@@ -1,8 +1,18 @@
+'use client';
+
 import React from 'react'
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from 'next/navigation';
 
 const Navber = () => {
+    const pathname = usePathname();
+    
+    // Hide navbar on login and register pages
+    if (pathname === '/login' || pathname === '/register') {
+        return null;
+    }
+    
     return (
         <header className="sticky top-0 z-40 bg-white text-black backdrop-blur border-b border-gray-100">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
