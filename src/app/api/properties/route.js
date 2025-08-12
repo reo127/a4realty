@@ -18,12 +18,43 @@ const verifyToken = (request) => {
   }
 };
 
-// GET all properties
+// GET all properties with filtering
 export async function GET(request) {
   try {
     await connectToDatabase();
     
-    const properties = await Property.find().sort({ createdAt: -1 });
+    // Get query parameters for filtering
+    const { searchParams } = new URL(request.url);
+    const location = searchParams.get('location');
+    const mode = searchParams.get('mode');
+    const type = searchParams.get('type');
+    const bhk = searchParams.get('bhk');
+    const price = searchParams.get('price');
+    
+    // Build filter object
+    const filter = {};
+    
+    if (location) {
+      filter.location = { $regex: location, $options: 'i' }; // Case-insensitive search
+    }
+    
+    if (mode) {
+      filter.mode = mode;
+    }
+    
+    if (type) {
+      filter.type = type;
+    }
+    
+    if (bhk) {
+      filter.bhk = bhk;
+    }
+    
+    if (price) {
+      filter.price = { $lte: parseInt(price) };
+    }
+    
+    const properties = await Property.find(filter).sort({ createdAt: -1 });
     
     return NextResponse.json(
       { success: true, count: properties.length, data: properties },
