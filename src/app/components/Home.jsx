@@ -37,7 +37,7 @@ export default function Home() {
                     <div className="mt-6 bg-white rounded-xl shadow-xl border border-gray-100">
                         {/* Tabs */}
                         <div className="flex">
-                            {[
+                            {/* {[
                                 { key: "buy", label: "Buy" },
                                 { key: "rent", label: "Rent" },
                                 { key: "new", label: "New Projects" },
@@ -53,7 +53,7 @@ export default function Home() {
                                 >
                                     {t.label}
                                 </button>
-                            ))}
+                            ))} */}
                         </div>
 
                         {/* Search row */}
