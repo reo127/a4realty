@@ -3,56 +3,41 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
-
-const allProperties = [
-    {
-        id: 1,
-        title: "Modern Downtown Apartment",
-        location: "Downtown, Metropolis",
-        price: "1,200,000",
-        type: "flat",
-        bhk: "2bhk",
-        mode: "buy",
-        img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1600&auto=format&fit=crop",
-        gallery: [
-            "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1600&auto=format&fit=crop",
-        ],
-        description: "A stunning modern apartment in the heart of the city, offering breathtaking views and state-of-the-art amenities. Perfect for young professionals and couples."
-    },
-    {
-        id: 2,
-        title: "Spacious Family House",
-        location: "Suburbia, Metropolis",
-        price: "750,000",
-        type: "house",
-        bhk: "3bhk",
-        mode: "buy",
-        img: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1600&auto=format&fit=crop",
-        gallery: [
-            "https://images.unsplash.com/photo-1570129477492-45c003edd2be?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1600&auto=format&fit=crop",
-        ],
-        description: "A beautiful and spacious family home in a quiet suburban neighborhood. Features a large backyard, a modern kitchen, and is close to schools and parks."
-    },
-];
 
 export default function PropertyDetails() {
     const { id } = useParams();
-    const property = allProperties.find(p => p.id.toString() === id);
+    const [property, setProperty] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-    if (!property) {
-        return <div>Property not found</div>;
-    }
+    useEffect(() => {
+        const fetchProperty = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`/api/properties/${id}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to fetch property');
+                }
+                
+                setProperty(data.data);
+            } catch (error) {
+                console.error('Error fetching property:', error);
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        if (id) {
+            fetchProperty();
+        }
+    }, [id]);
 
     const openModal = (index) => {
         setSelectedImageIndex(index);
@@ -70,6 +55,36 @@ export default function PropertyDetails() {
     const showPrevImage = () => {
         setSelectedImageIndex((prevIndex) => (prevIndex - 1 + property.gallery.length) % property.gallery.length);
     };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen px-4">
+                <div className="text-red-500 text-xl font-semibold mb-4">Error: {error}</div>
+                <Link href="/" className="text-indigo-600 hover:text-indigo-800">
+                    Return to Home
+                </Link>
+            </div>
+        );
+    }
+
+    if (!property) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen px-4">
+                <div className="text-xl font-semibold mb-4">Property not found</div>
+                <Link href="/" className="text-indigo-600 hover:text-indigo-800">
+                    Return to Home
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white text-gray-900">
