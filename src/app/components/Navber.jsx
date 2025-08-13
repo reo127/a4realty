@@ -1,12 +1,30 @@
 'use client';
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const Navber = () => {
     const pathname = usePathname();
+    const router = useRouter();
+    const [user, setUser] = useState(null);
+    
+    useEffect(() => {
+        // Check if user is logged in
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
+    
+    // Handle logout
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        router.push('/');
+    };
     
     // Hide navbar on login and register pages
     if (pathname === '/login' || pathname === '/register') {
@@ -32,18 +50,40 @@ const Navber = () => {
                     <Link href="/about" className="hover:text-indigo-600">About</Link>
                 </nav>
                 <div className="flex items-center gap-3">
-                    <Link
-                        href="/list-property"
-                        className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
-                    >
-                        List Property
-                    </Link>
-                    <Link
-                        href="/login"
-                        className="inline-flex px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700"
-                    >
-                        Sign in
-                    </Link>
+                    {user ? (
+                        <>
+                            <Link
+                                href="/list-property"
+                                className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
+                            >
+                                List Property
+                            </Link>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">{user.email}</span>
+                                <button
+                                    onClick={handleLogout}
+                                    className="inline-flex px-3 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href="/list-property"
+                                className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
+                            >
+                                List Property
+                            </Link>
+                            <Link
+                                href="/login"
+                                className="inline-flex px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700"
+                            >
+                                Sign in
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </header>

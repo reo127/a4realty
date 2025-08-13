@@ -51,7 +51,7 @@ export default function Login() {
       if (data.user.role === 'admin') {
         router.push('/admin');
       } else if (data.user.role === 'builder') {
-        router.push('/builder');
+        router.push('/builder')
       } else {
         router.push('/');
       }
