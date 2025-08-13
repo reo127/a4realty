@@ -217,7 +217,7 @@ export default function ListProperty() {
             <p className="text-blue-100 text-sm mt-1">Fill in the information below to list your property</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6 text-black">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">

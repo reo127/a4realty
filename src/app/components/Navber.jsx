@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from 'next/navigation';
 
+
 const Navber = () => {
     const pathname = usePathname();
     const router = useRouter();
@@ -17,6 +18,8 @@ const Navber = () => {
             setUser(JSON.parse(storedUser));
         }
     }, []);
+
+    console.log(user)
     
     // Handle logout
     const handleLogout = () => {
@@ -52,12 +55,14 @@ const Navber = () => {
                 <div className="flex items-center gap-3">
                     {user ? (
                         <>
-                            <Link
-                                href="/list-property"
-                                className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
-                            >
-                                List Property
-                            </Link>
+                            {user.role !== 'user' && (
+                                <Link
+                                    href="/list-property"
+                                    className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
+                                >
+                                    List Property
+                                </Link>
+                            )}
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-gray-600">{user.email}</span>
                                 <button
