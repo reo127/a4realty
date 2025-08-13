@@ -18,8 +18,6 @@ const Navber = () => {
             setUser(JSON.parse(storedUser));
         }
     }, []);
-
-    console.log(user)
     
     // Handle logout
     const handleLogout = () => {
