@@ -53,7 +53,9 @@ export default function Login() {
       } else if (data.user.role === 'builder') {
         router.push('/builder')
       } else {
-        router.push('/');
+        window.location.reload();
+        window.location.href = '/';
+        // router.push('/');
       }
     } catch (error) {
       setError(error.message);

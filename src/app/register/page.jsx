@@ -50,7 +50,8 @@ export default function Register() {
       localStorage.setItem('user', JSON.stringify(data.user));
 
       // Redirect to home page since everyone is a user now
-      router.push('/');
+       window.location.reload();
+       window.location.href = '/';
     } catch (error) {
       setError(error.message);
     } finally {
