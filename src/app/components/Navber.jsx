@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from 'next/navigation';
+import Logo from '../../../public/transparent-logo.svg'
 
 
 const Navber = () => {
@@ -37,10 +38,11 @@ const Navber = () => {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <Link href="/">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-indigo-600 rounded-md" />
-                        <span className="text-lg font-semibold tracking-tight">
+                        {/* <div className="h-8 w-8 bg-indigo-600 rounded-md" /> */}
+                        <Image src={Logo} alt="logo" className="h-[7rem] w-[10rem]" />
+                        {/* <span className="text-lg font-semibold tracking-tight">
                             A4Realty
-                        </span>
+                        </span> */}
                     </div>
                 </Link>
                 <nav className="hidden md:flex items-center gap-6 text-sm">
