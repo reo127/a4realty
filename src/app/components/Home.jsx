@@ -144,11 +144,11 @@ export default function Home() {
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Property type</option>
-                                    <option>Apartments</option>
-                                    <option>Villa</option>
-                                    <option>Plot</option>
-                                    <option>Office</option>
-                                    <option>Retail</option>
+                                    <option value="flat">Apartments</option>
+                                    <option value="house">Villa</option>
+                                    <option value="land">Plot</option>
+                                    <option value="office">Office</option>
+                                    <option value="office">Retail</option>
                                 </select>
                             </div>
 

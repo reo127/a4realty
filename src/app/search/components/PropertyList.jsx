@@ -3,8 +3,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PropertyList() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -19,15 +23,67 @@ export default function PropertyList() {
         bhk: "",
     });
 
-    // Fetch all properties on component mount
+    // Initialize filters from URL parameters and fetch properties
     useEffect(() => {
-        fetchProperties();
-    }, []);
+        // Read URL parameters and set initial filters
+        const initialFilters = {
+            location: searchParams.get('q') || searchParams.get('location') || "",
+            mode: mapMode(searchParams.get('tab')) || searchParams.get('mode') || "",
+            price: searchParams.get('max') || searchParams.get('price') || "",
+            type: searchParams.get('type') || "",
+            bhk: searchParams.get('bhk') || "",
+        };
+        
+        setFilters(initialFilters);
+        
+        // Fetch properties with initial filters
+        fetchPropertiesWithFilters(initialFilters);
+    }, [searchParams]);
+
+    // Map homepage tab to mode
+    const mapMode = (tab) => {
+        const modeMap = {
+            'buy': 'buy',
+            'rent': 'rent', 
+            'sell': 'sell',
+            'new': 'buy' // New projects are typically for buying
+        };
+        return modeMap[tab] || tab;
+    };
+
+    // Map homepage property types to API property types
+    const mapPropertyType = (homeType) => {
+        const typeMap = {
+            'Apartments': 'flat',
+            'Villa': 'house',
+            'Plot': 'land',
+            'Office': 'office',
+            'Retail': 'office'
+        };
+        return typeMap[homeType] || homeType;
+    };
 
     const fetchProperties = async () => {
+        await fetchPropertiesWithFilters(filters);
+    };
+
+    const fetchPropertiesWithFilters = async (currentFilters = filters) => {
         try {
             setLoading(true);
-            const response = await fetch('/api/properties');
+            
+            // Build query string from filters
+            const queryParams = new URLSearchParams();
+            
+            if (currentFilters.location) queryParams.append('location', currentFilters.location);
+            if (currentFilters.mode && currentFilters.mode !== 'buy') queryParams.append('mode', currentFilters.mode);
+            if (currentFilters.type) queryParams.append('type', currentFilters.type);
+            if (currentFilters.bhk) queryParams.append('bhk', currentFilters.bhk);
+            if (currentFilters.price) queryParams.append('price', currentFilters.price);
+            
+            const queryString = queryParams.toString();
+            const url = `/api/properties${queryString ? `?${queryString}` : ''}`;
+            
+            const response = await fetch(url);
             const data = await response.json();
             
             if (!response.ok) {
@@ -49,46 +105,40 @@ export default function PropertyList() {
     };
 
     const applyFilters = async () => {
-        try {
-            setLoading(true);
-            
-            // Build query string from filters
-            const queryParams = new URLSearchParams();
-            
-            if (filters.location) queryParams.append('location', filters.location);
-            if (filters.mode) queryParams.append('mode', filters.mode);
-            if (filters.type) queryParams.append('type', filters.type);
-            if (filters.bhk) queryParams.append('bhk', filters.bhk);
-            if (filters.price) queryParams.append('price', filters.price);
-            
-            const queryString = queryParams.toString();
-            const url = `/api/properties${queryString ? `?${queryString}` : ''}`;
-            
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to fetch properties');
-            }
-            
-            setProperties(data.data);
-        } catch (error) {
-            console.error('Error applying filters:', error);
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
+        // Update URL with current filters
+        const queryParams = new URLSearchParams();
+        
+        if (filters.location) queryParams.append('q', filters.location);
+        if (filters.mode) queryParams.append('mode', filters.mode);
+        if (filters.type) queryParams.append('type', filters.type);
+        if (filters.bhk) queryParams.append('bhk', filters.bhk);
+        if (filters.price) queryParams.append('price', filters.price);
+        
+        const newUrl = `/search${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        
+        // Update URL without page refresh
+        router.push(newUrl, { scroll: false });
+        
+        // Fetch properties with current filters
+        await fetchPropertiesWithFilters(filters);
     };
 
     const clearFilters = () => {
-        setFilters({
+        const clearedFilters = {
             location: "",
             mode: "",
             price: "",
             type: "",
             bhk: "",
-        });
-        fetchProperties();
+        };
+        
+        setFilters(clearedFilters);
+        
+        // Clear URL parameters
+        router.push('/search', { scroll: false });
+        
+        // Fetch all properties without filters
+        fetchPropertiesWithFilters(clearedFilters);
     };
 
     if (loading && properties.length === 0) {

@@ -66,7 +66,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
               <h3 className="text-xl font-bold text-white">{title}</h3>
               <button
                 onClick={onClose}
-                className="text-white hover:text-gray-200 transition-colors"
+                className="text-white hover:text-gray-200 transition-colors cursor-pointer"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -159,7 +159,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 transition-all"
+                className="px-6 cursor-pointer py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 transition-all"
               >
                 Maybe Later
               </button>
