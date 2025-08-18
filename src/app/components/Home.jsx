@@ -1,10 +1,61 @@
+'use client';
 /* app/page.tsx */
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import Logo from '../../../public/transparent-logo.svg'
 import Footer from "./Footer";
+import LeadCaptureModal from "./LeadCaptureModal";
 
 export default function Home() {
+    const [showLeadModal, setShowLeadModal] = useState(false);
+    const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
+
+    useEffect(() => {
+        // Check if user has already submitted lead information
+        const leadSubmitted = localStorage.getItem('leadSubmitted');
+        if (leadSubmitted) {
+            setHasSubmittedLead(true);
+        } else {
+            // Show modal after 3 seconds delay
+            const timer = setTimeout(() => {
+                setShowLeadModal(true);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const handleLeadSubmit = async (leadData) => {
+        try {
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(leadData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to submit lead');
+            }
+
+            // Store lead info in localStorage
+            localStorage.setItem('leadSubmitted', 'true');
+            localStorage.setItem('leadData', JSON.stringify(leadData));
+            setHasSubmittedLead(true);
+            setShowLeadModal(false);
+
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const handleCloseModal = () => {
+        setShowLeadModal(false);
+    };
+
     return (
         <main className="min-h-screen bg-white text-gray-900">
 
@@ -307,6 +358,14 @@ export default function Home() {
 
             {/* Footer */}
            <Footer/>
+
+            {/* Lead Capture Modal */}
+            <LeadCaptureModal
+                isOpen={showLeadModal}
+                onClose={handleCloseModal}
+                onSubmit={handleLeadSubmit}
+                title="Welcome! Get Exclusive Property Access"
+            />
         </main>
     );
 }

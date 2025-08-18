@@ -42,6 +42,17 @@ const PropertySchema = new mongoose.Schema({
     required: [true, 'Please provide a description'],
     trim: true
   },
+  contactNumber: {
+    type: String,
+    required: [true, 'Please provide a contact number'],
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return v && v.length === 10 && /^\d+$/.test(v);
+      },
+      message: 'Please provide a 10-digit phone number'
+    }
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

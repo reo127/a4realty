@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import LeadCaptureModal from './LeadCaptureModal';
 
 export default function PropertyDetails() {
     const { id } = useParams();
@@ -13,8 +14,16 @@ export default function PropertyDetails() {
     const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [showLeadModal, setShowLeadModal] = useState(false);
+    const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
 
     useEffect(() => {
+        // Check if user has already submitted lead information
+        const leadSubmitted = localStorage.getItem('leadSubmitted');
+        if (leadSubmitted) {
+            setHasSubmittedLead(true);
+        }
+        
         const fetchProperty = async () => {
             try {
                 setLoading(true);
@@ -54,6 +63,50 @@ export default function PropertyDetails() {
 
     const showPrevImage = () => {
         setSelectedImageIndex((prevIndex) => (prevIndex - 1 + property.gallery.length) % property.gallery.length);
+    };
+
+    const handleContactClick = (e) => {
+        e.preventDefault();
+        if (!hasSubmittedLead) {
+            setShowLeadModal(true);
+        } else {
+            // If lead is submitted, allow the call
+            window.location.href = `tel:${property.contactNumber}`;
+        }
+    };
+
+    const handleLeadSubmit = async (leadData) => {
+        try {
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(leadData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to submit lead');
+            }
+
+            // Store lead info in localStorage
+            localStorage.setItem('leadSubmitted', 'true');
+            localStorage.setItem('leadData', JSON.stringify(leadData));
+            setHasSubmittedLead(true);
+            setShowLeadModal(false);
+
+            // Now allow the call
+            window.location.href = `tel:${property.contactNumber}`;
+
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const handleCloseLeadModal = () => {
+        setShowLeadModal(false);
     };
 
     if (loading) {
@@ -236,11 +289,14 @@ export default function PropertyDetails() {
                                         <button className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                                             Schedule Viewing
                                         </button>
-                                        <button className="w-full mt-3 px-6 py-4 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                                        <button 
+                                            onClick={handleContactClick}
+                                            className="w-full mt-3 px-6 py-4 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                                        >
                                             <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                             </svg>
-                                            Call Now
+                                            {hasSubmittedLead ? `Call: ${property.contactNumber}` : 'Get Contact Details'}
                                         </button>
                                     </div>
                                     
@@ -330,6 +386,14 @@ export default function PropertyDetails() {
                     </div>
                 </div>
             </Modal>
+
+            {/* Lead Capture Modal */}
+            <LeadCaptureModal
+                isOpen={showLeadModal}
+                onClose={handleCloseLeadModal}
+                onSubmit={handleLeadSubmit}
+                title="Get Contact Details"
+            />
         </div>
     );
 }

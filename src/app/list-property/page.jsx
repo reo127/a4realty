@@ -20,6 +20,7 @@ export default function ListProperty() {
     bhk: '',
     mode: '',
     description: '',
+    contactNumber: '',
     gallery: []
   });
   
@@ -41,7 +42,15 @@ export default function ListProperty() {
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    // Special handling for phone number
+    if (name === 'contactNumber') {
+      // Only allow numbers and limit to 10 digits
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
   
   const handleImageUpload = async (e) => {
@@ -160,6 +169,7 @@ export default function ListProperty() {
         bhk: '',
         mode: '',
         description: '',
+        contactNumber: '',
         gallery: []
       });
       setPreviewImages([]);
@@ -343,6 +353,22 @@ export default function ListProperty() {
                 rows={4}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 placeholder="Describe your property in detail..."
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                Contact Number*
+              </label>
+              <input
+                type="text"
+                id="contactNumber"
+                name="contactNumber"
+                value={formData.contactNumber}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                placeholder="e.g. 9876543210"
               />
             </div>
             
