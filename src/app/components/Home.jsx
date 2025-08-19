@@ -10,6 +10,9 @@ import LeadCaptureModal from "./LeadCaptureModal";
 export default function Home() {
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
+    const [properties, setProperties] = useState([]);
+    const [visibleProperties, setVisibleProperties] = useState(3);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Check if user has already submitted lead information
@@ -24,6 +27,35 @@ export default function Home() {
             return () => clearTimeout(timer);
         }
     }, []);
+
+    useEffect(() => {
+        // Fetch properties in a separate useEffect
+        fetchProperties();
+    }, []);
+
+    const fetchProperties = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/properties');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success && data.data && Array.isArray(data.data)) {
+                setProperties(data.data);
+            } else {
+                setProperties([]);
+            }
+        } catch (error) {
+            console.error('Error fetching properties:', error);
+            setProperties([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleLeadSubmit = async (leadData) => {
         try {
@@ -56,6 +88,10 @@ export default function Home() {
         setShowLeadModal(false);
     };
 
+    const handleSeeMore = () => {
+        setVisibleProperties(prev => prev + 3);
+    };
+
     return (
         <main className="min-h-screen bg-white text-gray-900">
 
@@ -66,12 +102,8 @@ export default function Home() {
                 <div className="absolute inset-0">
                     <img
                         src="https://images.unsplash.com/photo-1600992045264-136a22de917e?q=80&w=2000&auto=format&fit=crop"
-                        // src="https://images.unsplash.com/photo-1600992045264-136a22de917e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                         alt="City skyline"
-                        fill
-                        priority
                         className="object-cover h-[90%] w-[100vw]"
-                    // height={300}
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50" />
                 </div>
@@ -228,73 +260,95 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Builder spotlight */}
+            {/* Featured Properties */}
             <section className="py-10 sm:py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex items-baseline justify-between">
-                        <h2 className="text-xl font-semibold">Featured Builder Projects</h2>
-                        <Link href="/search?tab=new" className="text-indigo-600 text-sm hover:underline">
+                        <h2 className="text-xl font-semibold">Featured Properties</h2>
+                        <Link href="/search" className="text-indigo-600 text-sm hover:underline">
                             View all
                         </Link>
                     </div>
 
-                    <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {[
-                            {
-                                title: "Skyline Residences",
-                                location: "Wakad, Pune",
-                                price: "₹62L–₹1.1Cr",
-                                tag: "New Launch",
-                                img: "https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1600&auto=format&fit=crop",
-                            },
-                            {
-                                title: "Green Arcadia",
-                                location: "Whitefield, Bengaluru",
-                                price: "₹80L–₹1.6Cr",
-                                tag: "RERA Approved",
-                                img: "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1600&auto=format&fit=crop",
-                            },
-                            {
-                                title: "Marine Vista",
-                                location: "Andheri (W), Mumbai",
-                                price: "₹1.2Cr–₹3.4Cr",
-                                tag: "Possession Soon",
-                                img: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1600&auto=format&fit=crop",
-                            },
-                        ].map((p) => (
-                            <Link
-                                key={p.title}
-                                href={`/property/${encodeURIComponent(p.title.toLowerCase().replace(/\s+/g, "-"))}`}
-                                className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
-                            >
-                                <div className="relative h-48">
-                                    <img
-                                        src={p.img}
-                                        alt={p.title}
-                                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
-                                    />
-                                    <div className="absolute left-3 top-3">
-                                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-white/90">
-                                            {p.tag}
-                                        </span>
+                    {loading && properties.length === 0 ? (
+                        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="overflow-hidden rounded-xl border border-gray-200 animate-pulse">
+                                    <div className="h-48 bg-gray-300"></div>
+                                    <div className="p-4 space-y-3">
+                                        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                                        <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                                        <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+                                        <div className="flex gap-2">
+                                            <div className="h-6 bg-gray-300 rounded w-16"></div>
+                                            <div className="h-6 bg-gray-300 rounded w-16"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="p-4">
-                                    <h3 className="text-base font-semibold">{p.title}</h3>
-                                    <p className="text-sm text-gray-600">{p.location}</p>
-                                    <p className="mt-2 text-sm font-medium">{p.price}</p>
-                                    <div className="mt-3 flex items-center gap-2">
-                                        <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-green-50 text-green-700">
-                                            Verified
-                                        </span>
-                                        <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-indigo-50 text-indigo-700">
-                                            Builder
-                                        </span>
-                                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                                {properties.slice(0, visibleProperties).map((property) => (
+                                    <Link
+                                        key={property._id}
+                                        href={`/property/${property._id}`}
+                                        className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
+                                    >
+                                        <div className="relative h-48">
+                                            <img
+                                                src={property.gallery?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+                                                alt={property.title}
+                                                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+                                            />
+                                            <div className="absolute left-3 top-3">
+                                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-white/90">
+                                                    For {property.mode}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="text-base font-semibold">{property.title}</h3>
+                                            <p className="text-sm text-gray-600">{property.location}</p>
+                                            <p className="mt-2 text-sm font-medium">₹{property.price?.toLocaleString()}</p>
+                                            <div className="mt-3 flex items-center gap-2">
+                                                <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-green-50 text-green-700">
+                                                    Verified
+                                                </span>
+                                                <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-indigo-50 text-indigo-700">
+                                                    {property.type}
+                                                </span>
+                                                {property.bhk && property.bhk !== 'na' && (
+                                                    <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-blue-50 text-blue-700">
+                                                        {property.bhk}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                            
+                            {/* See More Button */}
+                            {properties.length > visibleProperties && (
+                                <div className="mt-8 text-center">
+                                    <button
+                                        onClick={handleSeeMore}
+                                        className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                                    >
+                                        See More Properties ({properties.length - visibleProperties} more)
+                                    </button>
                                 </div>
-                            </Link>
-                        ))}
-                    </div>
+                            )}
+                            
+                            {properties.length === 0 && (
+                                <div className="mt-6 text-center py-12 bg-gray-50 rounded-xl">
+                                    <p className="text-gray-600">No properties found. Properties will appear here once they are added.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             </section>
 
