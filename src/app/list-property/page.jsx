@@ -25,6 +25,7 @@ export default function ListProperty() {
   });
   
   const [previewImages, setPreviewImages] = useState([]);
+  const [imageUrl, setImageUrl] = useState('');
   
   useEffect(() => {
     // Check if user is logged in
@@ -64,7 +65,8 @@ export default function ListProperty() {
     // Create preview URLs
     const newPreviewImages = files.map(file => ({
       file,
-      preview: URL.createObjectURL(file)
+      preview: URL.createObjectURL(file),
+      isUrl: false
     }));
     
     setPreviewImages([...previewImages, ...newPreviewImages]);
@@ -124,6 +126,31 @@ export default function ListProperty() {
     newGallery.splice(index, 1);
     setFormData({ ...formData, gallery: newGallery });
   };
+
+  const handleAddImageUrl = () => {
+    if (!imageUrl.trim()) {
+      setError('Please enter a valid image URL');
+      return;
+    }
+
+    // Add URL to preview images
+    const newPreviewImage = {
+      preview: imageUrl,
+      isUrl: true
+    };
+    
+    setPreviewImages([...previewImages, newPreviewImage]);
+    
+    // Add URL to form data gallery
+    setFormData(prev => ({
+      ...prev,
+      gallery: [...prev.gallery, imageUrl]
+    }));
+    
+    // Clear input
+    setImageUrl('');
+    setError('');
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -173,6 +200,7 @@ export default function ListProperty() {
         gallery: []
       });
       setPreviewImages([]);
+      setImageUrl('');
       
       // Redirect to property page after 2 seconds
       setTimeout(() => {
@@ -413,6 +441,30 @@ export default function ListProperty() {
                 </div>
               )}
               
+              {/* URL Input Section */}
+              <div className="mt-4 p-4 bg-blue-50 rounded-md border border-blue-200">
+                <h3 className="text-sm font-medium text-blue-900 mb-2">Or Add Image URLs</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="Paste image URL here (e.g., https://example.com/image.jpg)"
+                    className="flex-1 p-2 border border-blue-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddImageUrl}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="text-xs text-blue-600 mt-1">
+                  You can add multiple images by pasting URLs one at a time
+                </p>
+              </div>
+
               {previewImages.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {previewImages.map((image, index) => (
@@ -421,7 +473,17 @@ export default function ListProperty() {
                         src={image.preview} 
                         alt={`Preview ${index}`} 
                         className="h-24 w-full object-cover"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found';
+                        }}
                       />
+                      <div className="absolute top-1 left-1">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                          image.isUrl ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                        }`}>
+                          {image.isUrl ? 'URL' : 'File'}
+                        </span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
