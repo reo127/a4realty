@@ -3,7 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import Property from '@/models/Property';
 import jwt from 'jsonwebtoken';
 
-// Helper function to verify token
+// Helper function to verify token (same as working upload API)
 const verifyToken = (request) => {
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
@@ -74,13 +74,21 @@ export async function POST(request) {
   try {
     await connectToDatabase();
     
-    // Verify token and get user
+    // Verify token (same as working upload API)
     const decoded = verifyToken(request);
     
     if (!decoded) {
       return NextResponse.json(
         { success: false, message: 'Not authorized' },
         { status: 401 }
+      );
+    }
+    
+    // Check if user is admin (role is in the JWT token)
+    if (decoded.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Admin access required' },
+        { status: 403 }
       );
     }
     
