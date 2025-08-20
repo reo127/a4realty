@@ -23,22 +23,16 @@ export default function AdminProperties() {
     
     if (storedUser && token) {
       const userData = JSON.parse(storedUser);
-      console.log('🔍 Admin check - User data:', userData);
-      console.log('🔍 Admin check - User role:', userData.role);
-      console.log('🔍 Admin check - Is admin?', userData.role === 'admin');
       setUser(userData);
       
       // Check if user is admin
       if (userData.role !== 'admin') {
-        console.log('❌ Not admin, redirecting to home');
         router.push('/');
         return;
       }
       
-      console.log('✅ User is admin, fetching properties');
       fetchProperties();
     } else {
-      console.log('❌ No user or token, redirecting to login');
       router.push('/login');
     }
     
