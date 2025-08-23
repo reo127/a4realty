@@ -180,7 +180,10 @@ const ChatBot = () => {
                                                                 📍 {property.location}
                                                             </p>
                                                             <p className="text-xs font-medium text-indigo-600">
-                                                                ₹{(property.price / 100000).toFixed(0)} L
+                                                                {typeof property.price === 'string' ? 
+                                                                    (property.price.includes('₹') ? property.price : `₹${property.price}`) : 
+                                                                    `₹${(property.price / 100000).toFixed(0)} L`
+                                                                }
                                                             </p>
                                                             <p className="text-xs text-gray-500">
                                                                 {property.bhk ? property.bhk.toUpperCase() : property.type} • {property.mode}

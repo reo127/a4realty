@@ -51,7 +51,19 @@ export async function GET(request) {
     }
     
     if (price) {
-      filter.price = { $lte: parseInt(price) };
+      // For string prices, we can do text search or regex matching
+      // Convert to number if it's a numeric string, otherwise use text search
+      const numericPrice = parseInt(price);
+      if (!isNaN(numericPrice)) {
+        // If price is numeric, still support numeric comparison for backward compatibility
+        filter.$or = [
+          { price: { $lte: numericPrice } }, // For old numeric prices
+          { price: { $regex: price, $options: 'i' } } // For string prices containing the number
+        ];
+      } else {
+        // For non-numeric price strings, use text search
+        filter.price = { $regex: price, $options: 'i' };
+      }
     }
     
     const properties = await Property.find(filter).sort({ createdAt: -1 });

@@ -13,8 +13,9 @@ const PropertySchema = new mongoose.Schema({
     trim: true
   },
   price: {
-    type: Number,
-    required: [true, 'Please provide a price']
+    type: String,
+    required: [true, 'Please provide a price'],
+    trim: true
   },
   type: {
     type: String,

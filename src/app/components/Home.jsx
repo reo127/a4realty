@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Logo from '../../../public/transparent-logo.svg'
 import Footer from "./Footer";
 import LeadCaptureModal from "./LeadCaptureModal";
+import { formatPrice } from '../../utils/formatPrice';
 
 export default function Home() {
     const [showLeadModal, setShowLeadModal] = useState(false);
@@ -311,7 +312,7 @@ export default function Home() {
                                         <div className="p-4">
                                             <h3 className="text-base font-semibold">{property.title}</h3>
                                             <p className="text-sm text-gray-600">{property.location}</p>
-                                            <p className="mt-2 text-sm font-medium">₹{property.price?.toLocaleString()}</p>
+                                            <p className="mt-2 text-sm font-medium">{formatPrice(property.price)}</p>
                                             <div className="mt-3 flex items-center gap-2">
                                                 <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-green-50 text-green-700">
                                                     Verified

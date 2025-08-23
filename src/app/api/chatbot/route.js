@@ -194,10 +194,22 @@ function formatPropertyResponse(properties, criteria) {
     let response = `Great! I found ${count} ${type}${bhk} properties${location}${priceRange}${mode}.\n\n`;
     
     properties.slice(0, 3).forEach((property, index) => {
-        const price = (property.price / 100000).toFixed(0);
+        // Handle both string and number prices
+        let priceDisplay;
+        if (typeof property.price === 'string') {
+            // If it's already a formatted string, use it
+            priceDisplay = property.price.includes('₹') ? property.price : `₹${property.price}`;
+        } else if (typeof property.price === 'number') {
+            // Convert number to readable format
+            const price = (property.price / 100000).toFixed(0);
+            priceDisplay = `₹${price} lakhs`;
+        } else {
+            priceDisplay = 'Price on request';
+        }
+        
         response += `${index + 1}. ${property.title}\n`;
         response += `   📍 ${property.location}\n`;
-        response += `   💰 ₹${price} lakhs\n`;
+        response += `   💰 ${priceDisplay}\n`;
         response += `   🏠 ${property.bhk ? property.bhk.toUpperCase() : property.type}\n`;
         response += `   📱 ${property.contactNumber}\n\n`;
     });

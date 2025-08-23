@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import LeadCaptureModal from './LeadCaptureModal';
+import { formatPrice } from '../../utils/formatPrice';
 
 export default function PropertyDetails() {
     const { id } = useParams();
@@ -175,7 +176,7 @@ export default function PropertyDetails() {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-3xl font-bold text-indigo-600">${property.price.toLocaleString()}</p>
+                                        <p className="text-3xl font-bold text-indigo-600">{formatPrice(property.price)}</p>
                                         <p className="text-sm text-gray-500">{property.mode === 'rent' ? 'per month' : ''}</p>
                                     </div>
                                 </div>

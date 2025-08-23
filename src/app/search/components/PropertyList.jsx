@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { formatPrice } from '../../../utils/formatPrice';
 
 export default function PropertyList() {
     const router = useRouter();
@@ -408,7 +409,7 @@ export default function PropertyList() {
                                         
                                         <div className="mb-4">
                                             <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                                                ₹{property.price?.toLocaleString()}
+                                                {formatPrice(property.price)}
                                             </p>
                                         </div>
                                         

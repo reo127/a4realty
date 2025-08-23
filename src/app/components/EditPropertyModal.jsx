@@ -256,14 +256,14 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   Price*
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   id="price"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
                   required
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  placeholder="Enter amount"
+                  placeholder="e.g. 50 lakhs, 1cr - 1.5cr, 5000000"
                 />
               </div>
               
