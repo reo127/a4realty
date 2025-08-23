@@ -209,11 +209,6 @@ export default function ListProperty() {
       setPreviewImages([]);
       setImageUrl('');
       
-      // Redirect to property page after 2 seconds
-      setTimeout(() => {
-        router.push(`/property/${data.data._id}`);
-      }, 2000);
-      
     } catch (error) {
       setError(error.message);
     } finally {

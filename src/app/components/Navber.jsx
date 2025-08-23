@@ -11,7 +11,7 @@ const Navber = () => {
     const pathname = usePathname();
     const router = useRouter();
     const [user, setUser] = useState(null);
-    
+
     useEffect(() => {
         // Check if user is logged in
         const storedUser = localStorage.getItem('user');
@@ -19,7 +19,7 @@ const Navber = () => {
             setUser(JSON.parse(storedUser));
         }
     }, []);
-    
+
     // Handle logout
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -27,12 +27,12 @@ const Navber = () => {
         setUser(null);
         router.push('/');
     };
-    
+
     // Hide navbar on login and register pages
     if (pathname === '/login' || pathname === '/register') {
         return null;
     }
-    
+
     return (
         <header className="sticky top-0 z-40 bg-white text-black backdrop-blur border-b border-gray-100">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -55,13 +55,21 @@ const Navber = () => {
                 <div className="flex items-center gap-3">
                     {user ? (
                         <>
-                            {user.role !== 'user' && (
-                                <Link
-                                    href="/list-property"
-                                    className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
-                                >
-                                    List Property
-                                </Link>
+                            {user.role === 'admin' && (
+                                <div>
+                                    <Link
+                                        href="/list-property"
+                                        className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
+                                    >
+                                        List Property
+                                    </Link>
+                                    <Link
+                                        href="/admin/properties"
+                                        className="hidden ml-3 sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
+                                    >
+                                        Manage Properties
+                                    </Link>
+                                </div>
                             )}
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-gray-600">{user.email}</span>
@@ -75,12 +83,6 @@ const Navber = () => {
                         </>
                     ) : (
                         <>
-                            <Link
-                                href="/list-property"
-                                className="hidden sm:inline-flex px-3 py-2 rounded-md border border-gray-200 hover:border-gray-300 text-sm"
-                            >
-                                List Property
-                            </Link>
                             <Link
                                 href="/login"
                                 className="inline-flex px-3 py-2 rounded-md bg-indigo-600 text-white text-sm hover:bg-indigo-700"
