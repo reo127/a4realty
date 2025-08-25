@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { isValidVideoUrl, getThumbnailUrl, getPlatformName } from '@/utils/videoUtils';
 
 export default function ListProperty() {
   const router = useRouter();
@@ -21,11 +22,33 @@ export default function ListProperty() {
     mode: '',
     description: '',
     contactNumber: '',
-    gallery: []
+    gallery: [],
+    videos: [],
+    // Additional real estate fields
+    yearBuilt: '',
+    squareFootage: '',
+    lotSize: '',
+    amenities: [],
+    propertyCondition: '',
+    nearbyAmenities: [],
+    nearbyLocations: [],
+    schoolDistrict: '',
+    hoa: '',
+    propertyTax: '',
+    parkingSpaces: '',
+    floorNumber: '',
+    totalFloors: '',
+    furnishingStatus: '',
+    availabilityDate: ''
   });
   
   const [previewImages, setPreviewImages] = useState([]);
   const [imageUrl, setImageUrl] = useState('');
+  const [previewVideos, setPreviewVideos] = useState([]);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [amenityInput, setAmenityInput] = useState('');
+  const [nearbyAmenityInput, setNearbyAmenityInput] = useState('');
+  const [nearbyLocationInput, setNearbyLocationInput] = useState('');
   
   useEffect(() => {
     // Check if user is logged in
@@ -158,6 +181,102 @@ export default function ListProperty() {
     setImageUrl('');
     setError('');
   };
+
+  // Video handling functions
+  const handleAddVideoUrl = () => {
+    if (!videoUrl.trim()) {
+      setError('Please enter a valid video URL');
+      return;
+    }
+
+    if (!isValidVideoUrl(videoUrl)) {
+      setError('Please enter a valid YouTube, Vimeo, Dailymotion, or direct video URL');
+      return;
+    }
+
+    // Add URL to preview videos
+    const newPreviewVideo = {
+      url: videoUrl,
+      thumbnail: getThumbnailUrl(videoUrl),
+      platform: getPlatformName(videoUrl)
+    };
+    
+    setPreviewVideos([...previewVideos, newPreviewVideo]);
+    
+    // Add URL to form data videos
+    setFormData(prev => ({
+      ...prev,
+      videos: [...prev.videos, videoUrl]
+    }));
+    
+    // Clear input
+    setVideoUrl('');
+    setError('');
+  };
+
+  const removeVideo = (index) => {
+    // Remove from preview
+    const newPreviewVideos = [...previewVideos];
+    newPreviewVideos.splice(index, 1);
+    setPreviewVideos(newPreviewVideos);
+    
+    // Remove from form data
+    const newVideos = [...formData.videos];
+    newVideos.splice(index, 1);
+    setFormData({ ...formData, videos: newVideos });
+  };
+
+  // Amenity management functions
+  const addAmenity = () => {
+    if (amenityInput.trim() && !formData.amenities.includes(amenityInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        amenities: [...prev.amenities, amenityInput.trim()]
+      }));
+      setAmenityInput('');
+    }
+  };
+
+  const removeAmenity = (amenity) => {
+    setFormData(prev => ({
+      ...prev,
+      amenities: prev.amenities.filter(a => a !== amenity)
+    }));
+  };
+
+  const addNearbyAmenity = () => {
+    if (nearbyAmenityInput.trim() && !formData.nearbyAmenities.includes(nearbyAmenityInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        nearbyAmenities: [...prev.nearbyAmenities, nearbyAmenityInput.trim()]
+      }));
+      setNearbyAmenityInput('');
+    }
+  };
+
+  const removeNearbyAmenity = (amenity) => {
+    setFormData(prev => ({
+      ...prev,
+      nearbyAmenities: prev.nearbyAmenities.filter(a => a !== amenity)
+    }));
+  };
+
+  const addNearbyLocation = () => {
+    if (nearbyLocationInput.trim() && !formData.nearbyLocations.includes(nearbyLocationInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        nearbyLocations: [...prev.nearbyLocations, nearbyLocationInput.trim()]
+      }));
+      setNearbyLocationInput('');
+    }
+  };
+
+  const removeNearbyLocation = (location) => {
+    setFormData(prev => ({
+      ...prev,
+      nearbyLocations: prev.nearbyLocations.filter(l => l !== location)
+    }));
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -204,10 +323,30 @@ export default function ListProperty() {
         mode: '',
         description: '',
         contactNumber: '',
-        gallery: []
+        gallery: [],
+        videos: [],
+        yearBuilt: '',
+        squareFootage: '',
+        lotSize: '',
+        amenities: [],
+        propertyCondition: '',
+        nearbyAmenities: [],
+        nearbyLocations: [],
+        schoolDistrict: '',
+        hoa: '',
+        propertyTax: '',
+        parkingSpaces: '',
+        floorNumber: '',
+        totalFloors: '',
+        furnishingStatus: '',
+        availabilityDate: ''
       });
       setPreviewImages([]);
       setImageUrl('');
+      setPreviewVideos([]);
+      setVideoUrl('');
+      setAmenityInput('');
+      setNearbyAmenityInput('');
       
     } catch (error) {
       setError(error.message);
@@ -401,6 +540,386 @@ export default function ListProperty() {
                 placeholder="e.g. 9876543210"
               />
             </div>
+
+            {/* Additional Property Details Section */}
+            <div className="bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v12M13 7a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Property Specifications
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Year Built */}
+                <div>
+                  <label htmlFor="yearBuilt" className="block text-sm font-medium text-gray-700 mb-1">
+                    Year Built
+                  </label>
+                  <input
+                    type="number"
+                    id="yearBuilt"
+                    name="yearBuilt"
+                    value={formData.yearBuilt}
+                    onChange={handleChange}
+                    min="1900"
+                    max={new Date().getFullYear()}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. 2020"
+                  />
+                </div>
+
+                {/* Square Footage */}
+                <div>
+                  <label htmlFor="squareFootage" className="block text-sm font-medium text-gray-700 mb-1">
+                    Square Footage
+                  </label>
+                  <input
+                    type="number"
+                    id="squareFootage"
+                    name="squareFootage"
+                    value={formData.squareFootage}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. 1200"
+                  />
+                </div>
+
+                {/* Lot Size */}
+                <div>
+                  <label htmlFor="lotSize" className="block text-sm font-medium text-gray-700 mb-1">
+                    Lot Size
+                  </label>
+                  <input
+                    type="text"
+                    id="lotSize"
+                    name="lotSize"
+                    value={formData.lotSize}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. 0.25 acres or 5000 sq ft"
+                  />
+                </div>
+
+                {/* Property Condition */}
+                <div>
+                  <label htmlFor="propertyCondition" className="block text-sm font-medium text-gray-700 mb-1">
+                    Property Condition
+                  </label>
+                  <select
+                    id="propertyCondition"
+                    name="propertyCondition"
+                    value={formData.propertyCondition}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  >
+                    <option value="">Select Condition</option>
+                    <option value="new">New</option>
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                    <option value="needs-renovation">Needs Renovation</option>
+                  </select>
+                </div>
+
+                {/* Parking Spaces */}
+                <div>
+                  <label htmlFor="parkingSpaces" className="block text-sm font-medium text-gray-700 mb-1">
+                    Parking Spaces
+                  </label>
+                  <input
+                    type="number"
+                    id="parkingSpaces"
+                    name="parkingSpaces"
+                    value={formData.parkingSpaces}
+                    onChange={handleChange}
+                    min="0"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. 2"
+                  />
+                </div>
+
+                {/* Furnishing Status */}
+                <div>
+                  <label htmlFor="furnishingStatus" className="block text-sm font-medium text-gray-700 mb-1">
+                    Furnishing Status
+                  </label>
+                  <select
+                    id="furnishingStatus"
+                    name="furnishingStatus"
+                    value={formData.furnishingStatus}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="furnished">Furnished</option>
+                    <option value="semi-furnished">Semi-furnished</option>
+                    <option value="unfurnished">Unfurnished</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Floor Information - Only for flats */}
+              {(formData.type === 'flat' || formData.type === 'office') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label htmlFor="floorNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                      Floor Number
+                    </label>
+                    <input
+                      type="number"
+                      id="floorNumber"
+                      name="floorNumber"
+                      value={formData.floorNumber}
+                      onChange={handleChange}
+                      min="0"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="totalFloors" className="block text-sm font-medium text-gray-700 mb-1">
+                      Total Floors in Building
+                    </label>
+                    <input
+                      type="number"
+                      id="totalFloors"
+                      name="totalFloors"
+                      value={formData.totalFloors}
+                      onChange={handleChange}
+                      min="1"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Availability Date */}
+              <div className="mt-4">
+                <label htmlFor="availabilityDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  Available From
+                </label>
+                <input
+                  type="date"
+                  id="availabilityDate"
+                  name="availabilityDate"
+                  value={formData.availabilityDate}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                />
+              </div>
+            </div>
+
+            {/* Amenities Section */}
+            <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Property Amenities
+              </h3>
+
+              {/* Property Amenities */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Property Amenities
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={amenityInput}
+                    onChange={(e) => setAmenityInput(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. Swimming Pool, Gym, Security"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
+                  />
+                  <button
+                    type="button"
+                    onClick={addAmenity}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.amenities.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.amenities.map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                      >
+                        {amenity}
+                        <button
+                          type="button"
+                          onClick={() => removeAmenity(amenity)}
+                          className="ml-2 text-blue-600 hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Nearby Amenities */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nearby Amenities
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={nearbyAmenityInput}
+                    onChange={(e) => setNearbyAmenityInput(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. Metro Station, Hospital, School"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNearbyAmenity())}
+                  />
+                  <button
+                    type="button"
+                    onClick={addNearbyAmenity}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.nearbyAmenities.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.nearbyAmenities.map((amenity, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+                      >
+                        {amenity}
+                        <button
+                          type="button"
+                          onClick={() => removeNearbyAmenity(amenity)}
+                          className="ml-2 text-green-600 hover:text-green-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* CRM Nearby Locations Section */}
+            </div>
+              <div className="bg-purple-50 p-4 rounded-md">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  CRM Nearby Locations
+                </h3>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nearby Locations <span className="text-gray-400">(for CRM matching)</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">Add nearby locations to help sales team find alternative properties</p>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={nearbyLocationInput}
+                      onChange={(e) => setNearbyLocationInput(e.target.value)}
+                      className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      placeholder="e.g. BTM Layout, HSR Layout, Electronic City"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNearbyLocation())}
+                    />
+                    <button
+                      type="button"
+                      onClick={addNearbyLocation}
+                      className="px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {formData.nearbyLocations.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.nearbyLocations.map((location, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800"
+                        >
+                          {location}
+                          <button
+                            type="button"
+                            onClick={() => removeNearbyLocation(location)}
+                            className="ml-1 text-purple-600 hover:text-purple-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            {/* Financial & Location Details */}
+            <div className="bg-green-50 p-6 rounded-lg border-2 border-green-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Financial & Location Information
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* School District */}
+                <div>
+                  <label htmlFor="schoolDistrict" className="block text-sm font-medium text-gray-700 mb-1">
+                    School District
+                  </label>
+                  <input
+                    type="text"
+                    id="schoolDistrict"
+                    name="schoolDistrict"
+                    value={formData.schoolDistrict}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. District 5, Bangalore"
+                  />
+                </div>
+
+                {/* HOA */}
+                <div>
+                  <label htmlFor="hoa" className="block text-sm font-medium text-gray-700 mb-1">
+                    HOA/Maintenance Fee
+                  </label>
+                  <input
+                    type="text"
+                    id="hoa"
+                    name="hoa"
+                    value={formData.hoa}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. ₹5,000/month"
+                  />
+                </div>
+
+                {/* Property Tax */}
+                <div className="md:col-span-2">
+                  <label htmlFor="propertyTax" className="block text-sm font-medium text-gray-700 mb-1">
+                    Property Tax (Annual)
+                  </label>
+                  <input
+                    type="text"
+                    id="propertyTax"
+                    name="propertyTax"
+                    value={formData.propertyTax}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="e.g. ₹15,000/year"
+                  />
+                </div>
+              </div>
+            </div>
             
             <div className="bg-gray-50 p-4 rounded-md">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -493,6 +1012,80 @@ export default function ListProperty() {
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Video Gallery Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Property Videos <span className="text-gray-400">(Optional)</span>
+              </label>
+              <p className="text-xs text-gray-500 mb-3">Add YouTube, Vimeo, Dailymotion, or direct video URLs to showcase your property</p>
+              
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="Enter video URL (YouTube, Vimeo, etc.)"
+                  className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddVideoUrl}
+                  disabled={!videoUrl.trim()}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                >
+                  Add Video
+                </button>
+              </div>
+
+              {previewVideos.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {previewVideos.map((video, index) => (
+                    <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg border">
+                      <div className="flex-shrink-0 mr-3">
+                        {video.thumbnail ? (
+                          <img 
+                            src={video.thumbnail} 
+                            alt={`Video ${index + 1} thumbnail`}
+                            className="h-12 w-20 object-cover rounded"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="h-12 w-20 bg-purple-100 rounded flex items-center justify-center"
+                          style={{display: video.thumbnail ? 'none' : 'flex'}}
+                        >
+                          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h1m4 0h1M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {video.platform}
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">Video {index + 1}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 truncate">{video.url}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index)}
+                        className="flex-shrink-0 ml-3 text-red-600 hover:text-red-800 transition-colors"
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     </div>

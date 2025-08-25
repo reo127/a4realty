@@ -384,13 +384,18 @@ export default function PropertyList() {
                                                 </svg>
                                             </button>
                                         </div>
-                                        {property.gallery && property.gallery.length > 1 && (
-                                            <div className="absolute bottom-4 right-4">
+                                        <div className="absolute bottom-4 right-4 flex flex-col gap-1">
+                                            {property.gallery && property.gallery.length > 1 && (
                                                 <span className="px-2 py-1 bg-black/70 text-white text-xs rounded-md">
-                                                    +{property.gallery.length - 1} photos
+                                                    📸 {property.gallery.length} photos
                                                 </span>
-                                            </div>
-                                        )}
+                                            )}
+                                            {property.videos && property.videos.length > 0 && (
+                                                <span className="px-2 py-1 bg-purple-600/80 text-white text-xs rounded-md">
+                                                    🎬 {property.videos.length} videos
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     
                                     <div className="p-6 flex-1">
@@ -423,6 +428,28 @@ export default function PropertyList() {
                                                 </span>
                                             )}
                                         </div>
+                                        
+                                        {/* Nearby Locations */}
+                                        {property.nearbyLocations && property.nearbyLocations.length > 0 && (
+                                            <div className="mb-4">
+                                                <p className="text-sm text-gray-600 mb-2 font-medium">Nearby Areas:</p>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {property.nearbyLocations.slice(0, 3).map((location, index) => (
+                                                        <span 
+                                                            key={index}
+                                                            className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-md"
+                                                        >
+                                                            {location}
+                                                        </span>
+                                                    ))}
+                                                    {property.nearbyLocations.length > 3 && (
+                                                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-md">
+                                                            +{property.nearbyLocations.length - 3} more
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                         
                                         <div className="flex items-center justify-between text-sm text-gray-500">
                                             <span className="flex items-center">

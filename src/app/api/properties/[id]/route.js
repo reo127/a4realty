@@ -90,6 +90,21 @@ export async function PUT(request, { params }) {
     
     const data = await request.json();
     
+    // Clean data - remove empty strings for enum fields and other optional fields
+    const cleanData = {};
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      // Skip empty strings, null, and undefined values
+      if (value !== '' && value !== null && value !== undefined) {
+        // For arrays, keep them even if empty
+        if (Array.isArray(value)) {
+          cleanData[key] = value;
+        } else {
+          cleanData[key] = value;
+        }
+      }
+    });
+    
     // Find property
     const property = await Property.findById(id);
     
@@ -103,7 +118,7 @@ export async function PUT(request, { params }) {
     // Update property (admin can update any property)
     const updatedProperty = await Property.findByIdAndUpdate(
       id,
-      data,
+      cleanData,
       { new: true, runValidators: true }
     );
     

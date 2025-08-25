@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { getAllLocations } from '@/utils/locations';
 
 export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "Get Exclusive Access" }) {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    email: ''
+    email: '',
+    interestedLocation: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -31,8 +33,8 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
 
     try {
       // Basic validation
-      if (!formData.name.trim() || !formData.phone.trim()) {
-        throw new Error('Name and phone are required');
+      if (!formData.name.trim() || !formData.phone.trim() || !formData.interestedLocation.trim()) {
+        throw new Error('Name, phone, and interested location are required');
       }
 
       if (formData.phone.replace(/\s/g, '').length !== 10) {
@@ -43,7 +45,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
       await onSubmit(formData);
       
       // Reset form
-      setFormData({ name: '', phone: '', email: '' });
+      setFormData({ name: '', phone: '', email: '', interestedLocation: '' });
     } catch (error) {
       setError(error.message);
     } finally {
@@ -137,6 +139,27 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
                   placeholder="your@email.com"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="interestedLocation" className="block text-sm font-medium text-gray-700 mb-1">
+                  Interested Location *
+                </label>
+                <select
+                  id="interestedLocation"
+                  name="interestedLocation"
+                  value={formData.interestedLocation}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none bg-white"
+                >
+                  <option value="">Select preferred location</option>
+                  {getAllLocations().map(location => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

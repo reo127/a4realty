@@ -28,6 +28,11 @@ const LeadSchema = new mongoose.Schema({
       'Please provide a valid email',
     ],
   },
+  interestedLocation: {
+    type: String,
+    required: [true, 'Please provide interested location'],
+    trim: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -48,9 +53,9 @@ export async function POST(request) {
     const data = await request.json();
     
     // Validate required fields
-    if (!data.name || !data.phone) {
+    if (!data.name || !data.phone || !data.interestedLocation) {
       return NextResponse.json(
-        { success: false, message: 'Name and phone are required' },
+        { success: false, message: 'Name, phone, and interested location are required' },
         { status: 400 }
       );
     }

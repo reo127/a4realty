@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import LeadCaptureModal from './LeadCaptureModal';
 import { formatPrice } from '../../utils/formatPrice';
+import { getEmbedUrl, getVideoPlayerProps } from '@/utils/videoUtils';
 
 export default function PropertyDetails() {
     const { id } = useParams();
@@ -17,6 +18,7 @@ export default function PropertyDetails() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
+    const [activeMediaTab, setActiveMediaTab] = useState('images'); // 'images' or 'videos'
 
     useEffect(() => {
         // Check if user has already submitted lead information
@@ -181,49 +183,152 @@ export default function PropertyDetails() {
                                     </div>
                                 </div>
                                 
-                                {/* Premium Image Gallery */}
+                                {/* Nearby Locations */}
+                                {property.nearbyLocations && property.nearbyLocations.length > 0 && (
+                                    <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                        <h3 className="text-sm font-semibold text-purple-900 mb-2 flex items-center">
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Nearby Areas
+                                        </h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {property.nearbyLocations.map((location, index) => (
+                                                <span 
+                                                    key={index}
+                                                    className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full border border-purple-200"
+                                                >
+                                                    {location}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Premium Media Gallery */}
                                 <div className="space-y-4">
-                                    {/* Main Image */}
-                                    <div className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => openModal(0)}>
-                                        <img 
-                                            src={property.gallery[0]} 
-                                            alt={`Main view of ${property.title}`} 
-                                            className="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500" 
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <div className="absolute bottom-4 left-4 text-white">
-                                                <p className="text-sm font-medium">Click to view full gallery</p>
-                                            </div>
-                                        </div>
-                                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-900">
-                                            {selectedImageIndex + 1} / {property.gallery.length}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Thumbnail Grid */}
-                                    <div className="grid grid-cols-5 gap-2">
-                                        {property.gallery.map((image, index) => (
-                                            <div 
-                                                key={index} 
-                                                className={`relative group cursor-pointer overflow-hidden rounded-xl transition-all duration-300 ${
-                                                    index === selectedImageIndex 
-                                                        ? 'ring-2 ring-indigo-600 ring-offset-2' 
-                                                        : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2'
+                                    {/* Media Tabs */}
+                                    <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                                        <button
+                                            onClick={() => setActiveMediaTab('images')}
+                                            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                                activeMediaTab === 'images'
+                                                    ? 'bg-white text-indigo-700 shadow-sm'
+                                                    : 'text-gray-600 hover:text-gray-900'
+                                            }`}
+                                        >
+                                            📸 Images ({property.gallery?.length || 0})
+                                        </button>
+                                        {property.videos && property.videos.length > 0 && (
+                                            <button
+                                                onClick={() => setActiveMediaTab('videos')}
+                                                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                                    activeMediaTab === 'videos'
+                                                        ? 'bg-white text-indigo-700 shadow-sm'
+                                                        : 'text-gray-600 hover:text-gray-900'
                                                 }`}
-                                                onClick={() => {
-                                                    setSelectedImageIndex(index);
-                                                    openModal(index);
-                                                }}
                                             >
-                                                <img 
-                                                    src={image} 
-                                                    alt={`View ${index + 1} of ${property.title}`} 
-                                                    className="w-full h-20 object-cover transform group-hover:scale-110 transition-transform duration-300" 
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            </div>
-                                        ))}
+                                                🎬 Videos ({property.videos.length})
+                                            </button>
+                                        )}
                                     </div>
+
+                                    {/* Images Tab */}
+                                    {activeMediaTab === 'images' && (
+                                        <div className="space-y-4">
+                                            {/* Main Image */}
+                                            <div className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => openModal(0)}>
+                                                <img 
+                                                    src={property.gallery[0]} 
+                                                    alt={`Main view of ${property.title}`} 
+                                                    className="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500" 
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <div className="absolute bottom-4 left-4 text-white">
+                                                        <p className="text-sm font-medium">Click to view full gallery</p>
+                                                    </div>
+                                                </div>
+                                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-900">
+                                                    {selectedImageIndex + 1} / {property.gallery.length}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Thumbnail Grid */}
+                                            <div className="grid grid-cols-5 gap-2">
+                                                {property.gallery.map((image, index) => (
+                                                    <div 
+                                                        key={index} 
+                                                        className={`relative group cursor-pointer overflow-hidden rounded-xl transition-all duration-300 ${
+                                                            index === selectedImageIndex 
+                                                                ? 'ring-2 ring-indigo-600 ring-offset-2' 
+                                                                : 'hover:ring-2 hover:ring-gray-300 hover:ring-offset-2'
+                                                        }`}
+                                                        onClick={() => {
+                                                            setSelectedImageIndex(index);
+                                                            openModal(index);
+                                                        }}
+                                                    >
+                                                        <img 
+                                                            src={image} 
+                                                            alt={`View ${index + 1} of ${property.title}`} 
+                                                            className="w-full h-20 object-cover transform group-hover:scale-110 transition-transform duration-300" 
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Videos Tab */}
+                                    {activeMediaTab === 'videos' && property.videos && property.videos.length > 0 && (
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {property.videos.map((videoUrl, index) => {
+                                                    const embedUrl = getEmbedUrl(videoUrl);
+                                                    const playerProps = getVideoPlayerProps(videoUrl);
+                                                    
+                                                    return (
+                                                        <div key={index} className="space-y-3">
+                                                            <div className="aspect-video bg-gray-100 rounded-xl overflow-hidden">
+                                                                {embedUrl ? (
+                                                                    playerProps?.src?.endsWith('.mp4') || playerProps?.src?.endsWith('.webm') ? (
+                                                                        <video
+                                                                            className="w-full h-full object-cover"
+                                                                            controls
+                                                                            preload="metadata"
+                                                                        >
+                                                                            <source src={playerProps.src} type="video/mp4" />
+                                                                            Your browser does not support the video tag.
+                                                                        </video>
+                                                                    ) : (
+                                                                        <iframe
+                                                                            src={embedUrl}
+                                                                            className="w-full h-full"
+                                                                            frameBorder="0"
+                                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                            allowFullScreen
+                                                                        />
+                                                                    )
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                                                        <div className="text-center">
+                                                                            <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                                            </svg>
+                                                                            <p className="text-sm text-gray-500">Video not available</p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-gray-600">Video {index + 1}</p>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -245,8 +350,15 @@ export default function PropertyDetails() {
                                     <div className="text-sm text-gray-700 font-medium">For</div>
                                 </div>
                                 <div className="text-center p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl">
-                                    <div className="text-3xl font-bold text-pink-600 mb-1">{property.gallery.length}</div>
-                                    <div className="text-sm text-gray-700 font-medium">Photos</div>
+                                    <div className="text-3xl font-bold text-pink-600 mb-1">
+                                        {property.gallery.length}
+                                        {property.videos && property.videos.length > 0 && (
+                                            <span className="text-lg">+{property.videos.length}📹</span>
+                                        )}
+                                    </div>
+                                    <div className="text-sm text-gray-700 font-medium">
+                                        Media {property.videos && property.videos.length > 0 ? 'Files' : 'Photos'}
+                                    </div>
                                 </div>
                             </div>
                         </div>
