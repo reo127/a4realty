@@ -15,6 +15,16 @@ export default function LeadDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('exact');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchFilters, setSearchFilters] = useState({
+    location: '',
+    type: '',
+    mode: '',
+    bhk: '',
+    minPrice: '',
+    maxPrice: ''
+  });
 
   useEffect(() => {
     if (params.id) {
@@ -91,6 +101,64 @@ export default function LeadDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const searchProperties = async () => {
+    try {
+      setSearchLoading(true);
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      if (searchFilters.location) queryParams.append('location', searchFilters.location);
+      if (searchFilters.type) queryParams.append('type', searchFilters.type);
+      if (searchFilters.mode) queryParams.append('mode', searchFilters.mode);
+      if (searchFilters.bhk) queryParams.append('bhk', searchFilters.bhk);
+      
+      const response = await fetch(`/api/properties?${queryParams.toString()}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        let results = data.data;
+        
+        // Filter by price range if specified
+        if (searchFilters.minPrice || searchFilters.maxPrice) {
+          results = results.filter(property => {
+            const price = parseFloat(property.price.replace(/[^0-9.-]+/g, ""));
+            const minPrice = searchFilters.minPrice ? parseFloat(searchFilters.minPrice) : 0;
+            const maxPrice = searchFilters.maxPrice ? parseFloat(searchFilters.maxPrice) : Infinity;
+            return price >= minPrice && price <= maxPrice;
+          });
+        }
+        
+        setSearchResults(results);
+      } else {
+        throw new Error(data.message || 'Failed to search properties');
+      }
+    } catch (error) {
+      console.error('Error searching properties:', error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchInputChange = (field, value) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const clearSearch = () => {
+    setSearchFilters({
+      location: '',
+      type: '',
+      mode: '',
+      bhk: '',
+      minPrice: '',
+      maxPrice: ''
+    });
+    setSearchResults([]);
   };
 
   const formatDate = (dateString) => {
@@ -533,6 +601,19 @@ export default function LeadDetailPage() {
                 >
                   Nearby Locations ({nearbyProperties.length})
                 </button>
+                <button
+                  onClick={() => setActiveTab('search')}
+                  className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    activeTab === 'search'
+                      ? 'bg-white text-orange-700 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Search Properties ({searchResults.length})
+                </button>
               </div>
 
               {/* Property Lists */}
@@ -573,6 +654,176 @@ export default function LeadDetailPage() {
                       <p className="text-gray-600">No properties found in nearby locations.</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === 'search' && (
+                <div>
+                  {/* Search Filters */}
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                    <h4 className="text-lg font-semibold text-orange-900 mb-4 flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                      </svg>
+                      Property Search Filters
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4 text-black">
+                      {/* Location */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <input
+                          type="text"
+                          value={searchFilters.location}
+                          onChange={(e) => handleSearchInputChange('location', e.target.value)}
+                          placeholder="Enter any location"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        />
+                      </div>
+
+                      {/* Property Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                        <select
+                          value={searchFilters.type}
+                          onChange={(e) => handleSearchInputChange('type', e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        >
+                          <option value="">Any Type</option>
+                          <option value="flat">Flat</option>
+                          <option value="house">House</option>
+                          <option value="land">Land</option>
+                          <option value="office">Office</option>
+                        </select>
+                      </div>
+
+                      {/* Mode */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+                        <select
+                          value={searchFilters.mode}
+                          onChange={(e) => handleSearchInputChange('mode', e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        >
+                          <option value="">Any Mode</option>
+                          <option value="buy">Buy</option>
+                          <option value="rent">Rent</option>
+                          <option value="sell">Sell</option>
+                        </select>
+                      </div>
+
+                      {/* BHK */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">BHK</label>
+                        <select
+                          value={searchFilters.bhk}
+                          onChange={(e) => handleSearchInputChange('bhk', e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        >
+                          <option value="">Any BHK</option>
+                          <option value="1bhk">1 BHK</option>
+                          <option value="2bhk">2 BHK</option>
+                          <option value="3bhk">3 BHK</option>
+                          <option value="4bhk">4 BHK</option>
+                          <option value="5bhk">5+ BHK</option>
+                        </select>
+                      </div>
+
+                      {/* Price Range */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+                        <input
+                          type="number"
+                          value={searchFilters.minPrice}
+                          onChange={(e) => handleSearchInputChange('minPrice', e.target.value)}
+                          placeholder="Minimum price"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+                        <input
+                          type="number"
+                          value={searchFilters.maxPrice}
+                          onChange={(e) => handleSearchInputChange('maxPrice', e.target.value)}
+                          placeholder="Maximum price"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Search Actions */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={searchProperties}
+                        disabled={searchLoading}
+                        className="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                      >
+                        {searchLoading ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Searching...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span>Search Properties</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={clearSearch}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search Results */}
+                  <div>
+                    {searchResults.length > 0 ? (
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-lg font-semibold text-gray-900">
+                            Search Results ({searchResults.length} properties)
+                          </h4>
+                          <div className="text-sm text-gray-600">
+                            Expand your lead's options with these alternatives
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                          {searchResults.map(property => (
+                            <PropertyCard key={property._id} property={property} isNearby={false} />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        {searchLoading ? (
+                          <div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+                            <p className="text-gray-600">Searching properties...</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <h4 className="text-lg font-medium text-gray-900 mb-2">Search for Properties</h4>
+                            <p className="text-gray-600 mb-4">Use the filters above to find alternative properties for your lead</p>
+                            <p className="text-sm text-orange-600">💡 Try searching by different locations, property types, or price ranges</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
