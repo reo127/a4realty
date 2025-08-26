@@ -63,13 +63,22 @@ export default function LeadDetailPage() {
           normalizeLocationName(property.location) === interestedLocation
         );
         
-        // Nearby location matches
+        // Nearby location matches - using both predefined nearby areas and property nearbyLocations field
         const nearbyLocations = getNearbyLocations(interestedLocation);
         const nearbyMatches = allProperties.filter(property => {
           const propLocation = normalizeLocationName(property.location);
-          return nearbyLocations.some(nearby => 
+          
+          // Check if property location is in predefined nearby locations
+          const isNearbyByLocation = nearbyLocations.some(nearby => 
             normalizeLocationName(nearby) === propLocation
           );
+          
+          // Check if property has the lead's interested location in its nearbyLocations field
+          const isNearbyByProperty = property.nearbyLocations && property.nearbyLocations.some(nearby =>
+            normalizeLocationName(nearby) === interestedLocation
+          );
+          
+          return isNearbyByLocation || isNearbyByProperty;
         });
         
         setRelatedProperties(exactMatches);
@@ -225,7 +234,7 @@ export default function LeadDetailPage() {
         </div>
 
         {/* Additional Details for CRM */}
-        {(property.amenities?.length > 0 || property.nearbyAmenities?.length > 0) && (
+        {(property.amenities?.length > 0 || property.nearbyAmenities?.length > 0 || property.nearbyLocations?.length > 0) && (
           <div className="mt-3 pt-3 border-t">
             {property.amenities?.length > 0 && (
               <div className="mb-2">
@@ -246,8 +255,8 @@ export default function LeadDetailPage() {
             )}
             
             {property.nearbyAmenities?.length > 0 && (
-              <div>
-                <span className="text-xs text-gray-500 block mb-1">Nearby:</span>
+              <div className="mb-2">
+                <span className="text-xs text-gray-500 block mb-1">Nearby Amenities:</span>
                 <div className="flex flex-wrap gap-1">
                   {property.nearbyAmenities.slice(0, 2).map((amenity, idx) => (
                     <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
@@ -257,6 +266,26 @@ export default function LeadDetailPage() {
                   {property.nearbyAmenities.length > 2 && (
                     <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
                       +{property.nearbyAmenities.length - 2} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {property.nearbyLocations?.length > 0 && (
+              <div>
+                <span className="text-xs text-gray-500 block mb-1">
+                  {isNearby ? 'Matches via Nearby Areas:' : 'Also serves:'}
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {property.nearbyLocations.slice(0, 2).map((location, idx) => (
+                    <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
+                      {location}
+                    </span>
+                  ))}
+                  {property.nearbyLocations.length > 2 && (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                      +{property.nearbyLocations.length - 2} more
                     </span>
                   )}
                 </div>
@@ -412,14 +441,66 @@ export default function LeadDetailPage() {
                     <p className="font-medium text-gray-900 capitalize">{lead.source || 'Website'}</p>
                   </div>
                 </div>
+
+                {/* Lead Status */}
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm text-gray-600">Status</p>
+                    <p className="font-medium text-green-600 capitalize">{lead.status || 'New Lead'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CRM Action Buttons */}
+              <div className="mt-6 pt-6 border-t">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Actions</h4>
+                <div className="grid grid-cols-1 gap-3">
+                  <a 
+                    href={`tel:${lead.phone}`}
+                    className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Call Now
+                  </a>
+                  {lead.email && (
+                    <a 
+                      href={`mailto:${lead.email}?subject=Property Inquiry - ${getLocationDisplayName(lead.interestedLocation)}&body=Hello ${lead.name},%0A%0AI hope this email finds you well. I'm reaching out regarding your interest in properties in ${getLocationDisplayName(lead.interestedLocation)}.%0A%0ABest regards`}
+                      className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Send Email
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Right Section - Related Properties */}
           <div className="lg:col-span-2">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white rounded-lg shadow-sm p-4 text-center">
+                <div className="text-2xl font-bold text-indigo-600">{relatedProperties.length}</div>
+                <div className="text-sm text-gray-600">Exact Location Matches</div>
+              </div>
+              <div className="bg-white rounded-lg shadow-sm p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600">{nearbyProperties.length}</div>
+                <div className="text-sm text-gray-600">Nearby Area Matches</div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Related Properties</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Property Suggestions for {lead.name}
+              </h3>
               
               {/* Tabs */}
               <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
