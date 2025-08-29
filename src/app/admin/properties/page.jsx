@@ -16,6 +16,10 @@ export default function AdminProperties() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importResults, setImportResults] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in and is admin
@@ -120,6 +124,83 @@ export default function AdminProperties() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    setError('');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/properties/export', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `properties-export-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        setSuccess('Properties exported successfully');
+      } else {
+        const data = await response.json();
+        setError(data.message || 'Export failed');
+      }
+    } catch (error) {
+      setError('Error exporting properties');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith('.csv')) {
+      setError('Please select a CSV file');
+      return;
+    }
+    
+    setImporting(true);
+    setError('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('csvFile', file);
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/properties/import', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setImportResults(data.results);
+        setSuccess(data.message);
+        fetchProperties();
+        setShowImportModal(true);
+      } else {
+        setError(data.message || 'Import failed');
+      }
+    } catch (error) {
+      setError('Error importing properties');
+    } finally {
+      setImporting(false);
+      event.target.value = '';
+    }
+  };
+
   if (loading) {
     return <div className="text-center p-10">Loading...</div>;
   }
@@ -159,8 +240,43 @@ export default function AdminProperties() {
         )}
 
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <div className="bg-blue-700 text-white py-4 px-6">
+          <div className="bg-blue-700 text-white py-4 px-6 flex justify-between items-center">
             <h2 className="text-xl font-semibold">All Properties ({properties.length})</h2>
+            <div className="flex space-x-3">
+              <a
+                href="/api/properties/template"
+                download="properties-template.csv"
+                className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Template
+              </a>
+              <button
+                onClick={handleExport}
+                disabled={exporting || properties.length === 0}
+                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {exporting ? 'Exporting...' : 'Export CSV'}
+              </button>
+              <label className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors cursor-pointer">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+                {importing ? 'Importing...' : 'Import CSV'}
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImport}
+                  disabled={importing}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </div>
 
           {properties.length === 0 ? (
@@ -298,6 +414,70 @@ export default function AdminProperties() {
             onClose={() => setEditingProperty(null)}
             onUpdate={handleUpdateProperty}
           />
+        )}
+
+        {/* Import Results Modal */}
+        {showImportModal && importResults && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+            <div className="relative bg-white rounded-lg shadow-lg max-w-2xl mx-auto p-6 max-h-96 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Import Results</h3>
+                <button
+                  onClick={() => {
+                    setShowImportModal(false);
+                    setImportResults(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {importResults.success.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-green-800 mb-2">
+                    Successfully Imported ({importResults.success.length})
+                  </h4>
+                  <div className="max-h-32 overflow-y-auto bg-green-50 p-2 rounded">
+                    {importResults.success.map((item) => (
+                      <div key={item.id} className="text-xs text-green-700 mb-1">
+                        Row {item.row}: {item.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {importResults.errors.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-red-800 mb-2">
+                    Errors ({importResults.errors.length})
+                  </h4>
+                  <div className="max-h-32 overflow-y-auto bg-red-50 p-2 rounded">
+                    {importResults.errors.map((item, index) => (
+                      <div key={index} className="text-xs text-red-700 mb-1">
+                        Row {item.row}: {item.title} - {item.error}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowImportModal(false);
+                    setImportResults(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Delete Confirmation Modal */}
