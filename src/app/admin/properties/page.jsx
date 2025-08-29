@@ -1,13 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import EditPropertyModal from '@/app/components/EditPropertyModal';
 
 export default function AdminProperties() {
-  const router = useRouter();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState([]);
   const [error, setError] = useState('');
@@ -22,30 +19,12 @@ export default function AdminProperties() {
   const [importResults, setImportResults] = useState(null);
 
   useEffect(() => {
-    // Check if user is logged in and is admin
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
-    if (storedUser && token) {
-      const userData = JSON.parse(storedUser);
-      setUser(userData);
-      
-      // Check if user is admin
-      if (userData.role !== 'admin') {
-        router.push('/');
-        return;
-      }
-      
-      fetchProperties();
-    } else {
-      router.push('/login');
-    }
-    
-    setLoading(false);
-  }, [router]);
+    fetchProperties();
+  }, []);
 
   const fetchProperties = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
       const response = await fetch('/api/properties', {
         headers: {
@@ -62,6 +41,8 @@ export default function AdminProperties() {
       }
     } catch (error) {
       setError('Error fetching properties');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,18 +183,21 @@ export default function AdminProperties() {
   };
 
   if (loading) {
-    return <div className="text-center p-10">Loading...</div>;
-  }
-
-  if (!user) {
-    return null;
+    return (
+      <div className="p-6 flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading properties...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="p-6">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-blue-800">Admin - Property Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Property Management</h1>
           <p className="text-gray-600 mt-2">Manage all properties in the system</p>
         </div>
 

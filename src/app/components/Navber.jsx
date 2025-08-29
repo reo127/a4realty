@@ -28,8 +28,8 @@ const Navber = () => {
         router.push('/');
     };
 
-    // Hide navbar on login and register pages
-    if (pathname === '/login' || pathname === '/register') {
+    // Hide navbar on login, register, and admin pages
+    if (pathname === '/login' || pathname === '/register' || pathname.startsWith('/admin')) {
         return null;
     }
 
