@@ -413,8 +413,8 @@ export default function PropertyList() {
                                         </div>
                                         
                                         <div className="mb-4">
-                                            <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                                                {formatPrice(property.price)}
+                                            <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                                                💰 Price on Inquiry
                                             </p>
                                         </div>
                                         

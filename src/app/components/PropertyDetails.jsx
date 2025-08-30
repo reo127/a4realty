@@ -125,12 +125,20 @@ export default function PropertyDetails() {
 
     const handlePriceLeadSubmit = async (leadData) => {
         try {
+            // Add a note that this is a price inquiry request
+            const priceInquiryData = {
+                ...leadData,
+                inquiryType: 'price_request',
+                propertyId: property._id,
+                propertyTitle: property.title
+            };
+
             const response = await fetch('/api/leads', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(leadData)
+                body: JSON.stringify(priceInquiryData)
             });
 
             const data = await response.json();
@@ -216,16 +224,18 @@ export default function PropertyDetails() {
                                     </div>
                                     <div className="text-right">
                                         {hasSubmittedLead ? (
-                                            <>
-                                                <p className="text-3xl font-bold text-indigo-600">{formatPrice(property.price)}</p>
-                                                <p className="text-sm text-gray-500">{property.mode === 'rent' ? 'per month' : ''}</p>
-                                            </>
+                                            <div className="text-center">
+                                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                                    <p className="text-green-800 font-semibold text-lg">✅ Request Submitted</p>
+                                                    <p className="text-green-700 text-sm mt-1">Our team will call you with pricing details</p>
+                                                </div>
+                                            </div>
                                         ) : (
                                             <button 
                                                 onClick={handlePriceClick}
                                                 className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                             >
-                                                🏷️ Get Price
+                                                📞 Request Price Call
                                             </button>
                                         )}
                                     </div>
@@ -554,6 +564,7 @@ export default function PropertyDetails() {
                 onClose={handleCloseLeadModal}
                 onSubmit={handleLeadSubmit}
                 title="Get Contact Details"
+                description="Get priority access to property details and contact information"
             />
 
             {/* Lead Capture Modal for Price */}
@@ -561,7 +572,8 @@ export default function PropertyDetails() {
                 isOpen={showPriceModal}
                 onClose={handleClosePriceModal}
                 onSubmit={handlePriceLeadSubmit}
-                title="Get Property Price"
+                title="Request Price Information"
+                description="Our team will call you within 24 hours with detailed pricing information"
             />
         </div>
     );

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { getAllLocations } from '@/utils/locations';
 
-export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "Get Exclusive Access" }) {
+export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "Get Exclusive Access", description = "Get priority access to property details and exclusive offers" }) {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -76,7 +76,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
               </button>
             </div>
             <p className="text-indigo-100 text-sm mt-1">
-              Get priority access to property details and exclusive offers
+              {description}
             </p>
           </div>
 
