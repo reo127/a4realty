@@ -18,6 +18,7 @@ export default function PropertyDetails() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
+    const [showPriceModal, setShowPriceModal] = useState(false);
     const [activeMediaTab, setActiveMediaTab] = useState('images'); // 'images' or 'videos'
 
     useEffect(() => {
@@ -112,6 +113,42 @@ export default function PropertyDetails() {
         setShowLeadModal(false);
     };
 
+    const handleClosePriceModal = () => {
+        setShowPriceModal(false);
+    };
+
+    const handlePriceClick = () => {
+        if (!hasSubmittedLead) {
+            setShowPriceModal(true);
+        }
+    };
+
+    const handlePriceLeadSubmit = async (leadData) => {
+        try {
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(leadData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to submit lead');
+            }
+
+            localStorage.setItem('leadSubmitted', 'true');
+            localStorage.setItem('leadData', JSON.stringify(leadData));
+            setHasSubmittedLead(true);
+            setShowPriceModal(false);
+
+        } catch (error) {
+            throw error;
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -178,8 +215,19 @@ export default function PropertyDetails() {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-3xl font-bold text-indigo-600">{formatPrice(property.price)}</p>
-                                        <p className="text-sm text-gray-500">{property.mode === 'rent' ? 'per month' : ''}</p>
+                                        {hasSubmittedLead ? (
+                                            <>
+                                                <p className="text-3xl font-bold text-indigo-600">{formatPrice(property.price)}</p>
+                                                <p className="text-sm text-gray-500">{property.mode === 'rent' ? 'per month' : ''}</p>
+                                            </>
+                                        ) : (
+                                            <button 
+                                                onClick={handlePriceClick}
+                                                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                            >
+                                                🏷️ Get Price
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 
@@ -500,12 +548,20 @@ export default function PropertyDetails() {
                 </div>
             </Modal>
 
-            {/* Lead Capture Modal */}
+            {/* Lead Capture Modal for Contact */}
             <LeadCaptureModal
                 isOpen={showLeadModal}
                 onClose={handleCloseLeadModal}
                 onSubmit={handleLeadSubmit}
                 title="Get Contact Details"
+            />
+
+            {/* Lead Capture Modal for Price */}
+            <LeadCaptureModal
+                isOpen={showPriceModal}
+                onClose={handleClosePriceModal}
+                onSubmit={handlePriceLeadSubmit}
+                title="Get Property Price"
             />
         </div>
     );
