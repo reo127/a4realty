@@ -200,7 +200,7 @@ export default function PropertyList() {
                             <div className="p-4">
                                 <h3 className="text-lg font-semibold">{p.title}</h3>
                                 <p className="text-sm text-gray-600">{p.location}</p>
-                                <p className="mt-2 text-xl font-bold text-indigo-600">Price on Inquiry</p>
+                                <p className="mt-2 text-xl font-bold text-indigo-600">Price on Request</p>
                                 <div className="mt-3 flex items-center justify-start gap-2 text-sm">
                                     <span className="inline-flex items-center px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
                                         {p.type}

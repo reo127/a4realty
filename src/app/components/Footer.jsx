@@ -18,7 +18,7 @@ const Footer = () => {
                             <p className="mt-3 text-gray-600">
                                 New projects, verified listings, and trusted agents across India.
                             </p>
-                        </div>
+                        </div> 
                         <div>
                             <div className="font-semibold mb-2">Company</div>
                             <ul className="space-y-1 text-gray-600">

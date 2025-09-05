@@ -312,7 +312,7 @@ export default function Home() {
                                         <div className="p-4">
                                             <h3 className="text-base font-semibold">{property.title}</h3>
                                             <p className="text-sm text-gray-600">{property.location}</p>
-                                            <p className="mt-2 text-sm font-medium text-indigo-600">💰 Price on Inquiry</p>
+                                            <p className="mt-2 text-sm font-medium text-indigo-600">💰 Price on Request</p>
                                             <div className="mt-3 flex items-center gap-2">
                                                 <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-green-50 text-green-700">
                                                     Verified
