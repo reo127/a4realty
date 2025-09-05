@@ -6,7 +6,7 @@ import Logo from '../../../public/transparent-logo.svg'
 const Footer = () => {
     return (
         <>
-            <footer className="border-t border-gray-100 text-black">
+            <footer className="border-t bg-white border-gray-100 text-black">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 text-sm">
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div>

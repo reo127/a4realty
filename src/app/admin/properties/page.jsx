@@ -308,14 +308,20 @@ export default function AdminProperties() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-12 w-12">
-                            <img 
-                              className="h-12 w-12 rounded-lg object-cover" 
-                              src={property.gallery[0] || 'https://via.placeholder.com/300x200?text=No+Image'} 
-                              alt={property.title}
-                              onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                              }}
-                            />
+                            {property.gallery && property.gallery[0] ? (
+                              <img 
+                                className="h-12 w-12 rounded-lg object-cover" 
+                                src={property.gallery[0]} 
+                                alt={property.title}
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                <span className="text-xs text-gray-500">No Image</span>
+                              </div>
+                            )}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">

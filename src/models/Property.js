@@ -189,6 +189,45 @@ const PropertySchema = new mongoose.Schema({
     required: true,
     userVisible: false
   },
+  // PropertyDetails specific fields
+  developer: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  possessionDate: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  projectArea: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  launchDate: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  totalUnits: {
+    type: Number,
+    userVisible: true
+  },
+  totalTowers: {
+    type: Number,
+    userVisible: true
+  },
+  highlights: {
+    type: [String],
+    default: [],
+    userVisible: true
+  },
+  locationAdvantages: {
+    type: [String],
+    default: [],
+    userVisible: true
+  },
   createdAt: {
     type: Date,
     default: Date.now,

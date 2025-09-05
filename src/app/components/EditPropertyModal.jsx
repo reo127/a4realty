@@ -30,7 +30,16 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     floorNumber: '',
     totalFloors: '',
     furnishingStatus: '',
-    availabilityDate: ''
+    availabilityDate: '',
+    // PropertyDetails specific fields
+    developer: '',
+    possessionDate: '',
+    projectArea: '',
+    launchDate: '',
+    totalUnits: '',
+    totalTowers: '',
+    highlights: [],
+    locationAdvantages: []
   });
   
   const [previewImages, setPreviewImages] = useState([]);
@@ -40,6 +49,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
   const [amenityInput, setAmenityInput] = useState('');
   const [nearbyAmenityInput, setNearbyAmenityInput] = useState('');
   const [nearbyLocationInput, setNearbyLocationInput] = useState('');
+  const [highlightInput, setHighlightInput] = useState('');
+  const [locationAdvantageInput, setLocationAdvantageInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -72,7 +83,16 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         floorNumber: property.floorNumber || '',
         totalFloors: property.totalFloors || '',
         furnishingStatus: property.furnishingStatus || '',
-        availabilityDate: property.availabilityDate ? property.availabilityDate.split('T')[0] : ''
+        availabilityDate: property.availabilityDate ? property.availabilityDate.split('T')[0] : '',
+        // PropertyDetails specific fields
+        developer: property.developer || '',
+        possessionDate: property.possessionDate || '',
+        projectArea: property.projectArea || '',
+        launchDate: property.launchDate || '',
+        totalUnits: property.totalUnits || '',
+        totalTowers: property.totalTowers || '',
+        highlights: property.highlights || [],
+        locationAdvantages: property.locationAdvantages || []
       });
 
       // Set preview images from existing gallery
@@ -284,6 +304,42 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     }));
   };
 
+  // Highlights management functions
+  const addHighlight = () => {
+    if (highlightInput.trim() && !formData.highlights.includes(highlightInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        highlights: [...prev.highlights, highlightInput.trim()]
+      }));
+      setHighlightInput('');
+    }
+  };
+
+  const removeHighlight = (highlight) => {
+    setFormData(prev => ({
+      ...prev,
+      highlights: prev.highlights.filter(h => h !== highlight)
+    }));
+  };
+
+  // Location Advantages management functions
+  const addLocationAdvantage = () => {
+    if (locationAdvantageInput.trim() && !formData.locationAdvantages.includes(locationAdvantageInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        locationAdvantages: [...prev.locationAdvantages, locationAdvantageInput.trim()]
+      }));
+      setLocationAdvantageInput('');
+    }
+  };
+
+  const removeLocationAdvantage = (advantage) => {
+    setFormData(prev => ({
+      ...prev,
+      locationAdvantages: prev.locationAdvantages.filter(a => a !== advantage)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -320,6 +376,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         },
         body: JSON.stringify(cleanFormData)
       });
+      
+      console.log('Submitted form data:', cleanFormData);
       
       const data = await response.json();
       
@@ -580,9 +638,13 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                         alt={`Preview ${index}`} 
                         className="h-24 w-full object-cover"
                         onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found';
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
                         }}
                       />
+                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-xs text-gray-500" style={{display: 'none'}}>
+                        Image Not Found
+                      </div>
                       <div className="absolute top-1 left-1">
                         <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                           image.isUrl ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
@@ -1056,6 +1118,221 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                     placeholder="e.g. ₹15,000/year"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Project Details Section */}
+            <div className="bg-orange-50 p-4 rounded-md">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m4 0V9a2 2 0 012-2h2a2 2 0 012 2v12M13 7a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Project Information
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Developer */}
+                <div>
+                  <label htmlFor="edit-developer" className="block text-sm font-medium text-gray-700 mb-1">
+                    Developer/Builder
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-developer"
+                    name="developer"
+                    value={formData.developer}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Prestige Group, Brigade Group"
+                  />
+                </div>
+
+                {/* Possession Date */}
+                <div>
+                  <label htmlFor="edit-possessionDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Possession Date
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-possessionDate"
+                    name="possessionDate"
+                    value={formData.possessionDate}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Dec 2026, Ready to Move"
+                  />
+                </div>
+
+                {/* Project Area */}
+                <div>
+                  <label htmlFor="edit-projectArea" className="block text-sm font-medium text-gray-700 mb-1">
+                    Project Area
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-projectArea"
+                    name="projectArea"
+                    value={formData.projectArea}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 4 Acre, 2.5 Acre"
+                  />
+                </div>
+
+                {/* Launch Date */}
+                <div>
+                  <label htmlFor="edit-launchDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Launch Date
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-launchDate"
+                    name="launchDate"
+                    value={formData.launchDate}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Jul 2023, Jan 2024"
+                  />
+                </div>
+
+                {/* Total Units */}
+                <div>
+                  <label htmlFor="edit-totalUnits" className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Units
+                  </label>
+                  <input
+                    type="number"
+                    id="edit-totalUnits"
+                    name="totalUnits"
+                    value={formData.totalUnits}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 410, 250"
+                  />
+                </div>
+
+                {/* Total Towers */}
+                <div>
+                  <label htmlFor="edit-totalTowers" className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Towers/Buildings
+                  </label>
+                  <input
+                    type="number"
+                    id="edit-totalTowers"
+                    name="totalTowers"
+                    value={formData.totalTowers}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 2, 5"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Property Highlights Section */}
+            <div className="bg-yellow-50 p-4 rounded-md">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                Property Highlights
+              </h3>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Key Features & Highlights
+                </label>
+                <p className="text-xs text-gray-500 mb-2">Add standout features that make this property special</p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={highlightInput}
+                    onChange={(e) => setHighlightInput(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Vastu Compliant, Premium Amenities, Great Ventilation"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addHighlight())}
+                  />
+                  <button
+                    type="button"
+                    onClick={addHighlight}
+                    className="px-3 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors text-sm"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.highlights.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.highlights.map((highlight, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800"
+                      >
+                        {highlight}
+                        <button
+                          type="button"
+                          onClick={() => removeHighlight(highlight)}
+                          className="ml-1 text-yellow-600 hover:text-yellow-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Location Advantages Section */}
+            <div className="bg-teal-50 p-4 rounded-md">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Location Advantages
+              </h3>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location Benefits & Connectivity
+                </label>
+                <p className="text-xs text-gray-500 mb-2">Add location advantages like nearby facilities with travel time</p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={locationAdvantageInput}
+                    onChange={(e) => setLocationAdvantageInput(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Metro Station - 5 mins, IT Parks - 15 mins, Hospital - 10 mins"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLocationAdvantage())}
+                  />
+                  <button
+                    type="button"
+                    onClick={addLocationAdvantage}
+                    className="px-3 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors text-sm"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.locationAdvantages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.locationAdvantages.map((advantage, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-teal-100 text-teal-800"
+                      >
+                        {advantage}
+                        <button
+                          type="button"
+                          onClick={() => removeLocationAdvantage(advantage)}
+                          className="ml-1 text-teal-600 hover:text-teal-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             
