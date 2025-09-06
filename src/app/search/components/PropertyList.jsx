@@ -147,8 +147,8 @@ export default function PropertyList() {
             <div className="flex justify-center items-center min-h-screen">
                 <div className="flex flex-col items-center space-y-4">
                     <div className="relative w-20 h-20">
-                        <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 rounded-full"></div>
-                        <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
+                        <div className="absolute top-0 left-0 w-full h-full border-4 border-red-200 rounded-full"></div>
+                        <div className="absolute top-0 left-0 w-full h-full border-4 border-red-600 rounded-full animate-spin border-t-transparent"></div>
                     </div>
                     <p className="text-gray-600 font-medium">Finding your perfect properties...</p>
                 </div>
@@ -184,7 +184,7 @@ export default function PropertyList() {
                 {/* Enhanced Search and Filter Section */}
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 mb-8 overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                    <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                             <h2 className="text-2xl font-bold text-white mb-2 md:mb-0">Search Properties</h2>
                             <button
@@ -213,7 +213,7 @@ export default function PropertyList() {
                                 placeholder="Search by location, area, or property name..."
                                 value={filters.location}
                                 onChange={handleFilterChange}
-                                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                             />
                         </div>
                     </div>
@@ -228,7 +228,7 @@ export default function PropertyList() {
                                         name="mode"
                                         value={filters.mode}
                                         onChange={handleFilterChange}
-                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                                     >
                                         <option value="">Buy/Sell/Rent</option>
                                         <option value="buy">Buy</option>
@@ -243,7 +243,7 @@ export default function PropertyList() {
                                         name="price"
                                         value={filters.price}
                                         onChange={handleFilterChange}
-                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                                     >
                                         <option value="">Any Price</option>
                                         <option value="100000">₹1 Lakh</option>
@@ -260,7 +260,7 @@ export default function PropertyList() {
                                         name="type"
                                         value={filters.type}
                                         onChange={handleFilterChange}
-                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                                     >
                                         <option value="">All Types</option>
                                         <option value="flat">Apartment</option>
@@ -276,7 +276,7 @@ export default function PropertyList() {
                                         name="bhk"
                                         value={filters.bhk}
                                         onChange={handleFilterChange}
-                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                                        className="w-full p-3 border-2 border-gray-200 rounded-lg bg-white focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                                     >
                                         <option value="">Any BHK</option>
                                         <option value="1bhk">1 BHK</option>
@@ -292,7 +292,7 @@ export default function PropertyList() {
                                 <button
                                     onClick={applyFilters}
                                     disabled={loading}
-                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-4 focus:ring-red-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? 'Searching...' : 'Apply Filters'}
                                 </button>
@@ -321,7 +321,7 @@ export default function PropertyList() {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-2 border-2 border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                            className="px-4 py-2 border-2 border-gray-200 rounded-lg bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all outline-none"
                         >
                             <option value="newest">Newest First</option>
                             <option value="price-low">Price: Low to High</option>
@@ -334,7 +334,7 @@ export default function PropertyList() {
                             <button
                                 onClick={() => setViewMode('grid')}
                                 className={`p-2 rounded-md transition-colors ${viewMode === 'grid' 
-                                    ? 'bg-white text-blue-600 shadow-sm' 
+                                    ? 'bg-white text-red-600 shadow-sm' 
                                     : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -344,7 +344,7 @@ export default function PropertyList() {
                             <button
                                 onClick={() => setViewMode('list')}
                                 className={`p-2 rounded-md transition-colors ${viewMode === 'list' 
-                                    ? 'bg-white text-blue-600 shadow-sm' 
+                                    ? 'bg-white text-red-600 shadow-sm' 
                                     : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -373,16 +373,9 @@ export default function PropertyList() {
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         />
                                         <div className="absolute top-4 left-4">
-                                            <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                                            <span className="px-3 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-full shadow-lg">
                                                 For {property.mode}
                                             </span>
-                                        </div>
-                                        <div className="absolute top-4 right-4">
-                                            <button className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors">
-                                                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                                </svg>
-                                            </button>
                                         </div>
                                         <div className="absolute bottom-4 right-4 flex flex-col gap-1">
                                             {property.gallery && property.gallery.length > 1 && (
@@ -400,7 +393,7 @@ export default function PropertyList() {
                                     
                                     <div className="p-6 flex-1">
                                         <div className="mb-3">
-                                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-red-600 transition-colors line-clamp-2">
                                                 {property.title}
                                             </h3>
                                             <p className="text-gray-600 mt-1 flex items-center">
@@ -413,13 +406,13 @@ export default function PropertyList() {
                                         </div>
                                         
                                         <div className="mb-4">
-                                            <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                                                💰 Price on Request
+                                            <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-700">
+                                                💰 Price on Enquiry
                                             </p>
                                         </div>
                                         
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                                            <span className="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">
                                                 {property.type}
                                             </span>
                                             {property.bhk && property.bhk !== 'na' && (
@@ -429,27 +422,6 @@ export default function PropertyList() {
                                             )}
                                         </div>
                                         
-                                        {/* Nearby Locations */}
-                                        {property.nearbyLocations && property.nearbyLocations.length > 0 && (
-                                            <div className="mb-4">
-                                                <p className="text-sm text-gray-600 mb-2 font-medium">Nearby Areas:</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {property.nearbyLocations.slice(0, 3).map((location, index) => (
-                                                        <span 
-                                                            key={index}
-                                                            className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-md"
-                                                        >
-                                                            {location}
-                                                        </span>
-                                                    ))}
-                                                    {property.nearbyLocations.length > 3 && (
-                                                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-md">
-                                                            +{property.nearbyLocations.length - 3} more
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
                                         
                                         <div className="flex items-center justify-between text-sm text-gray-500">
                                             <span className="flex items-center">
@@ -458,7 +430,7 @@ export default function PropertyList() {
                                                 </svg>
                                                 {new Date(property.createdAt).toLocaleDateString()}
                                             </span>
-                                            <span className="text-blue-600 font-medium group-hover:text-blue-700">
+                                            <span className="text-red-600 font-medium group-hover:text-red-700">
                                                 View Details →
                                             </span>
                                         </div>
@@ -480,7 +452,7 @@ export default function PropertyList() {
                         </p>
                         <button 
                             onClick={clearFilters}
-                            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+                            className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 transition-all"
                         >
                             Clear Filters & See All Properties
                         </button>

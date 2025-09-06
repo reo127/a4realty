@@ -63,7 +63,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
       {/* Modal panel */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+          <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">{title}</h3>
               <button
@@ -75,7 +75,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                 </svg>
               </button>
             </div>
-            <p className="text-indigo-100 text-sm mt-1">
+            <p className="text-red-100 text-sm mt-1">
               {description}
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -121,7 +121,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                   placeholder="9876543210"
                 />
               </div>
@@ -136,7 +136,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
                   placeholder="your@email.com"
                 />
               </div>
@@ -151,7 +151,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   value={formData.interestedLocation}
                   onChange={handleChange}
                   required
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none bg-white"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none bg-white"
                 >
                   <option value="">Select preferred location</option>
                   {getAllLocations().map(location => (
@@ -167,7 +167,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:ring-indigo-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-4 focus:ring-red-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <div className="flex items-center justify-center">

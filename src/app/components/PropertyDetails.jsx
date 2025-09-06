@@ -328,7 +328,7 @@ export default function PropertyDetails() {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
             </div>
         );
     }
@@ -344,7 +344,7 @@ export default function PropertyDetails() {
                     </div>
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">Error</h2>
                     <p className="text-gray-600 mb-6">{error}</p>
-                    <Link href="/" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                    <Link href="/" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-red-600 hover:bg-red-700 transition-colors">
                         Return to Home
                     </Link>
                 </div>
@@ -363,7 +363,7 @@ export default function PropertyDetails() {
                     </div>
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">Property not found</h2>
                     <p className="text-gray-600 mb-6">We couldn't find the property you're looking for.</p>
-                    <Link href="/" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                    <Link href="/" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-red-600 hover:bg-red-700 transition-colors">
                         Return to Home
                     </Link>
                 </div>
@@ -408,7 +408,7 @@ export default function PropertyDetails() {
                                     });
                                 }
                             }}
-                            className="hover:text-blue-600 transition-colors duration-200 cursor-pointer whitespace-nowrap text-xs sm:text-sm font-medium py-2 px-1 sm:px-2"
+                            className="hover:text-red-600 transition-colors duration-200 cursor-pointer whitespace-nowrap text-xs sm:text-sm font-medium py-2 px-1 sm:px-2"
                         >
                             {label}
                         </button>
@@ -444,7 +444,7 @@ export default function PropertyDetails() {
                                 {/* Get Price Button */}
                                 <button 
                                     onClick={handlePriceClick}
-                                    className="flex cursor-pointer items-center justify-center gap-2 px-4 sm:px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition w-full sm:w-auto"
+                                    className="flex cursor-pointer items-center justify-center gap-2 px-4 sm:px-5 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition w-full sm:w-auto"
                                 >
                                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -455,7 +455,7 @@ export default function PropertyDetails() {
                                 {/* Download Brochure Button */}
                                 <button 
                                     onClick={handleBrochureClick}
-                                    className="flex cursor-pointer items-center justify-center gap-2 px-4 sm:px-5 py-3 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg shadow-md transition w-full sm:w-auto"
+                                    className="flex cursor-pointer items-center justify-center gap-2 px-4 sm:px-5 py-3 bg-white border border-red-600 text-red-600 hover:bg-red-50 font-medium rounded-lg shadow-md transition w-full sm:w-auto"
                                 >
                                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -560,10 +560,10 @@ export default function PropertyDetails() {
                 </div>
                 <div className="w-full xl:w-[40rem] lg:w-3/12 lg:pl-8 mb-12">
                     <div className="sticky top-[5rem]">
-                        <form onSubmit={handleSidebarFormSubmit} className="bg-gradient-to-br from-blue-50 via-white to-blue-100 rounded-2xl shadow-xl p-6 sm:p-8 space-y-4 sm:space-y-5">
-                            <h2 className="text-lg sm:text-xl font-semibold text-blue-900 text-center leading-tight">
+                        <form onSubmit={handleSidebarFormSubmit} className="bg-gradient-to-br from-red-50 via-white to-red-100 rounded-2xl shadow-xl p-6 sm:p-8 space-y-4 sm:space-y-5">
+                            <h2 className="text-lg sm:text-xl font-semibold text-red-900 text-center leading-tight">
                                 Looking for a property in <br />
-                                <span className="text-blue-600 text-base sm:text-lg">{property.title}</span>
+                                <span className="text-red-600 text-base sm:text-lg">{property.title}</span>
                             </h2>
 
                         <input
@@ -572,7 +572,7 @@ export default function PropertyDetails() {
                             value={sidebarForm.name}
                             onChange={(e) => setSidebarForm({...sidebarForm, name: e.target.value})}
                             required
-                            className="text-black w-full px-4 py-3 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                            className="text-black w-full px-4 py-3 rounded-lg border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
                         />
 
                         <input
@@ -580,7 +580,7 @@ export default function PropertyDetails() {
                             placeholder="Your Email"
                             value={sidebarForm.email}
                             onChange={(e) => setSidebarForm({...sidebarForm, email: e.target.value})}
-                            className="text-black w-full px-4 py-3 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                            className="text-black w-full px-4 py-3 rounded-lg border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
                         />
 
                         <input
@@ -600,13 +600,13 @@ export default function PropertyDetails() {
                             }}
                             maxLength={10}
                             required
-                            className="text-black w-full px-4 py-3 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                            className="text-black w-full px-4 py-3 rounded-lg border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
                         />
 
                         <button
                             type="submit"
                             disabled={isSubmittingLead}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition"
+                            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition"
                         >
                             {isSubmittingLead ? 'Submitting...' : 'Submit'}
                         </button>
@@ -866,7 +866,7 @@ export default function PropertyDetails() {
                         </p>
                         <button
                             onClick={handleClosePriceSuccessModal}
-                            className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                            className="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
                         >
                             Close
                         </button>
@@ -890,7 +890,7 @@ export default function PropertyDetails() {
                         </p>
                         <button
                             onClick={handleCloseBrochureSuccessModal}
-                            className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                            className="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
                         >
                             Close
                         </button>
@@ -914,7 +914,7 @@ export default function PropertyDetails() {
                         </p>
                         <button
                             onClick={handleCloseSidebarSuccessModal}
-                            className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                            className="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
                         >
                             Close
                         </button>
