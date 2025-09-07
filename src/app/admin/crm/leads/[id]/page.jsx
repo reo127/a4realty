@@ -10,6 +10,7 @@ export default function LeadDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [lead, setLead] = useState(null);
+  const [allLeads, setAllLeads] = useState([]);
   const [relatedProperties, setRelatedProperties] = useState([]);
   const [nearbyProperties, setNearbyProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +18,7 @@ export default function LeadDetailPage() {
   const [activeTab, setActiveTab] = useState('exact');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     location: '',
     type: '',
@@ -44,6 +46,9 @@ export default function LeadDetailPage() {
       const data = await response.json();
       
       if (data.success) {
+        // Store all leads for sidebar navigation
+        setAllLeads(data.data);
+        
         const foundLead = data.data.find(l => l._id === params.id);
         if (foundLead) {
           setLead(foundLead);
@@ -206,7 +211,7 @@ export default function LeadDetailPage() {
             {property.title}
           </h3>
           <div className="text-right ml-4">
-            <div className="text-lg font-bold text-indigo-600">
+            <div className="text-lg font-bold text-red-600">
               {formatPrice(property.price)}
             </div>
           </div>
@@ -283,7 +288,7 @@ export default function LeadDetailPage() {
               <span className="text-xs text-gray-500">Contact:</span>
               <a 
                 href={`tel:${property.contactNumber}`}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                className="text-xs text-red-600 hover:text-red-800 font-medium"
               >
                 {property.contactNumber}
               </a>
@@ -294,7 +299,7 @@ export default function LeadDetailPage() {
           <div className="flex gap-2 pt-2">
             <Link
               href={`/admin/crm/property/${property._id}`}
-              className="flex-1 text-center px-3 py-2 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700 transition-colors"
+              className="flex-1 text-center px-3 py-2 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors"
             >
               View Details
             </Link>
@@ -379,7 +384,7 @@ export default function LeadDetailPage() {
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
           </div>
         </div>
       </div>
@@ -415,25 +420,235 @@ export default function LeadDetailPage() {
     );
   }
 
+  const getCurrentLeadIndex = () => {
+    return allLeads.findIndex(l => l._id === params.id);
+  };
+
+  const navigateToLead = (leadId) => {
+    router.push(`/admin/crm/leads/${leadId}`);
+  };
+
+  const getNextLead = () => {
+    const currentIndex = getCurrentLeadIndex();
+    if (currentIndex < allLeads.length - 1) {
+      return allLeads[currentIndex + 1];
+    }
+    return null;
+  };
+
+  const getPreviousLead = () => {
+    const currentIndex = getCurrentLeadIndex();
+    if (currentIndex > 0) {
+      return allLeads[currentIndex - 1];
+    }
+    return null;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Leads Navigation Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="h-full flex flex-col">
+          {/* Sidebar Header */}
+          <div className="bg-red-600 text-white px-4 py-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">All Leads ({allLeads.length})</h3>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="text-white hover:text-red-200 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-red-100 text-sm mt-1">Click any lead to navigate instantly</p>
+          </div>
+
+          {/* Leads List */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-2">
+              {allLeads.map((leadItem) => {
+                const isActive = leadItem._id === params.id;
+                return (
+                  <div
+                    key={leadItem._id}
+                    onClick={() => {
+                      navigateToLead(leadItem._id);
+                      setSidebarOpen(false);
+                    }}
+                    className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
+                      isActive
+                        ? 'bg-red-100 border-l-4 border-red-600 text-red-900'
+                        : 'hover:bg-gray-50 border-l-4 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
+                        isActive ? 'bg-red-200' : 'bg-gray-200'
+                      }`}>
+                        <span className={`text-xs font-medium ${
+                          isActive ? 'text-red-700' : 'text-gray-600'
+                        }`}>
+                          {leadItem.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-sm font-medium truncate ${
+                          isActive ? 'text-red-900' : 'text-gray-900'
+                        }`}>
+                          {leadItem.name}
+                        </div>
+                        <div className={`text-xs truncate ${
+                          isActive ? 'text-red-600' : 'text-gray-500'
+                        }`}>
+                          {leadItem.phone} • {getLocationDisplayName(leadItem.interestedLocation)}
+                        </div>
+                        <div className={`text-xs ${
+                          isActive ? 'text-red-500' : 'text-gray-400'
+                        }`}>
+                          {formatDate(leadItem.createdAt).split(',')[0]}
+                        </div>
+                      </div>
+                      {isActive && (
+                        <div className="flex-shrink-0">
+                          <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sidebar Footer */}
+          <div className="bg-gray-50 px-4 py-3 border-t">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>Lead {getCurrentLeadIndex() + 1} of {allLeads.length}</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    const prev = getPreviousLead();
+                    if (prev) {
+                      navigateToLead(prev._id);
+                      setSidebarOpen(false);
+                    }
+                  }}
+                  disabled={!getPreviousLead()}
+                  className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => {
+                    const next = getNextLead();
+                    if (next) {
+                      navigateToLead(next._id);
+                      setSidebarOpen(false);
+                    }
+                  }}
+                  disabled={!getNextLead()}
+                  className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-25 z-40"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      <div className="bg-white shadow sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center space-x-4 min-w-0">
+              {/* Leads Navigation Toggle */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors flex-shrink-0"
+                title="Browse All Leads"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
               <Link
                 href="/admin/crm/leads"
-                className="text-indigo-600 hover:text-indigo-800"
+                className="text-red-600 hover:text-red-800 flex-shrink-0"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Lead Details</h1>
-                <p className="text-gray-600 mt-1">ID: {lead._id}</p>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Lead Details</h1>
+                <p className="text-sm sm:text-base text-gray-600 mt-1 truncate">
+                  ID: {lead._id.slice(-8)} • {getCurrentLeadIndex() + 1} of {allLeads.length} leads
+                </p>
               </div>
+            </div>
+            
+            {/* Quick Navigation */}
+            <div className="flex items-center space-x-2">
+              {allLeads.length > 0 ? (
+                <>
+                  <button
+                    onClick={() => {
+                      const prev = getPreviousLead();
+                      if (prev) navigateToLead(prev._id);
+                    }}
+                    disabled={!getPreviousLead()}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm border border-gray-200"
+                    title={getPreviousLead() ? `Previous: ${getPreviousLead().name}` : 'No previous lead'}
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="hidden sm:inline">Previous</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const next = getNextLead();
+                      if (next) navigateToLead(next._id);
+                    }}
+                    disabled={!getNextLead()}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    title={getNextLead() ? `Next: ${getNextLead().name}` : 'No more leads'}
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <svg className="w-4 h-4 sm:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Lead Position Indicator */}
+                  <div className="ml-2 px-2 sm:px-3 py-2 bg-red-50 text-red-700 rounded-md text-xs sm:text-sm font-medium border border-red-200 whitespace-nowrap">
+                    {getCurrentLeadIndex() + 1} / {allLeads.length}
+                  </div>
+                </>
+              ) : (
+                <div className="px-3 py-2 bg-gray-100 text-gray-500 rounded-md text-sm">
+                  Loading leads...
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -445,8 +660,8 @@ export default function LeadDetailPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
               <div className="text-center mb-6">
-                <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-indigo-600 font-bold text-xl">
+                <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-red-600 font-bold text-xl">
                     {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                   </span>
                 </div>
@@ -462,7 +677,7 @@ export default function LeadDetailPage() {
                   </svg>
                   <div>
                     <p className="text-sm text-gray-600">Phone</p>
-                    <a href={`tel:${lead.phone}`} className="font-medium text-indigo-600 hover:text-indigo-800">
+                    <a href={`tel:${lead.phone}`} className="font-medium text-red-600 hover:text-red-800">
                       {lead.phone}
                     </a>
                   </div>
@@ -476,7 +691,7 @@ export default function LeadDetailPage() {
                     </svg>
                     <div>
                       <p className="text-sm text-gray-600">Email</p>
-                      <a href={`mailto:${lead.email}`} className="font-medium text-indigo-600 hover:text-indigo-800">
+                      <a href={`mailto:${lead.email}`} className="font-medium text-red-600 hover:text-red-800">
                         {lead.email}
                       </a>
                     </div>
@@ -557,6 +772,58 @@ export default function LeadDetailPage() {
                   )}
                 </div>
               </div>
+              
+              {/* Navigation Helper */}
+              <div className="mt-4 pt-4 border-t">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Quick Navigation</h4>
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="w-full flex items-center justify-center px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  Browse All Leads ({allLeads.length})
+                </button>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      const prev = getPreviousLead();
+                      if (prev) navigateToLead(prev._id);
+                    }}
+                    disabled={!getPreviousLead()}
+                    className="flex items-center justify-center px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => {
+                      const next = getNextLead();
+                      if (next) navigateToLead(next._id);
+                    }}
+                    disabled={!getNextLead()}
+                    className="flex items-center justify-center px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                    <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                {getPreviousLead() && (
+                  <div className="text-xs text-gray-500 mt-2">
+                    ← Previous: {getPreviousLead().name}
+                  </div>
+                )}
+                {getNextLead() && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    Next: {getNextLead().name} →
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -565,11 +832,11 @@ export default function LeadDetailPage() {
             {/* Summary Stats */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                <div className="text-2xl font-bold text-indigo-600">{relatedProperties.length}</div>
+                <div className="text-2xl font-bold text-red-600">{relatedProperties.length}</div>
                 <div className="text-sm text-gray-600">Exact Location Matches</div>
               </div>
               <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600">{nearbyProperties.length}</div>
+                <div className="text-2xl font-bold text-red-600">{nearbyProperties.length}</div>
                 <div className="text-sm text-gray-600">Nearby Area Matches</div>
               </div>
             </div>
@@ -585,7 +852,7 @@ export default function LeadDetailPage() {
                   onClick={() => setActiveTab('exact')}
                   className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === 'exact'
-                      ? 'bg-white text-indigo-700 shadow-sm'
+                      ? 'bg-white text-red-700 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -595,7 +862,7 @@ export default function LeadDetailPage() {
                   onClick={() => setActiveTab('nearby')}
                   className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === 'nearby'
-                      ? 'bg-white text-indigo-700 shadow-sm'
+                      ? 'bg-white text-red-700 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -808,7 +1075,7 @@ export default function LeadDetailPage() {
                       <div className="text-center py-12">
                         {searchLoading ? (
                           <div>
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
                             <p className="text-gray-600">Searching properties...</p>
                           </div>
                         ) : (

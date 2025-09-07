@@ -76,6 +76,9 @@ export const BANGALORE_LOCATIONS = {
 
 // Get nearby locations for a given location
 export function getNearbyLocations(location) {
+  if (!location || typeof location !== 'string') {
+    return [];
+  }
   const normalizedLocation = location.toLowerCase().replace(/\s+/g, '-');
   return BANGALORE_LOCATIONS[normalizedLocation]?.nearby || [];
 }
@@ -87,11 +90,17 @@ export function getAllLocations() {
 
 // Normalize location name for database storage
 export function normalizeLocationName(location) {
+  if (!location || typeof location !== 'string') {
+    return '';
+  }
   return location.toLowerCase().replace(/\s+/g, '-');
 }
 
 // Get display name for location
 export function getLocationDisplayName(location) {
+  if (!location || typeof location !== 'string') {
+    return 'Unknown Location';
+  }
   const normalizedLocation = location.toLowerCase().replace(/\s+/g, '-');
   return BANGALORE_LOCATIONS[normalizedLocation]?.name || location;
 }
