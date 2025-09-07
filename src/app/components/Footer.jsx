@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from "next/link";
 import Image from "next/image";
-import Logo from '../../../public/transparent-logo.svg'
+import Logo from '../../../public/finalLogo.jpeg'
 
 const Footer = () => {
     return (
@@ -12,7 +12,7 @@ const Footer = () => {
                         <div>
                             <div className="flex items-center gap-2">
                                 {/* <div className="h-7 w-7 bg-indigo-600 rounded-md" /> */}
-                                <Image src={Logo} alt="logo" className="h-[7rem] w-[10rem]" />
+                                <Image src={Logo} alt="logo" className="h-[3.5rem] w-[9rem] rounded-sm" />
                                 {/* <span className="font-semibold">RealtyHub</span> */}
                             </div>
                             <p className="mt-3 text-gray-600">

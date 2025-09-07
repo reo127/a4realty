@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import Logo from '../../../public/transparent-logo.svg'
 import Footer from "./Footer";
 import LeadCaptureModal from "./LeadCaptureModal";
 import { formatPrice } from '../../utils/formatPrice';
