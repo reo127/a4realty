@@ -105,7 +105,7 @@ export default function Home() {
                         alt="City skyline"
                         className="object-cover h-[90%] w-[100vw]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#D7242A]/60 via-[#D7242A]/45 to-[#D7242A]/70" />
                 </div>
 
                 <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-24">
@@ -131,7 +131,7 @@ export default function Home() {
                                     key={t.key}
                                     data-tab={t.key}
                                     className={`w-1/3 py-3 text-sm font-medium border-b-2 ${i === 0
-                                        ? "border-red-600 text-red-700"
+                                        ? "border-[#D7242A] text-[#D7242A]"
                                         : "border-transparent text-gray-600 hover:text-gray-900"
                                         }`}
                                 // For demo: first tab active by default. Hook into state if making interactive.
@@ -158,7 +158,7 @@ export default function Home() {
                                         name="q"
                                         type="text"
                                         placeholder="City, locality, project, landmark"
-                                        className="w-full h-12 px-4 pr-10 rounded-md border border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none"
+                                        className="w-full h-12 px-4 pr-10 rounded-md border border-gray-200 focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
                                     />
                                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                                         ⌕
@@ -172,7 +172,7 @@ export default function Home() {
                                 <select
                                     id="type"
                                     name="type"
-                                    className="w-full h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none"
+                                    className="w-full h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Property type</option>
@@ -190,7 +190,7 @@ export default function Home() {
                                 <select
                                     id="min"
                                     name="min"
-                                    className="w-1/2 h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none"
+                                    className="w-1/2 h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Min</option>
@@ -204,7 +204,7 @@ export default function Home() {
                                 <select
                                     id="max"
                                     name="max"
-                                    className="w-1/2 h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none"
+                                    className="w-1/2 h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Max</option>
@@ -218,7 +218,7 @@ export default function Home() {
 
                             <button
                                 type="submit"
-                                className="h-12 px-6 rounded-md bg-red-600 text-white font-medium hover:bg-red-700"
+                                className="h-12 px-6 rounded-md bg-[#D7242A] text-white font-medium hover:bg-[#D7242A]/90"
                             >
                                 Search
                             </button>
@@ -265,7 +265,7 @@ export default function Home() {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex items-baseline justify-between">
                         <h2 className="text-xl font-semibold">Featured Properties</h2>
-                        <Link href="/search" className="text-red-600 text-sm hover:underline">
+                        <Link href="/search" className="text-[#D7242A] text-sm hover:underline">
                             View all
                         </Link>
                     </div>
@@ -311,12 +311,12 @@ export default function Home() {
                                         <div className="p-4">
                                             <h3 className="text-base font-semibold">{property.title}</h3>
                                             <p className="text-sm text-gray-600">{property.location}</p>
-                                            <p className="mt-2 text-sm font-medium text-red-600">💰 Price on Request</p>
+                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">💰 Price on Request</p>
                                             <div className="mt-3 flex items-center gap-2">
                                                 <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-green-50 text-green-700">
                                                     Verified
                                                 </span>
-                                                <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-red-50 text-red-700">
+                                                <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-[#D7242A]/10 text-[#D7242A]">
                                                     {property.type}
                                                 </span>
                                                 {property.bhk && property.bhk !== 'na' && (
@@ -335,7 +335,7 @@ export default function Home() {
                                 <div className="mt-8 text-center">
                                     <button
                                         onClick={handleSeeMore}
-                                        className="px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                                        className="px-6 py-3 bg-[#D7242A] text-white font-medium rounded-lg hover:bg-[#D7242A]/90 transition-colors"
                                     >
                                         See More Properties ({properties.length - visibleProperties} more)
                                     </button>
@@ -380,7 +380,7 @@ export default function Home() {
             {/* Lead-gen band */}
             <section className="py-12">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-red-600 to-red-500 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-[#D7242A] to-[#D7242A]/90 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-xl font-semibold">Get priority access to builder offers</h3>
                             <p className="text-white/90 mt-1 text-sm">
@@ -401,7 +401,7 @@ export default function Home() {
                             />
                             <button
                                 type="submit"
-                                className="h-12 px-5 rounded-md bg-white text-red-700 font-medium hover:bg-white/90"
+                                className="h-12 px-5 rounded-md bg-white text-[#D7242A] font-medium hover:bg-white/90"
                             >
                                 Get Callback
                             </button>

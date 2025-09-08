@@ -63,7 +63,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
       {/* Modal panel */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+          <div className="bg-gradient-to-r from-[#D7242A] to-[#D7242A]/90 px-6 py-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">{title}</h3>
               <button
@@ -75,7 +75,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                 </svg>
               </button>
             </div>
-            <p className="text-red-100 text-sm mt-1">
+            <p className="text-white/90 text-sm mt-1">
               {description}
             </p>
           </div>
@@ -83,7 +83,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-6 py-6 text-black">
             {error && (
-              <div className="mb-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
+              <div className="mb-4 bg-[#D7242A]/5 border-l-4 border-[#D7242A] text-[#D7242A] p-4 rounded-md">
                 <div className="flex items-center">
                   <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -105,7 +105,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/20 transition-all outline-none"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -121,7 +121,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/20 transition-all outline-none"
                   placeholder="9876543210"
                 />
               </div>
@@ -136,7 +136,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-4 focus:ring-red-100 transition-all outline-none"
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/20 transition-all outline-none"
                   placeholder="your@email.com"
                 />
               </div>
@@ -167,7 +167,7 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-4 focus:ring-red-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#D7242A] to-[#D7242A]/90 text-white font-semibold rounded-lg hover:from-[#D7242A]/90 hover:to-[#D7242A]/80 focus:ring-4 focus:ring-[#D7242A]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <div className="flex items-center justify-center">

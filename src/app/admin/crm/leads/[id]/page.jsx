@@ -211,7 +211,7 @@ export default function LeadDetailPage() {
             {property.title}
           </h3>
           <div className="text-right ml-4">
-            <div className="text-lg font-bold text-red-600">
+            <div className="text-lg font-bold text-[#D7242A]">
               {formatPrice(property.price)}
             </div>
           </div>
@@ -288,7 +288,7 @@ export default function LeadDetailPage() {
               <span className="text-xs text-gray-500">Contact:</span>
               <a 
                 href={`tel:${property.contactNumber}`}
-                className="text-xs text-red-600 hover:text-red-800 font-medium"
+                className="text-xs text-[#D7242A] hover:text-[#D7242A]/80 font-medium"
               >
                 {property.contactNumber}
               </a>
@@ -299,7 +299,7 @@ export default function LeadDetailPage() {
           <div className="flex gap-2 pt-2">
             <Link
               href={`/admin/crm/property/${property._id}`}
-              className="flex-1 text-center px-3 py-2 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors"
+              className="flex-1 text-center px-3 py-2 bg-[#D7242A] text-white text-xs font-medium rounded hover:bg-[#D7242A]/90 transition-colors"
             >
               View Details
             </Link>
@@ -384,7 +384,7 @@ export default function LeadDetailPage() {
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#D7242A]"></div>
           </div>
         </div>
       </div>
@@ -395,9 +395,9 @@ export default function LeadDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Lead</h2>
-            <p className="text-red-600">{error || 'Lead not found'}</p>
+          <div className="bg-[#D7242A]/5 border border-[#D7242A]/20 rounded-lg p-6 text-center">
+            <h2 className="text-xl font-semibold text-[#D7242A] mb-2">Error Loading Lead</h2>
+            <p className="text-[#D7242A]/80">{error || 'Lead not found'}</p>
             <div className="mt-4 space-x-4">
               <button 
                 onClick={() => router.back()}
@@ -408,7 +408,7 @@ export default function LeadDetailPage() {
               {error && (
                 <button 
                   onClick={fetchLeadDetails}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-[#D7242A] text-white rounded-lg hover:bg-[#D7242A]/90 transition-colors"
                 >
                   Retry
                 </button>
@@ -452,19 +452,19 @@ export default function LeadDetailPage() {
       }`}>
         <div className="h-full flex flex-col">
           {/* Sidebar Header */}
-          <div className="bg-red-600 text-white px-4 py-4">
+          <div className="bg-[#D7242A] text-white px-4 py-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">All Leads ({allLeads.length})</h3>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="text-white hover:text-red-200 transition-colors"
+                className="text-white hover:text-white/80 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <p className="text-red-100 text-sm mt-1">Click any lead to navigate instantly</p>
+            <p className="text-white/90 text-sm mt-1">Click any lead to navigate instantly</p>
           </div>
 
           {/* Leads List */}
@@ -481,40 +481,40 @@ export default function LeadDetailPage() {
                     }}
                     className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
                       isActive
-                        ? 'bg-red-100 border-l-4 border-red-600 text-red-900'
+                        ? 'bg-[#D7242A]/10 border-l-4 border-[#D7242A] text-[#D7242A]'
                         : 'hover:bg-gray-50 border-l-4 border-transparent'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-                        isActive ? 'bg-red-200' : 'bg-gray-200'
+                        isActive ? 'bg-[#D7242A]/20' : 'bg-gray-200'
                       }`}>
                         <span className={`text-xs font-medium ${
-                          isActive ? 'text-red-700' : 'text-gray-600'
+                          isActive ? 'text-[#D7242A]' : 'text-gray-600'
                         }`}>
                           {leadItem.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className={`text-sm font-medium truncate ${
-                          isActive ? 'text-red-900' : 'text-gray-900'
+                          isActive ? 'text-[#D7242A]' : 'text-gray-900'
                         }`}>
                           {leadItem.name}
                         </div>
                         <div className={`text-xs truncate ${
-                          isActive ? 'text-red-600' : 'text-gray-500'
+                          isActive ? 'text-[#D7242A]' : 'text-gray-500'
                         }`}>
                           {leadItem.phone} • {getLocationDisplayName(leadItem.interestedLocation)}
                         </div>
                         <div className={`text-xs ${
-                          isActive ? 'text-red-500' : 'text-gray-400'
+                          isActive ? 'text-[#D7242A]/80' : 'text-gray-400'
                         }`}>
                           {formatDate(leadItem.createdAt).split(',')[0]}
                         </div>
                       </div>
                       {isActive && (
                         <div className="flex-shrink-0">
-                          <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-4 h-4 text-[#D7242A]" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         </div>
@@ -583,7 +583,7 @@ export default function LeadDetailPage() {
               {/* Leads Navigation Toggle */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors flex-shrink-0"
+                className="text-[#D7242A] hover:text-[#D7242A]/80 p-1 rounded-md hover:bg-[#D7242A]/5 transition-colors flex-shrink-0"
                 title="Browse All Leads"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -592,7 +592,7 @@ export default function LeadDetailPage() {
               </button>
               <Link
                 href="/admin/crm/leads"
-                className="text-red-600 hover:text-red-800 flex-shrink-0"
+                className="text-[#D7242A] hover:text-[#D7242A]/80 flex-shrink-0"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -630,7 +630,7 @@ export default function LeadDetailPage() {
                       if (next) navigateToLead(next._id);
                     }}
                     disabled={!getNextLead()}
-                    className="flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    className="flex items-center px-3 py-2 text-sm font-medium text-white bg-[#D7242A] rounded-md hover:bg-[#D7242A]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                     title={getNextLead() ? `Next: ${getNextLead().name}` : 'No more leads'}
                   >
                     <span className="hidden sm:inline">Next</span>
@@ -640,7 +640,7 @@ export default function LeadDetailPage() {
                   </button>
                   
                   {/* Lead Position Indicator */}
-                  <div className="ml-2 px-2 sm:px-3 py-2 bg-red-50 text-red-700 rounded-md text-xs sm:text-sm font-medium border border-red-200 whitespace-nowrap">
+                  <div className="ml-2 px-2 sm:px-3 py-2 bg-[#D7242A]/5 text-[#D7242A] rounded-md text-xs sm:text-sm font-medium border border-[#D7242A]/20 whitespace-nowrap">
                     {getCurrentLeadIndex() + 1} / {allLeads.length}
                   </div>
                 </>
@@ -660,8 +660,8 @@ export default function LeadDetailPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
               <div className="text-center mb-6">
-                <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-red-600 font-bold text-xl">
+                <div className="h-20 w-20 rounded-full bg-[#D7242A]/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-[#D7242A] font-bold text-xl">
                     {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                   </span>
                 </div>
@@ -677,7 +677,7 @@ export default function LeadDetailPage() {
                   </svg>
                   <div>
                     <p className="text-sm text-gray-600">Phone</p>
-                    <a href={`tel:${lead.phone}`} className="font-medium text-red-600 hover:text-red-800">
+                    <a href={`tel:${lead.phone}`} className="font-medium text-[#D7242A] hover:text-[#D7242A]/80">
                       {lead.phone}
                     </a>
                   </div>
@@ -691,7 +691,7 @@ export default function LeadDetailPage() {
                     </svg>
                     <div>
                       <p className="text-sm text-gray-600">Email</p>
-                      <a href={`mailto:${lead.email}`} className="font-medium text-red-600 hover:text-red-800">
+                      <a href={`mailto:${lead.email}`} className="font-medium text-[#D7242A] hover:text-[#D7242A]/80">
                         {lead.email}
                       </a>
                     </div>
@@ -778,7 +778,7 @@ export default function LeadDetailPage() {
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Quick Navigation</h4>
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="w-full flex items-center justify-center px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                  className="w-full flex items-center justify-center px-4 py-2 bg-[#D7242A]/5 text-[#D7242A] rounded-lg hover:bg-[#D7242A]/10 transition-colors text-sm"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -832,11 +832,11 @@ export default function LeadDetailPage() {
             {/* Summary Stats */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                <div className="text-2xl font-bold text-red-600">{relatedProperties.length}</div>
+                <div className="text-2xl font-bold text-[#D7242A]">{relatedProperties.length}</div>
                 <div className="text-sm text-gray-600">Exact Location Matches</div>
               </div>
               <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-                <div className="text-2xl font-bold text-red-600">{nearbyProperties.length}</div>
+                <div className="text-2xl font-bold text-[#D7242A]">{nearbyProperties.length}</div>
                 <div className="text-sm text-gray-600">Nearby Area Matches</div>
               </div>
             </div>
@@ -852,7 +852,7 @@ export default function LeadDetailPage() {
                   onClick={() => setActiveTab('exact')}
                   className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === 'exact'
-                      ? 'bg-white text-red-700 shadow-sm'
+                      ? 'bg-white text-[#D7242A] shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -862,7 +862,7 @@ export default function LeadDetailPage() {
                   onClick={() => setActiveTab('nearby')}
                   className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === 'nearby'
-                      ? 'bg-white text-red-700 shadow-sm'
+                      ? 'bg-white text-[#D7242A] shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -1075,7 +1075,7 @@ export default function LeadDetailPage() {
                       <div className="text-center py-12">
                         {searchLoading ? (
                           <div>
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D7242A] mx-auto mb-4"></div>
                             <p className="text-gray-600">Searching properties...</p>
                           </div>
                         ) : (
