@@ -114,7 +114,7 @@ const ChatBot = () => {
             {isOpen && (
                 <div className="absolute bottom-20 right-0 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 mb-2">
                     {/* Chat Header */}
-                    <div className="flex items-center justify-between p-4 border-b bg-indigo-600 text-white rounded-t-lg">
+                    <div className="flex items-center justify-between p-4 border-b bg-[#D7242A] text-white rounded-t-lg">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -146,7 +146,7 @@ const ChatBot = () => {
                                 <div
                                     className={`${message.sender === 'user' ? 'max-w-xs' : 'max-w-sm'} px-4 py-2 rounded-lg ${
                                         message.sender === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-br-none'
+                                            ? 'bg-[#D7242A] text-white rounded-br-none'
                                             : 'bg-white text-gray-800 rounded-bl-none shadow'
                                     }`}
                                 >
@@ -179,7 +179,7 @@ const ChatBot = () => {
                                                             <p className="text-xs text-gray-600">
                                                                 📍 {property.location}
                                                             </p>
-                                                            <p className="text-xs font-medium text-indigo-600">
+                                                            <p className="text-xs font-medium text-[#D7242A]">
                                                                 {typeof property.price === 'string' ? 
                                                                     (property.price.includes('₹') ? property.price : `₹${property.price}`) : 
                                                                     `₹${(property.price / 100000).toFixed(0)} L`
@@ -229,13 +229,13 @@ const ChatBot = () => {
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder="Type your message..."
-                                className="flex-1 text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                className="flex-1 text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7242A] text-sm"
                                 disabled={isTyping}
                             />
                             <button
                                 type="submit"
                                 disabled={!inputValue.trim() || isTyping}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-4 py-2 bg-[#D7242A] text-white rounded-lg hover:bg-[#D7242A]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -249,7 +249,7 @@ const ChatBot = () => {
             {/* Floating Chat Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-105"
+                className="bg-[#D7242A] hover:bg-[#D7242A]/90 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-105"
                 aria-label="Toggle chat"
             >
                 {isOpen ? (
