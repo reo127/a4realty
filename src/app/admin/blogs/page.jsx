@@ -174,7 +174,7 @@ export default function AdminBlogsPage() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7242A] focus:border-[#D7242A] text-sm"
+              className="px-3 text-black py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7242A] focus:border-[#D7242A] text-sm"
             >
               <option value="all">All Status</option>
               <option value="published">Published</option>

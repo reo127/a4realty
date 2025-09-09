@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Blog from '@/models/Blog';
+import User from '@/models/User';
 import jwt from 'jsonwebtoken';
 
 // Helper function to verify admin token

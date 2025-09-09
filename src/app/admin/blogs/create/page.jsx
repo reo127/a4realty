@@ -3,6 +3,10 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamically import TinyMCE to avoid SSR issues
+const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => ({ default: mod.Editor })), { ssr: false });
 
 export default function CreateBlogPage() {
   const router = useRouter();
@@ -271,29 +275,32 @@ export default function CreateBlogPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Blog Content *
                 </label>
-                <textarea
-                  name="content"
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  required
-                  rows={20}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7242A] focus:border-[#D7242A] font-mono text-sm"
-                  placeholder="Write your blog content here. You can use HTML tags for formatting:
-
-<h2>Section Title</h2>
-<p>Your paragraph content</p>
-<ul>
-<li>List item 1</li>
-<li>List item 2</li>
-</ul>
-<strong>Bold text</strong>
-<em>Italic text</em>
-<a href='URL'>Link text</a>
-<img src='IMAGE_URL' alt='Description' />
-"
-                />
+                <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#D7242A] focus-within:border-[#D7242A]">
+                  <Editor
+                    apiKey="uq5hzjb6crfbpx3eclyfsk6xjwqtwhe7hbkz1xvee5uqderz"
+                    value={formData.content}
+                    onEditorChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                    init={{
+                      height: 400,
+                      menubar: false,
+                      plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                        'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
+                      ],
+                      toolbar: 'undo redo | blocks | ' +
+                        'bold italic forecolor | alignleft aligncenter ' +
+                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                        'removeformat | help',
+                      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                      skin: 'oxide',
+                      content_css: 'default',
+                      branding: false,
+                    }}
+                  />
+                </div>
                 <div className="text-xs text-gray-500 mt-2">
-                  Tip: Use HTML tags for formatting. Rich text editor will be added in future updates.
+                  Use the toolbar above for rich text formatting. Content will be saved as HTML.
                 </div>
               </div>
 
