@@ -83,6 +83,13 @@ export default function PropertyDetails() {
         }
     }, [id]);
 
+    // Fetch similar properties when main property is loaded
+    useEffect(() => {
+        if (property?._id) {
+            fetchSimilarProperties();
+        }
+    }, [property?._id]);
+
     const openModal = (index) => {
         setSelectedImageIndex(index);
         setIsModalOpen(true);
@@ -188,6 +195,9 @@ export default function PropertyDetails() {
     const [showPriceSuccessModal, setShowPriceSuccessModal] = useState(false);
     const [showBrochureSuccessModal, setShowBrochureSuccessModal] = useState(false);
     const [showSidebarSuccessModal, setShowSidebarSuccessModal] = useState(false);
+    const [similarProperties, setSimilarProperties] = useState([]);
+    const [loadingSimilar, setLoadingSimilar] = useState(false);
+    const [currentSlide, setCurrentSlide] = useState(0);
 
     const handleBrochureClick = () => {
         setShowBrochureModal(true);
@@ -288,6 +298,26 @@ export default function PropertyDetails() {
         }
     };
 
+    const fetchSimilarProperties = async () => {
+        if (!property?._id) return;
+        
+        try {
+            setLoadingSimilar(true);
+            const response = await fetch(`/api/properties/similar/${property._id}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                setSimilarProperties(data.data || []);
+            } else {
+                console.error('Failed to fetch similar properties:', data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching similar properties:', error);
+        } finally {
+            setLoadingSimilar(false);
+        }
+    };
+
     const handleMediaNavigation = (direction) => {
         const currentMedia = mediaType === 'images' ? property.gallery : (property.videos || []);
         if (direction === 'next') {
@@ -311,6 +341,192 @@ export default function PropertyDetails() {
     const handleCloseMediaModal = () => {
         setShowMediaModal(false);
         setIsZoomed(false);
+    };
+
+    const nextSlide = () => {
+        if (similarProperties.length > 0) {
+            const maxSlides = Math.max(0, similarProperties.length - 3);
+            setCurrentSlide((prev) => 
+                prev >= maxSlides ? 0 : prev + 1
+            );
+        }
+    };
+
+    const prevSlide = () => {
+        if (similarProperties.length > 0) {
+            const maxSlides = Math.max(0, similarProperties.length - 3);
+            setCurrentSlide((prev) => 
+                prev === 0 ? maxSlides : prev - 1
+            );
+        }
+    };
+
+    const getAmenityIcon = (amenity) => {
+        const amenityLower = amenity.toLowerCase();
+        
+        // Swimming Pool
+        if (amenityLower.includes('swimming') || amenityLower.includes('pool')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 12c0 5.5 4.5 10 10 10s10-4.5 10-10c0-1.1-.2-2.1-.5-3.1"/>
+                    <path d="M7 12c0-2.8 2.2-5 5-5s5 2.2 5 5"/>
+                    <circle cx="12" cy="12" r="2"/>
+                </svg>
+            );
+        }
+        
+        // Gym/Fitness
+        if (amenityLower.includes('gym') || amenityLower.includes('fitness') || amenityLower.includes('exercise')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m7.5 4.27 9 5.15"/>
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                    <path d="m3.3 7 8.7 5 8.7-5"/>
+                    <path d="M12 22V12"/>
+                </svg>
+            );
+        }
+        
+        // Parking
+        if (amenityLower.includes('parking') || amenityLower.includes('car')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 16H9m10 0h3m-3 0a3 3 0 01-3-3V7a1 1 0 00-1-1H4a1 1 0 00-1 1v6a3 3 0 01-3 3m16 0v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1m16 0H5"/>
+                    <circle cx="6.5" cy="16.5" r="2.5"/>
+                    <circle cx="17.5" cy="16.5" r="2.5"/>
+                </svg>
+            );
+        }
+        
+        // Garden/Park/Landscaping
+        if (amenityLower.includes('garden') || amenityLower.includes('park') || amenityLower.includes('landscape') || amenityLower.includes('green')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22v-7l-2-2"/>
+                    <path d="M17 8v.8A6 6 0 0 1 13.8 20v0H10v0A6.5 6.5 0 0 1 7 8h0a5 5 0 0 1 10 0Z"/>
+                    <path d="m10 22 1.5-1.5L13 22"/>
+                    <path d="M17 8h0a5 5 0 0 0-10 0h0A6.5 6.5 0 0 0 10 20v0h3.8v0A6 6 0 0 0 17 8.8V8Z"/>
+                </svg>
+            );
+        }
+        
+        // Security
+        if (amenityLower.includes('security') || amenityLower.includes('cctv') || amenityLower.includes('guard')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                </svg>
+            );
+        }
+        
+        // Club House / Community Hall
+        if (amenityLower.includes('club') || amenityLower.includes('community') || amenityLower.includes('hall')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 21h18"/>
+                    <path d="M5 21V7l8-4v18"/>
+                    <path d="M19 21V11l-6-4"/>
+                    <path d="M9 9v.01"/>
+                    <path d="M9 12v.01"/>
+                    <path d="M9 15v.01"/>
+                    <path d="M9 18v.01"/>
+                </svg>
+            );
+        }
+        
+        // Elevator/Lift
+        if (amenityLower.includes('elevator') || amenityLower.includes('lift')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 24h10V0H7z"/>
+                    <path d="M5 8h14"/>
+                    <path d="M5 16h14"/>
+                    <path d="M12 6V2"/>
+                    <path d="M12 22v-4"/>
+                    <path d="m15 18-3-3-3 3"/>
+                    <path d="m9 6 3-3 3 3"/>
+                </svg>
+            );
+        }
+        
+        // Playground/Kids Area
+        if (amenityLower.includes('playground') || amenityLower.includes('kids') || amenityLower.includes('children')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.64 3.64 16.36 8.92"/>
+                    <path d="m14.5 7.5-7 7"/>
+                    <path d="M8.84 15.16 3.64 20.36"/>
+                    <circle cx="4" cy="20" r="2"/>
+                    <path d="M8.5 8.5 12 5l7 7-3.5 3.5L12 12"/>
+                    <path d="M12 5 8.5 8.5"/>
+                    <circle cx="20" cy="4" r="2"/>
+                </svg>
+            );
+        }
+        
+        // Power Backup/Generator
+        if (amenityLower.includes('power') || amenityLower.includes('backup') || amenityLower.includes('generator') || amenityLower.includes('electricity')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+            );
+        }
+        
+        // Water Supply
+        if (amenityLower.includes('water') || amenityLower.includes('supply')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/>
+                    <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2.04 4.6 4.14 5.93C19.3 9.7 20 10.76 20 12c0 1.94-1.57 3.51-3.5 3.51s-3.5-1.57-3.5-3.51c0-.34.04-.68.12-1"/>
+                </svg>
+            );
+        }
+        
+        // Internet/WiFi
+        if (amenityLower.includes('internet') || amenityLower.includes('wifi') || amenityLower.includes('broadband')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                    <line x1="12" x2="12.01" y1="20" y2="20"/>
+                </svg>
+            );
+        }
+        
+        // Maintenance/Housekeeping
+        if (amenityLower.includes('maintenance') || amenityLower.includes('housekeeping') || amenityLower.includes('cleaning')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    <path d="M4 6h16l-1 10c0 1-1 2-2 2H7c-1 0-2-1-2-2L4 6Z"/>
+                    <path d="M10 11V6"/>
+                    <path d="M14 11V6"/>
+                </svg>
+            );
+        }
+        
+        // Air Conditioning
+        if (amenityLower.includes('ac') || amenityLower.includes('air') || amenityLower.includes('conditioning')) {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 2h8l4 6.5v9.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8.5L8 2z"/>
+                    <path d="M16 8h2a2 2 0 0 1 2 2v4"/>
+                    <path d="M6 8H4a2 2 0 0 0-2 2v4"/>
+                    <path d="M12 8v8"/>
+                    <path d="M8 12h8"/>
+                </svg>
+            );
+        }
+        
+        // Default fallback icon
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        );
     };
 
     const sections = [
@@ -472,7 +688,9 @@ export default function PropertyDetails() {
                             <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'>
                                 {property.amenities.map((amenity, index) => (
                                     <div key={index} className='text-[#606060] rounded-md font-thin flex flex-col border items-center justify-center h-[70px] sm:h-[80px] p-2'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-party-popper-icon lucide-party-popper mb-1"><path d="M5.8 11.3 2 22l10.7-3.79" /><path d="M4 3h.01" /><path d="M22 8h.01" /><path d="M15 2h.01" /><path d="M22 20h.01" /><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10" /><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17" /><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7" /><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z" /></svg>
+                                        <div className="mb-1">
+                                            {getAmenityIcon(amenity)}
+                                        </div>
                                         <p className='text-xs sm:text-sm text-center leading-tight'>{amenity}</p>
                                     </div>
                                 ))}
@@ -553,7 +771,105 @@ export default function PropertyDetails() {
                         )}
                     </section>
 
+                    {/* Similar Properties Section */}
+                    <section className='mt-16 sm:mt-24 lg:mt-32'>
+                        <h1 className='text-2xl sm:text-3xl lg:text-[32px] text-[#303030] font-bold mb-6'>
+                            {property.mode === 'buy' ? 'More Properties' : 'Similar Properties'}
+                        </h1>
+                        
+                        {loadingSimilar ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D7242A]"></div>
+                            </div>
+                        ) : similarProperties.length > 0 ? (
+                            <div className="relative">
+                                {/* Navigation Buttons */}
+                                {similarProperties.length > 3 && (
+                                    <>
+                                        <button
+                                            onClick={prevSlide}
+                                            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+                                            style={{ marginLeft: '-1.5rem' }}
+                                        >
+                                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={nextSlide}
+                                            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+                                            style={{ marginRight: '-1.5rem' }}
+                                        >
+                                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </>
+                                )}
 
+                                {/* Properties Slider */}
+                                <div className="overflow-hidden">
+                                    <div 
+                                        className="flex transition-transform duration-300 ease-in-out gap-6"
+                                        style={{ 
+                                            transform: `translateX(-${currentSlide * (100 / 3)}%)`,
+                                            width: `${Math.ceil(similarProperties.length / 3) * 100}%`
+                                        }}
+                                    >
+                                        {similarProperties.map((similarProperty) => (
+                                            <div key={similarProperty._id} className="flex-shrink-0 w-[20%] min-w-0 px-2">
+                                                <Link href={`/property/${similarProperty._id}`} className="block group">
+                                                    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+                                                        {/* Property Image */}
+                                                        <div className="relative h-56 overflow-hidden">
+                                                            <img
+                                                                src={similarProperty.gallery[0]}
+                                                                alt={similarProperty.title}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                            />
+                                                            {/* Media Count Badge */}
+                                                            <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full">
+                                                                {similarProperty.gallery.length} {similarProperty.gallery.length === 1 ? 'photo' : 'photos'}
+                                                                {similarProperty.videos && similarProperty.videos.length > 0 && (
+                                                                    <span>, {similarProperty.videos.length} video{similarProperty.videos.length !== 1 ? 's' : ''}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Property Details */}
+                                                        <div className="p-5">
+                                                            <h3 className="font-semibold text-gray-900 text-lg mb-3 line-clamp-2 group-hover:text-[#D7242A] transition-colors">
+                                                                {similarProperty.title}
+                                                            </h3>
+                                                            
+                                                            <div className="flex items-center text-gray-600 text-sm mb-3">
+                                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                </svg>
+                                                                <span className="truncate">{similarProperty.location}</span>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between text-sm">
+                                                                <span className="bg-gray-100 px-3 py-2 rounded-lg font-medium text-gray-700">
+                                                                    {similarProperty.bhk}
+                                                                </span>
+                                                                <span className="font-semibold text-[#D7242A] text-base">
+                                                                    Price on Request
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className='text-[#999999] italic text-sm'>No similar properties found</p>
+                        )}
+                    </section>
 
                     <section id="ratings-reviews"></section>
                     <section id="about-location" className='mb-12 sm:mb-24 lg:mb-32'></section>
