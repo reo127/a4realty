@@ -20,6 +20,12 @@ export default function AdminBlogsPage() {
       setLoading(true);
       const token = localStorage.getItem('token');
       
+      if (!token) {
+        setError('Authentication required. Please login again.');
+        window.location.href = '/admin/login';
+        return;
+      }
+      
       const params = new URLSearchParams({
         admin: 'true',
         page: currentPage.toString(),
@@ -36,11 +42,23 @@ export default function AdminBlogsPage() {
         }
       });
 
+      // Check if response is ok first
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          setError('Session expired. Please login again.');
+          window.location.href = '/admin/login';
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (data.success) {
         setBlogs(data.data.blogs);
         setTotalPages(data.data.pagination.totalPages);
+        setError(''); // Clear any previous errors
       } else {
         setError(data.message);
       }
@@ -59,12 +77,29 @@ export default function AdminBlogsPage() {
 
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        alert('Authentication required. Please login again.');
+        window.location.href = '/admin/login';
+        return;
+      }
+      
       const response = await fetch(`/api/blogs/${slug}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          alert('Session expired. Please login again.');
+          window.location.href = '/admin/login';
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       
@@ -112,12 +147,20 @@ export default function AdminBlogsPage() {
               <h1 className="text-3xl font-bold text-gray-900">Blog Management</h1>
               <p className="text-gray-600 mt-1">Create and manage your blog posts for SEO</p>
             </div>
-            <Link
-              href="/admin/blogs/create"
-              className="bg-[#D7242A] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#D7242A]/90 transition-colors"
-            >
-              Create New Blog
-            </Link>
+            <div className="flex space-x-3">
+              <Link
+                href="/blog"
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+              >
+                View Blog Page
+              </Link>
+              <Link
+                href="/admin/blogs/create"
+                className="bg-[#D7242A] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#D7242A]/90 transition-colors"
+              >
+                Create New Blog
+              </Link>
+            </div>
           </div>
         </div>
 
