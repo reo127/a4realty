@@ -97,29 +97,26 @@ export default function Home() {
 
         
             {/* Hero with segmented search */}
-            <section className="relative">
-                {/* Background hero image/video area */}
-                <div className="absolute inset-0">
-                    <img
-                        src="https://images.unsplash.com/photo-1600992045264-136a22de917e?q=80&w=2000&auto=format&fit=crop"
-                        alt="City skyline"
-                        className="object-cover h-[90%] w-[100vw]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#D7242A]/60 via-[#D7242A]/45 to-[#D7242A]/70" />
+            <section className="relative bg-white">
+                {/* Decorative background elements */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#D7242A]/5 rounded-full"></div>
+                    <div className="absolute top-32 -left-16 w-64 h-64 bg-[#D7242A]/3 rounded-full"></div>
                 </div>
 
                 <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-24">
-                    <div className="max-w-3xl">
-                        <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
-                            Discover new projects and verified listings
+                    <div className="max-w-4xl text-center mx-auto">
+                        <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 leading-tight">
+                            Discover new projects and 
+                            <span className="text-[#D7242A]"> verified listings</span>
                         </h1>
-                        <p className="mt-3 text-white/90 text-base sm:text-lg">
-                            Explore builder floors, apartments, and villas across top micro-markets.
+                        <p className="mt-6 text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto">
+                            Explore builder floors, apartments, and villas across top micro-markets with complete transparency and verification.
                         </p>
                     </div>
 
                     {/* Search Card */}
-                    <div className="mt-6 bg-white rounded-xl shadow-xl border border-gray-100">
+                    <div className="mt-10 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                         {/* Tabs */}
                         <div className="flex">
                             {/* {[
@@ -144,7 +141,7 @@ export default function Home() {
                         {/* Search row */}
                         <form
                             action="/search"
-                            className="p-4 sm:p-5 flex flex-col md:flex-row gap-3"
+                            className="p-6 sm:p-8 flex flex-col md:flex-row gap-4"
                         >
                             {/* Hidden active tab field (default buy); toggle with state when implementing */}
                             <input type="hidden" name="tab" value="buy" />
@@ -158,7 +155,7 @@ export default function Home() {
                                         name="q"
                                         type="text"
                                         placeholder="City, locality, project, landmark"
-                                        className="w-full h-12 px-4 pr-10 rounded-md border border-gray-200 focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
+                                        className="w-full h-14 px-4 pr-10 rounded-lg border-2 border-gray-200 focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none text-gray-900 placeholder-gray-500"
                                     />
                                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                                         ⌕
@@ -172,7 +169,7 @@ export default function Home() {
                                 <select
                                     id="type"
                                     name="type"
-                                    className="w-full h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
+                                    className="w-full h-14 px-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none text-gray-900"
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Property type</option>
@@ -190,7 +187,7 @@ export default function Home() {
                                 <select
                                     id="min"
                                     name="min"
-                                    className="w-1/2 h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
+                                    className="w-1/2 h-14 px-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none text-gray-900"
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Min</option>
@@ -204,7 +201,7 @@ export default function Home() {
                                 <select
                                     id="max"
                                     name="max"
-                                    className="w-1/2 h-12 px-3 rounded-md border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none"
+                                    className="w-1/2 h-14 px-3 rounded-lg border-2 border-gray-200 bg-white focus:border-[#D7242A] focus:ring-2 focus:ring-[#D7242A]/20 outline-none text-gray-900"
                                     defaultValue=""
                                 >
                                     <option value="" disabled>Max</option>
@@ -218,20 +215,20 @@ export default function Home() {
 
                             <button
                                 type="submit"
-                                className="h-12 px-6 rounded-md bg-[#D7242A] text-white font-medium hover:bg-[#D7242A]/90"
+                                className="h-14 px-8 rounded-lg bg-[#D7242A] text-white font-semibold hover:bg-[#D7242A]/90 shadow-lg hover:shadow-xl transition-all duration-200"
                             >
                                 Search
                             </button>
                         </form>
 
                         {/* Quick filters row */}
-                        <div className="px-4 sm:px-5 pb-4 flex flex-wrap gap-2 text-sm">
+                        <div className="px-6 sm:px-8 pb-6 flex flex-wrap gap-3 text-sm">
                             {["Near Metro", "Ready to Move", "Under Construction", "With Floor Plan", "Verified", "Owner"].map(
                                 (chip) => (
                                     <Link
                                         key={chip}
                                         href={`/search?tab=buy&q=${encodeURIComponent(chip)}`}
-                                        className="px-3 py-1.5 rounded-full border border-gray-200 hover:border-gray-300"
+                                        className="px-4 py-2 rounded-full border-2 border-gray-200 hover:border-[#D7242A] hover:text-[#D7242A] transition-all duration-200 bg-white hover:bg-red-50"
                                     >
                                         {chip}
                                     </Link>
@@ -241,15 +238,15 @@ export default function Home() {
                     </div>
 
                     {/* Popular cities */}
-                    <div className="mt-6">
-                        <div className="text-white/90 text-sm mb-2">Popular cities</div>
-                        <div className="flex flex-wrap gap-2">
+                    <div className="mt-8 text-center">
+                        <div className="text-gray-600 text-sm mb-4 font-medium">Popular cities</div>
+                        <div className="flex flex-wrap justify-center gap-3">
                             {["Mumbai", "Delhi NCR", "Bengaluru", "Pune", "Hyderabad", "Chennai", "Kolkata", "Ahmedabad"].map(
                                 (city) => (
                                     <Link
                                         key={city}
                                         href={`/search?tab=buy&q=${encodeURIComponent(city)}`}
-                                        className="px-3 py-1.5 rounded-full bg-white/90 hover:bg-white text-gray-900 text-sm"
+                                        className="px-5 py-2.5 rounded-full bg-gray-100 hover:bg-[#D7242A] text-gray-700 hover:text-white text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                                     >
                                         {city}
                                     </Link>
