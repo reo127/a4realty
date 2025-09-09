@@ -810,18 +810,18 @@ export default function PropertyDetails() {
                                 {/* Properties Slider */}
                                 <div className="overflow-hidden">
                                     <div 
-                                        className="flex transition-transform duration-300 ease-in-out gap-6"
+                                        className="flex transition-transform duration-300 ease-in-out gap-3 sm:gap-4 lg:gap-6"
                                         style={{ 
                                             transform: `translateX(-${currentSlide * (100 / 3)}%)`,
                                             width: `${Math.ceil(similarProperties.length / 3) * 100}%`
                                         }}
                                     >
                                         {similarProperties.map((similarProperty) => (
-                                            <div key={similarProperty._id} className="flex-shrink-0 w-[20%] min-w-0 px-2">
+                                            <div key={similarProperty._id} className="flex-shrink-0 w-[20%] min-w-0">
                                                 <Link href={`/property/${similarProperty._id}`} className="block group">
                                                     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
                                                         {/* Property Image */}
-                                                        <div className="relative h-56 overflow-hidden">
+                                                        <div className="relative h-32 sm:h-40 lg:h-56 overflow-hidden">
                                                             <img
                                                                 src={similarProperty.gallery[0]}
                                                                 alt={similarProperty.title}
@@ -837,24 +837,24 @@ export default function PropertyDetails() {
                                                         </div>
 
                                                         {/* Property Details */}
-                                                        <div className="p-5">
-                                                            <h3 className="font-semibold text-gray-900 text-lg mb-3 line-clamp-2 group-hover:text-[#D7242A] transition-colors">
+                                                        <div className="p-2 sm:p-3 lg:p-5">
+                                                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base lg:text-lg mb-1 sm:mb-2 lg:mb-3 line-clamp-2 group-hover:text-[#D7242A] transition-colors">
                                                                 {similarProperty.title}
                                                             </h3>
                                                             
-                                                            <div className="flex items-center text-gray-600 text-sm mb-3">
-                                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <div className="flex items-center text-gray-600 text-xs sm:text-sm mb-1 sm:mb-2 lg:mb-3">
+                                                                <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                                                 </svg>
                                                                 <span className="truncate">{similarProperty.location}</span>
                                                             </div>
 
-                                                            <div className="flex items-center justify-between text-sm">
-                                                                <span className="bg-gray-100 px-3 py-2 rounded-lg font-medium text-gray-700">
+                                                            <div className="flex items-center justify-between text-xs sm:text-sm">
+                                                                <span className="bg-gray-100 px-2 py-1 sm:px-3 sm:py-2 rounded-lg font-medium text-gray-700">
                                                                     {similarProperty.bhk}
                                                                 </span>
-                                                                <span className="font-semibold text-[#D7242A] text-base">
+                                                                <span className="font-semibold text-[#D7242A] text-xs sm:text-sm lg:text-base">
                                                                     Price on Request
                                                                 </span>
                                                             </div>
