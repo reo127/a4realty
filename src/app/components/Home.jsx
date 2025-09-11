@@ -239,19 +239,35 @@ export default function Home() {
 
                     {/* Popular cities */}
                     <div className="mt-8 text-center">
-                        <div className="text-gray-600 text-sm mb-4 font-medium">Popular cities</div>
-                        <div className="flex flex-wrap justify-center gap-3">
-                            {["Mumbai", "Delhi NCR", "Bengaluru", "Pune", "Hyderabad", "Chennai", "Kolkata", "Ahmedabad"].map(
-                                (city) => (
-                                    <Link
-                                        key={city}
-                                        href={`/search?tab=buy&q=${encodeURIComponent(city)}`}
-                                        className="px-5 py-2.5 rounded-full bg-gray-100 hover:bg-[#D7242A] text-gray-700 hover:text-white text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                                    >
-                                        {city}
-                                    </Link>
-                                )
-                            )}
+                        <div className="text-gray-600 text-sm mb-6 font-medium">Popular cities</div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 max-w-6xl mx-auto">
+                            {[
+                                { name: "Mumbai", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/40/ce/c3/mumbai-marine-drive-along.jpg?w=2000&h=-1&s=1" },
+                                { name: "Delhi NCR", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=300&h=300&fit=crop&crop=center" },
+                                { name: "Bengaluru", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=300&h=300&fit=crop&crop=center" },
+                                { name: "Pune", image: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=300&h=300&fit=crop&crop=center" },
+                                { name: "Hyderabad", image: "https://lp-cms-production.imgix.net/2019-06/GettyImages-171676147_full.jpg?fit=crop&ar=1%3A1&w=1200&auto=format&q=75" },
+                                { name: "Chennai", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=300&h=300&fit=crop&crop=center" },
+                                { name: "Kolkata", image: "https://media.assettype.com/outlooktraveller%2F2024-04%2F4b6c5c58-610a-4294-82f2-7ed6b16fc1c0%2Fkolkata7.jpg" },
+                                { name: "Ahmedabad", image: "https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=300&h=300&fit=crop&crop=center" }
+                            ].map((city) => (
+                                <Link
+                                    key={city.name}
+                                    href={`/search?tab=buy&q=${encodeURIComponent(city.name)}`}
+                                    className="group flex flex-col items-center space-y-2 hover:scale-105 transition-all duration-200"
+                                >
+                                    <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-200 ring-2 ring-gray-100 group-hover:ring-[#D7242A]/20">
+                                        <img
+                                            src={city.image}
+                                            alt={city.name}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                        />
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-[#D7242A] transition-colors duration-200">
+                                        {city.name}
+                                    </span>
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 </div>
