@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import Footer from "./Footer";
 import LeadCaptureModal from "./LeadCaptureModal";
+import Banner from "./Banner";
 import { formatPrice } from '../../utils/formatPrice';
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
     const [properties, setProperties] = useState([]);
     const [visibleProperties, setVisibleProperties] = useState(3);
     const [loading, setLoading] = useState(true);
+    const [banners, setBanners] = useState([]);
 
     useEffect(() => {
         // Check if user has already submitted lead information
@@ -29,8 +31,9 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        // Fetch properties in a separate useEffect
+        // Fetch properties and banners in a separate useEffect
         fetchProperties();
+        fetchBanners();
     }, []);
 
     const fetchProperties = async () => {
@@ -54,6 +57,50 @@ export default function Home() {
             setProperties([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchBanners = async () => {
+        try {
+            // Sample image banners - replace with actual API call later
+            const sampleBanners = [
+                {
+                    id: 1,
+                    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=400&fit=crop&crop=center",
+                    title: "Luxury Apartments Available",
+                    subtitle: "Starting from ₹85L - Limited Time Offer",
+                    alt: "Luxury apartment complex",
+                    link: "/search?q=luxury+apartments"
+                },
+                {
+                    id: 2,
+                    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=400&fit=crop&crop=center",
+                    title: "Premium Villas - Early Bird Offer",
+                    subtitle: "Save up to 15% on booking",
+                    alt: "Modern villa exterior",
+                    link: "/search?type=house"
+                },
+                {
+                    id: 3,
+                    image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200&h=400&fit=crop&crop=center",
+                    title: "Ready to Move Properties",
+                    subtitle: "Immediate possession available",
+                    alt: "Ready to move apartment",
+                    link: "/search?q=ready+to+move"
+                }
+            ];
+            
+            setBanners(sampleBanners);
+            
+            // TODO: Replace with actual API call
+            // const response = await fetch('/api/banners');
+            // if (response.ok) {
+            //     const data = await response.json();
+            //     setBanners(data.banners || []);
+            // }
+        } catch (error) {
+            console.error('Error fetching banners:', error);
+            setBanners([]);
         }
     };
 
@@ -94,7 +141,8 @@ export default function Home() {
 
     return (
         <main className="min-h-screen bg-white text-gray-900">
-
+            {/* Banner Section */}
+            <Banner banners={banners} />
         
             {/* Hero with segmented search */}
             <section className="relative bg-white">
