@@ -27,6 +27,11 @@ export default function LeadDetailPage() {
     minPrice: '',
     maxPrice: ''
   });
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState('');
+  const [updateNote, setUpdateNote] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState('');
 
   useEffect(() => {
     if (params.id) {
@@ -164,6 +169,85 @@ export default function LeadDetailPage() {
       maxPrice: ''
     });
     setSearchResults([]);
+  };
+
+  const handleUpdateLead = async (e) => {
+    e.preventDefault();
+    
+    if (!updateStatus && !updateNote.trim()) {
+      setUpdateError('Please provide either a status update or a note');
+      return;
+    }
+
+    setIsUpdating(true);
+    setUpdateError('');
+
+    try {
+      let action;
+      if (updateStatus && updateNote.trim()) {
+        action = 'updateStatusAndNote';
+      } else if (updateStatus) {
+        action = 'updateStatus';
+      } else {
+        action = 'addNote';
+      }
+
+      const requestBody = {
+        leadId: lead._id,
+        action,
+        status: updateStatus || undefined,
+        note: updateNote.trim() || undefined
+      };
+
+      const response = await fetch('/api/leads', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update lead');
+      }
+
+      // Update the local lead state
+      setLead(data.data);
+      
+      // Update the lead in allLeads array too
+      setAllLeads(prevLeads => 
+        prevLeads.map(l => l._id === lead._id ? data.data : l)
+      );
+
+      // Reset form and close modal
+      setUpdateStatus('');
+      setUpdateNote('');
+      setShowUpdateModal(false);
+    } catch (error) {
+      console.error('Error updating lead:', error);
+      setUpdateError(error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'new': 'bg-blue-100 text-blue-800',
+      'contacted': 'bg-yellow-100 text-yellow-800',
+      'qualified': 'bg-green-100 text-green-800',
+      'interested': 'bg-purple-100 text-purple-800',
+      'not_interested': 'bg-red-100 text-red-800',
+      'follow_up': 'bg-orange-100 text-orange-800',
+      'closed': 'bg-gray-100 text-gray-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const formatStatusText = (status) => {
+    return status ? status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'New';
   };
 
   const formatDate = (dateString) => {
@@ -735,21 +819,79 @@ export default function LeadDetailPage() {
                 </div>
 
                 {/* Lead Status */}
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                  <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div>
-                    <p className="text-sm text-gray-600">Status</p>
-                    <p className="font-medium text-green-600 capitalize">{lead.status || 'New Lead'}</p>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm text-gray-600">Status</p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status || 'new')}`}>
+                        {formatStatusText(lead.status || 'new')}
+                      </span>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      setUpdateStatus('');
+                      setUpdateNote('');
+                      setUpdateError('');
+                      setShowUpdateModal(true);
+                    }}
+                    className="text-[#D7242A] hover:text-[#D7242A]/80 p-1 rounded-md hover:bg-[#D7242A]/5 transition-colors"
+                    title="Update Status"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
                 </div>
+              </div>
+
+              {/* Notes Section */}
+              <div className="mt-6 pt-6 border-t">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  Lead Notes {lead.notes && lead.notes.length > 0 && (
+                    <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full ml-2">
+                      {lead.notes.length}
+                    </span>
+                  )}
+                </h4>
+                {lead.notes && lead.notes.length > 0 ? (
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {lead.notes.slice().reverse().map((note, index) => (
+                      <div key={index} className="border-l-2 border-indigo-200 pl-3 py-2 bg-indigo-50/50 rounded-r">
+                        <div className="text-sm text-gray-700 mb-1">{note.content}</div>
+                        <div className="text-xs text-gray-500">
+                          {formatDate(note.addedAt)} • {note.addedBy}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-sm">No notes yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Add a note to track communication with this lead</p>
+                  </div>
+                )}
               </div>
 
               {/* CRM Action Buttons */}
               <div className="mt-6 pt-6 border-t">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Quick Actions</h4>
                 <div className="grid grid-cols-1 gap-3">
+                  <button
+                    onClick={() => setShowUpdateModal(true)}
+                    className="flex items-center justify-center px-4 py-2 bg-[#D7242A] text-white rounded-lg hover:bg-[#D7242A]/90 transition-colors"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Update Status & Add Note
+                  </button>
                   <a 
                     href={`tel:${lead.phone}`}
                     className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -1097,6 +1239,130 @@ export default function LeadDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Update Status & Add Note Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative min-h-screen flex items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="bg-[#D7242A] text-white py-4 px-6 rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Update Lead
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowUpdateModal(false);
+                      setUpdateError('');
+                      setUpdateStatus('');
+                      setUpdateNote('');
+                    }}
+                    className="text-white hover:text-gray-200 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {updateError && (
+                <div className="mx-6 mt-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
+                  <div className="flex items-center">
+                    <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    {updateError}
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleUpdateLead} className="p-6 space-y-4 text-black">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Update Status
+                  </label>
+                  <select
+                    value={updateStatus}
+                    onChange={(e) => setUpdateStatus(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                  >
+                    <option value="">-- Select Status --</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="interested">Interested</option>
+                    <option value="not_interested">Not Interested</option>
+                    <option value="follow_up">Follow Up</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                  {updateStatus && (
+                    <div className="mt-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(updateStatus)}`}>
+                        {formatStatusText(updateStatus)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Add Note
+                  </label>
+                  <textarea
+                    value={updateNote}
+                    onChange={(e) => setUpdateNote(e.target.value)}
+                    rows="4"
+                    placeholder="Add a note about this lead (optional)"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUpdateModal(false);
+                      setUpdateError('');
+                      setUpdateStatus('');
+                      setUpdateNote('');
+                    }}
+                    disabled={isUpdating}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdating || (!updateStatus && !updateNote.trim())}
+                    className="px-4 py-2 text-sm font-medium text-white bg-[#D7242A] rounded-md hover:bg-[#D7242A]/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    {isUpdating ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Update Lead</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

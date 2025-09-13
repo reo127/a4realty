@@ -128,6 +128,23 @@ export default function CRMLeadsPage() {
     });
   };
 
+  const getStatusColor = (status) => {
+    const colors = {
+      'new': 'bg-blue-100 text-blue-800',
+      'contacted': 'bg-yellow-100 text-yellow-800',
+      'qualified': 'bg-green-100 text-green-800',
+      'interested': 'bg-purple-100 text-purple-800',
+      'not_interested': 'bg-red-100 text-red-800',
+      'follow_up': 'bg-orange-100 text-orange-800',
+      'closed': 'bg-gray-100 text-gray-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const formatStatusText = (status) => {
+    return status ? status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'New';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -255,6 +272,9 @@ export default function CRMLeadsPage() {
                       Interested Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date Added
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -306,6 +326,33 @@ export default function CRMLeadsPage() {
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           {getLocationDisplayName(lead.interestedLocation || 'Unknown')}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap relative">
+                        <div className="group relative">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${getStatusColor(lead.status || 'new')}`}>
+                            {formatStatusText(lead.status || 'new')}
+                          </span>
+                          {lead.notes && lead.notes.length > 0 && (
+                            <span className="ml-2 inline-flex items-center justify-center w-4 h-4 text-xs bg-indigo-100 text-indigo-600 rounded-full cursor-pointer">
+                              {lead.notes.length}
+                            </span>
+                          )}
+                          {lead.notes && lead.notes.length > 0 && (
+                            <div className="invisible group-hover:visible absolute z-50 left-0 top-8 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-64 overflow-y-auto">
+                              <div className="text-sm font-semibold text-gray-900 mb-2">Notes ({lead.notes.length})</div>
+                              <div className="space-y-3">
+                                {lead.notes.slice().reverse().map((note, index) => (
+                                  <div key={index} className="border-l-2 border-indigo-200 pl-3">
+                                    <div className="text-sm text-gray-700">{note.content}</div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {formatDate(note.addedAt)} • {note.addedBy}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(lead.createdAt)}

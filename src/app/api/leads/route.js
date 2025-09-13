@@ -40,7 +40,26 @@ const LeadSchema = new mongoose.Schema({
   source: {
     type: String,
     default: 'website'
-  }
+  },
+  status: {
+    type: String,
+    enum: ['new', 'contacted', 'qualified', 'interested', 'not_interested', 'follow_up', 'closed'],
+    default: 'new'
+  },
+  notes: [{
+    content: {
+      type: String,
+      required: true
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    },
+    addedBy: {
+      type: String,
+      default: 'admin'
+    }
+  }]
 });
 
 const Lead = mongoose.models.Lead || mongoose.model('Lead', LeadSchema);
@@ -98,6 +117,94 @@ export async function GET(request) {
     );
   } catch (error) {
     console.error('Get leads error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Server Error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - Update lead status or add notes
+export async function PUT(request) {
+  try {
+    await connectToDatabase();
+    
+    const data = await request.json();
+    const { leadId, action, status, note } = data;
+    
+    if (!leadId || !action) {
+      return NextResponse.json(
+        { success: false, message: 'Lead ID and action are required' },
+        { status: 400 }
+      );
+    }
+
+    const lead = await Lead.findById(leadId);
+    if (!lead) {
+      return NextResponse.json(
+        { success: false, message: 'Lead not found' },
+        { status: 404 }
+      );
+    }
+
+    // Initialize fields if they don't exist (for existing leads)
+    if (!lead.notes) {
+      lead.notes = [];
+    }
+    if (!lead.status) {
+      lead.status = 'new';
+    }
+
+    if (action === 'updateStatus') {
+      if (!status) {
+        return NextResponse.json(
+          { success: false, message: 'Status is required for status update' },
+          { status: 400 }
+        );
+      }
+      lead.status = status;
+    } else if (action === 'addNote') {
+      if (!note) {
+        return NextResponse.json(
+          { success: false, message: 'Note content is required' },
+          { status: 400 }
+        );
+      }
+      lead.notes.push({
+        content: note,
+        addedAt: new Date(),
+        addedBy: 'admin'
+      });
+    } else if (action === 'updateStatusAndNote') {
+      if (!status) {
+        return NextResponse.json(
+          { success: false, message: 'Status is required for status update' },
+          { status: 400 }
+        );
+      }
+      lead.status = status;
+      if (note) {
+        lead.notes.push({
+          content: note,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+    } else {
+      return NextResponse.json(
+        { success: false, message: 'Invalid action' },
+        { status: 400 }
+      );
+    }
+
+    const savedLead = await lead.save();
+    
+    return NextResponse.json(
+      { success: true, data: savedLead, message: 'Lead updated successfully' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Update lead error:', error);
     return NextResponse.json(
       { success: false, message: error.message || 'Server Error' },
       { status: 500 }
