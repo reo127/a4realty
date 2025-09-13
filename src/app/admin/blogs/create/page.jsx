@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-// Dynamically import TinyMCE to avoid SSR issues
-const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => ({ default: mod.Editor })), { ssr: false });
+// Dynamically import WYSIWYG Editor
+const WYSIWYGEditor = dynamic(() => import('@/components/WYSIWYGEditor'), { ssr: false });
 
 export default function CreateBlogPage() {
   const router = useRouter();
@@ -275,32 +275,15 @@ export default function CreateBlogPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Blog Content *
                 </label>
-                <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#D7242A] focus-within:border-[#D7242A]">
-                  <Editor
-                    apiKey="uq5hzjb6crfbpx3eclyfsk6xjwqtwhe7hbkz1xvee5uqderz"
+                <div className="focus-within:ring-2 focus-within:ring-[#D7242A] focus-within:border-[#D7242A] rounded-lg">
+                  <WYSIWYGEditor
                     value={formData.content}
-                    onEditorChange={(content) => setFormData(prev => ({ ...prev, content }))}
-                    init={{
-                      height: 400,
-                      menubar: false,
-                      plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
-                      ],
-                      toolbar: 'undo redo | blocks | ' +
-                        'bold italic forecolor | alignleft aligncenter ' +
-                        'alignright alignjustify | bullist numlist outdent indent | ' +
-                        'removeformat | help',
-                      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                      skin: 'oxide',
-                      content_css: 'default',
-                      branding: false,
-                    }}
+                    onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                    placeholder="Write your blog content here. Use the toolbar above for rich formatting..."
                   />
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
-                  Use the toolbar above for rich text formatting. Content will be saved as HTML.
+                  Use the toolbar above for rich text formatting. Content will be saved as HTML and displayed properly to your readers.
                 </div>
               </div>
 
