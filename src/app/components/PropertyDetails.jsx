@@ -8,6 +8,36 @@ import Modal from './Modal';
 import LeadCaptureModal from './LeadCaptureModal';
 import { formatPrice } from '../../utils/formatPrice';
 import { getEmbedUrl } from '@/utils/videoUtils';
+import {
+    Waves,
+    Dumbbell,
+    Car,
+    Trees,
+    Shield,
+    Building2,
+    MoveVertical,
+    Baby,
+    Zap,
+    Droplets,
+    Wifi,
+    Wrench,
+    Wind,
+    Gamepad2,
+    MapPin,
+    Home,
+    Users,
+    Flower2,
+    Camera,
+    Music,
+    Utensils,
+    ShoppingCart,
+    GraduationCap,
+    Stethoscope,
+    Mountain,
+    Sun,
+    Moon,
+    Star
+} from 'lucide-react';
 
 export default function PropertyDetails() {
     const { id } = useParams();
@@ -363,170 +393,144 @@ export default function PropertyDetails() {
 
     const getAmenityIcon = (amenity) => {
         const amenityLower = amenity.toLowerCase();
-        
+
         // Swimming Pool
         if (amenityLower.includes('swimming') || amenityLower.includes('pool')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 12c0 5.5 4.5 10 10 10s10-4.5 10-10c0-1.1-.2-2.1-.5-3.1"/>
-                    <path d="M7 12c0-2.8 2.2-5 5-5s5 2.2 5 5"/>
-                    <circle cx="12" cy="12" r="2"/>
-                </svg>
-            );
+            return <Waves size={24} />;
         }
-        
+
         // Gym/Fitness
-        if (amenityLower.includes('gym') || amenityLower.includes('fitness') || amenityLower.includes('exercise')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m7.5 4.27 9 5.15"/>
-                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-                    <path d="m3.3 7 8.7 5 8.7-5"/>
-                    <path d="M12 22V12"/>
-                </svg>
-            );
+        if (amenityLower.includes('gym') || amenityLower.includes('fitness') || amenityLower.includes('exercise') || amenityLower.includes('workout')) {
+            return <Dumbbell size={24} />;
         }
-        
+
         // Parking
         if (amenityLower.includes('parking') || amenityLower.includes('car')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 16H9m10 0h3m-3 0a3 3 0 01-3-3V7a1 1 0 00-1-1H4a1 1 0 00-1 1v6a3 3 0 01-3 3m16 0v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1m16 0H5"/>
-                    <circle cx="6.5" cy="16.5" r="2.5"/>
-                    <circle cx="17.5" cy="16.5" r="2.5"/>
-                </svg>
-            );
+            return <Car size={24} />;
         }
-        
+
         // Garden/Park/Landscaping
         if (amenityLower.includes('garden') || amenityLower.includes('park') || amenityLower.includes('landscape') || amenityLower.includes('green')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22v-7l-2-2"/>
-                    <path d="M17 8v.8A6 6 0 0 1 13.8 20v0H10v0A6.5 6.5 0 0 1 7 8h0a5 5 0 0 1 10 0Z"/>
-                    <path d="m10 22 1.5-1.5L13 22"/>
-                    <path d="M17 8h0a5 5 0 0 0-10 0h0A6.5 6.5 0 0 0 10 20v0h3.8v0A6 6 0 0 0 17 8.8V8Z"/>
-                </svg>
-            );
+            return <Trees size={24} />;
         }
-        
+
         // Security
         if (amenityLower.includes('security') || amenityLower.includes('cctv') || amenityLower.includes('guard')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    <path d="M9 12l2 2 4-4"/>
-                </svg>
-            );
+            return <Shield size={24} />;
         }
-        
+
         // Club House / Community Hall
         if (amenityLower.includes('club') || amenityLower.includes('community') || amenityLower.includes('hall')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 21h18"/>
-                    <path d="M5 21V7l8-4v18"/>
-                    <path d="M19 21V11l-6-4"/>
-                    <path d="M9 9v.01"/>
-                    <path d="M9 12v.01"/>
-                    <path d="M9 15v.01"/>
-                    <path d="M9 18v.01"/>
-                </svg>
-            );
+            return <Building2 size={24} />;
         }
-        
+
         // Elevator/Lift
         if (amenityLower.includes('elevator') || amenityLower.includes('lift')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 24h10V0H7z"/>
-                    <path d="M5 8h14"/>
-                    <path d="M5 16h14"/>
-                    <path d="M12 6V2"/>
-                    <path d="M12 22v-4"/>
-                    <path d="m15 18-3-3-3 3"/>
-                    <path d="m9 6 3-3 3 3"/>
-                </svg>
-            );
+            return <MoveVertical size={24} />;
         }
-        
+
         // Playground/Kids Area
         if (amenityLower.includes('playground') || amenityLower.includes('kids') || amenityLower.includes('children')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21.64 3.64 16.36 8.92"/>
-                    <path d="m14.5 7.5-7 7"/>
-                    <path d="M8.84 15.16 3.64 20.36"/>
-                    <circle cx="4" cy="20" r="2"/>
-                    <path d="M8.5 8.5 12 5l7 7-3.5 3.5L12 12"/>
-                    <path d="M12 5 8.5 8.5"/>
-                    <circle cx="20" cy="4" r="2"/>
-                </svg>
-            );
+            return <Baby size={24} />;
         }
-        
+
         // Power Backup/Generator
         if (amenityLower.includes('power') || amenityLower.includes('backup') || amenityLower.includes('generator') || amenityLower.includes('electricity')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-            );
+            return <Zap size={24} />;
         }
-        
+
         // Water Supply
         if (amenityLower.includes('water') || amenityLower.includes('supply')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/>
-                    <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2.04 4.6 4.14 5.93C19.3 9.7 20 10.76 20 12c0 1.94-1.57 3.51-3.5 3.51s-3.5-1.57-3.5-3.51c0-.34.04-.68.12-1"/>
-                </svg>
-            );
+            return <Droplets size={24} />;
         }
-        
+
         // Internet/WiFi
         if (amenityLower.includes('internet') || amenityLower.includes('wifi') || amenityLower.includes('broadband')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-                    <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-                    <line x1="12" x2="12.01" y1="20" y2="20"/>
-                </svg>
-            );
+            return <Wifi size={24} />;
         }
-        
+
         // Maintenance/Housekeeping
         if (amenityLower.includes('maintenance') || amenityLower.includes('housekeeping') || amenityLower.includes('cleaning')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                    <path d="M4 6h16l-1 10c0 1-1 2-2 2H7c-1 0-2-1-2-2L4 6Z"/>
-                    <path d="M10 11V6"/>
-                    <path d="M14 11V6"/>
-                </svg>
-            );
+            return <Wrench size={24} />;
         }
-        
+
         // Air Conditioning
         if (amenityLower.includes('ac') || amenityLower.includes('air') || amenityLower.includes('conditioning')) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M8 2h8l4 6.5v9.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8.5L8 2z"/>
-                    <path d="M16 8h2a2 2 0 0 1 2 2v4"/>
-                    <path d="M6 8H4a2 2 0 0 0-2 2v4"/>
-                    <path d="M12 8v8"/>
-                    <path d="M8 12h8"/>
-                </svg>
-            );
+            return <Wind size={24} />;
         }
-        
+
+        // Gaming/Entertainment
+        if (amenityLower.includes('game') || amenityLower.includes('gaming') || amenityLower.includes('entertainment')) {
+            return <Gamepad2 size={24} />;
+        }
+
+        // Location/Area specific
+        if (amenityLower.includes('location') || amenityLower.includes('area')) {
+            return <MapPin size={24} />;
+        }
+
+        // Hospital/Medical
+        if (amenityLower.includes('hospital') || amenityLower.includes('medical') || amenityLower.includes('clinic')) {
+            return <Stethoscope size={24} />;
+        }
+
+        // School/Education
+        if (amenityLower.includes('school') || amenityLower.includes('education') || amenityLower.includes('college')) {
+            return <GraduationCap size={24} />;
+        }
+
+        // Shopping/Mall
+        if (amenityLower.includes('shop') || amenityLower.includes('mall') || amenityLower.includes('market')) {
+            return <ShoppingCart size={24} />;
+        }
+
+        // Restaurant/Food
+        if (amenityLower.includes('restaurant') || amenityLower.includes('food') || amenityLower.includes('cafe')) {
+            return <Utensils size={24} />;
+        }
+
+        // Music/Audio
+        if (amenityLower.includes('music') || amenityLower.includes('audio') || amenityLower.includes('sound')) {
+            return <Music size={24} />;
+        }
+
+        // Photography/Camera
+        if (amenityLower.includes('photo') || amenityLower.includes('camera')) {
+            return <Camera size={24} />;
+        }
+
+        // Flowers/Landscaping
+        if (amenityLower.includes('flower') || amenityLower.includes('plant')) {
+            return <Flower2 size={24} />;
+        }
+
+        // Community/Social
+        if (amenityLower.includes('social') || amenityLower.includes('meet') || amenityLower.includes('gathering')) {
+            return <Users size={24} />;
+        }
+
+        // Views/Scenic
+        if (amenityLower.includes('view') || amenityLower.includes('scenic') || amenityLower.includes('mountain')) {
+            return <Mountain size={24} />;
+        }
+
+        // Balcony/Terrace/Outdoor
+        if (amenityLower.includes('balcony') || amenityLower.includes('terrace') || amenityLower.includes('outdoor')) {
+            return <Sun size={24} />;
+        }
+
+        // Night/Evening amenities
+        if (amenityLower.includes('night') || amenityLower.includes('evening')) {
+            return <Moon size={24} />;
+        }
+
+        // Premium/Luxury
+        if (amenityLower.includes('premium') || amenityLower.includes('luxury') || amenityLower.includes('vip')) {
+            return <Star size={24} />;
+        }
+
         // Default fallback icon
-        return (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        );
+        return <Home size={24} />;
     };
 
     const sections = [
