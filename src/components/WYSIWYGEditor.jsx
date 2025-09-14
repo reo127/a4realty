@@ -25,7 +25,7 @@ export default function WYSIWYGEditor({ value = '', onChange, placeholder = "Wri
   return (
     <div className="wysiwyg-editor border border-gray-300 rounded-lg overflow-hidden">
       <Editor
-        apiKey="no-api-key"
+        apiKey="uq5hzjb6crfbpx3eclyfsk6xjwqtwhe7hbkz1xvee5uqderz"
         value={value}
         onEditorChange={handleEditorChange}
         init={{
