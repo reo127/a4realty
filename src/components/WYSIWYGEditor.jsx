@@ -1,51 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { EditorState, convertToRaw, ContentState } from 'draft-js';
-import draftToHtml from 'draftjs-to-html';
-import htmlToDraft from 'html-to-draftjs';
-
-// Dynamically import the editor to avoid SSR issues
-const Editor = dynamic(
-  () => import('react-draft-wysiwyg').then(mod => ({ default: mod.Editor })),
-  { ssr: false }
-);
-
-// Import CSS
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import { Editor } from '@tinymce/tinymce-react';
 
 export default function WYSIWYGEditor({ value = '', onChange, placeholder = "Write your content here..." }) {
-  const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
   const [isReady, setIsReady] = useState(false);
 
-  // Initialize editor state from HTML value
   useEffect(() => {
-    if (value && value !== '') {
-      try {
-        const contentBlock = htmlToDraft(value);
-        if (contentBlock) {
-          const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-          const initialEditorState = EditorState.createWithContent(contentState);
-          setEditorState(initialEditorState);
-        }
-      } catch (error) {
-        console.error('Error parsing HTML:', error);
-        setEditorState(EditorState.createEmpty());
-      }
-    }
     setIsReady(true);
   }, []);
 
-  const onEditorStateChange = (newEditorState) => {
-    setEditorState(newEditorState);
-    
-    // Convert to HTML and call onChange
-    const contentState = newEditorState.getCurrentContent();
-    const rawContent = convertToRaw(contentState);
-    const htmlContent = draftToHtml(rawContent);
-    
-    onChange(htmlContent);
+  const handleEditorChange = (content) => {
+    onChange(content);
   };
 
   if (!isReady) {
@@ -59,107 +25,44 @@ export default function WYSIWYGEditor({ value = '', onChange, placeholder = "Wri
   return (
     <div className="wysiwyg-editor border border-gray-300 rounded-lg overflow-hidden">
       <Editor
-        editorState={editorState}
-        onEditorStateChange={onEditorStateChange}
-        placeholder={placeholder}
-        editorStyle={{
-          minHeight: '300px',
-          padding: '16px',
-          fontSize: '14px',
-          lineHeight: '1.6'
-        }}
-        toolbarStyle={{
-          borderBottom: '1px solid #e5e7eb',
-          marginBottom: '0'
-        }}
-        toolbar={{
-          options: [
-            'inline',
-            'blockType', 
-            'fontSize',
-            'list',
-            'textAlign',
-            'colorPicker',
-            'link',
-            'image',
-            'history'
+        apiKey="no-api-key"
+        value={value}
+        onEditorChange={handleEditorChange}
+        init={{
+          height: 300,
+          menubar: false,
+          placeholder,
+          plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
           ],
-          inline: {
-            options: ['bold', 'italic', 'underline', 'strikethrough']
-          },
-          blockType: {
-            options: ['Normal', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Blockquote'],
-          },
-          fontSize: {
-            options: [8, 9, 10, 11, 12, 14, 16, 18, 24, 30, 36, 48, 60, 72, 96],
-          },
-          list: {
-            options: ['unordered', 'ordered', 'indent', 'outdent']
-          },
-          textAlign: {
-            options: ['left', 'center', 'right', 'justify']
-          },
-          colorPicker: {
-            colors: [
-              'rgb(97,189,109)', 'rgb(26,188,156)', 'rgb(84,172,210)', 'rgb(44,130,201)',
-              'rgb(147,101,184)', 'rgb(71,85,119)', 'rgb(204,204,204)', 'rgb(65,168,95)',
-              'rgb(0,168,133)', 'rgb(61,142,185)', 'rgb(41,105,176)', 'rgb(85,57,130)',
-              'rgb(40,50,78)', 'rgb(0,0,0)', 'rgb(247,218,100)', 'rgb(251,160,38)',
-              'rgb(235,107,86)', 'rgb(226,80,65)', 'rgb(163,143,132)', 'rgb(239,239,239)',
-              'rgb(255,255,255)', 'rgb(250,197,28)', 'rgb(243,121,52)', 'rgb(209,72,65)',
-              'rgb(184,49,47)', 'rgb(124,112,107)', 'rgb(209,213,216)'
-            ],
-          },
-          link: {
-            options: ['link', 'unlink']
-          },
-          image: {
-            urlEnabled: true,
-            uploadEnabled: false,
-            previewImage: true,
-            alt: { present: true, mandatory: false }
+          toolbar: 'undo redo | blocks | ' +
+            'bold italic forecolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help',
+          content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; }',
+          skin: 'oxide',
+          content_css: 'default',
+          branding: false,
+          promotion: false,
+          setup: (editor) => {
+            editor.on('init', () => {
+              console.log('TinyMCE editor initialized');
+            });
           }
         }}
       />
-      
+
       <style jsx global>{`
-        .wysiwyg-editor .rdw-editor-toolbar {
-          background-color: #f9fafb;
-          border: none;
+        .wysiwyg-editor .tox .tox-editor-header {
           border-bottom: 1px solid #e5e7eb;
-          margin-bottom: 0;
-          padding: 8px;
         }
-        .wysiwyg-editor .rdw-editor-main {
-          min-height: 300px;
+        .wysiwyg-editor .tox .tox-toolbar {
+          background-color: #f9fafb;
         }
-        .wysiwyg-editor .rdw-dropdown-wrapper {
-          background: white;
-        }
-        .wysiwyg-editor .rdw-dropdown-selectedtext {
-          color: #374151;
-        }
-        .wysiwyg-editor .rdw-option-wrapper {
-          border: 1px solid #d1d5db;
-          margin: 0 2px;
-          border-radius: 4px;
-        }
-        .wysiwyg-editor .rdw-option-wrapper:hover {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-        }
-        .wysiwyg-editor .rdw-option-active {
-          box-shadow: 0 0 0 2px #D7242A;
-          background-color: #fee2e2;
-        }
-        .wysiwyg-editor .public-DraftEditor-content {
-          min-height: 250px;
-          padding: 16px;
-        }
-        .wysiwyg-editor .public-DraftEditorPlaceholder-root {
-          color: #9ca3af;
-          position: absolute;
-          pointer-events: none;
-          z-index: 1;
+        .wysiwyg-editor .tox .tox-edit-area {
+          border: none;
         }
       `}</style>
     </div>
