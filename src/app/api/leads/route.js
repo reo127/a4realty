@@ -1,68 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import mongoose from 'mongoose';
-
-// Lead Schema
-const LeadSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Please provide a name'],
-    trim: true
-  },
-  phone: {
-    type: String,
-    required: [true, 'Please provide a phone number'],
-    trim: true,
-    validate: {
-      validator: function(v) {
-        return v && v.length === 10 && /^\d+$/.test(v);
-      },
-      message: 'Please provide a 10-digit phone number'
-    }
-  },
-  email: {
-    type: String,
-    trim: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email',
-    ],
-  },
-  interestedLocation: {
-    type: String,
-    required: [true, 'Please provide interested location'],
-    trim: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  source: {
-    type: String,
-    default: 'website'
-  },
-  status: {
-    type: String,
-    enum: ['new', 'contacted', 'qualified', 'interested', 'not_interested', 'follow_up', 'closed'],
-    default: 'new'
-  },
-  notes: [{
-    content: {
-      type: String,
-      required: true
-    },
-    addedAt: {
-      type: Date,
-      default: Date.now
-    },
-    addedBy: {
-      type: String,
-      default: 'admin'
-    }
-  }]
-});
-
-const Lead = mongoose.models.Lead || mongoose.model('Lead', LeadSchema);
+import Lead from '@/models/Lead';
 
 // POST - Create a new lead
 export async function POST(request) {
@@ -124,14 +62,14 @@ export async function GET(request) {
   }
 }
 
-// PUT - Update lead status or add notes
+// PUT - Update lead status, substatus, or add notes
 export async function PUT(request) {
   try {
     await connectToDatabase();
-    
+
     const data = await request.json();
-    const { leadId, action, status, note } = data;
-    
+    const { leadId, action, status, substatus, note, siteVisitDate } = data;
+
     if (!leadId || !action) {
       return NextResponse.json(
         { success: false, message: 'Lead ID and action are required' },
@@ -155,14 +93,52 @@ export async function PUT(request) {
       lead.status = 'new';
     }
 
-    if (action === 'updateStatus') {
+    // Store previous status and substatus for notes
+    const previousStatus = lead.status;
+    const previousSubstatus = lead.substatus;
+
+    if (action === 'updateStatus' || action === 'updateStatusAndSubstatus') {
       if (!status) {
         return NextResponse.json(
           { success: false, message: 'Status is required for status update' },
           { status: 400 }
         );
       }
+
+      // Validate substatus if provided
+      if (substatus) {
+        const validSubstatuses = Lead.getValidSubstatuses(status);
+        if (!validSubstatuses.includes(substatus)) {
+          return NextResponse.json(
+            { success: false, message: `Invalid substatus "${substatus}" for status "${status}"` },
+            { status: 400 }
+          );
+        }
+      }
+
       lead.status = status;
+      lead.substatus = substatus || null;
+
+      // Handle site visit date for specific substatus
+      if (substatus === 'site_visit_scheduled_with_date' && siteVisitDate) {
+        lead.siteVisitDate = new Date(siteVisitDate);
+      } else if (substatus !== 'site_visit_scheduled_with_date') {
+        lead.siteVisitDate = null;
+      }
+
+      // Add automatic note for status change
+      const statusChangeNote = `Status changed from "${lead.getStatusDisplay.call({status: previousStatus})}" to "${lead.getStatusDisplay()}"`;
+      const substatusNote = substatus ? ` with substatus "${lead.getSubstatusDisplay()}"` : '';
+
+      lead.notes.push({
+        content: statusChangeNote + substatusNote,
+        addedAt: new Date(),
+        addedBy: 'admin',
+        relatedToStatusChange: true,
+        previousStatus,
+        previousSubstatus
+      });
+
     } else if (action === 'addNote') {
       if (!note) {
         return NextResponse.json(
@@ -175,14 +151,50 @@ export async function PUT(request) {
         addedAt: new Date(),
         addedBy: 'admin'
       });
-    } else if (action === 'updateStatusAndNote') {
+
+    } else if (action === 'updateStatusAndNote' || action === 'updateStatusSubstatusAndNote') {
       if (!status) {
         return NextResponse.json(
           { success: false, message: 'Status is required for status update' },
           { status: 400 }
         );
       }
+
+      // Validate substatus if provided
+      if (substatus) {
+        const validSubstatuses = Lead.getValidSubstatuses(status);
+        if (!validSubstatuses.includes(substatus)) {
+          return NextResponse.json(
+            { success: false, message: `Invalid substatus "${substatus}" for status "${status}"` },
+            { status: 400 }
+          );
+        }
+      }
+
       lead.status = status;
+      lead.substatus = substatus || null;
+
+      // Handle site visit date
+      if (substatus === 'site_visit_scheduled_with_date' && siteVisitDate) {
+        lead.siteVisitDate = new Date(siteVisitDate);
+      } else if (substatus !== 'site_visit_scheduled_with_date') {
+        lead.siteVisitDate = null;
+      }
+
+      // Add automatic note for status change
+      const statusChangeNote = `Status changed from "${previousStatus}" to "${status}"`;
+      const substatusNote = substatus ? ` with substatus "${substatus}"` : '';
+
+      lead.notes.push({
+        content: statusChangeNote + substatusNote,
+        addedAt: new Date(),
+        addedBy: 'admin',
+        relatedToStatusChange: true,
+        previousStatus,
+        previousSubstatus
+      });
+
+      // Add user note if provided
       if (note) {
         lead.notes.push({
           content: note,
@@ -190,6 +202,7 @@ export async function PUT(request) {
           addedBy: 'admin'
         });
       }
+
     } else {
       return NextResponse.json(
         { success: false, message: 'Invalid action' },
@@ -198,13 +211,37 @@ export async function PUT(request) {
     }
 
     const savedLead = await lead.save();
-    
+
     return NextResponse.json(
       { success: true, data: savedLead, message: 'Lead updated successfully' },
       { status: 200 }
     );
   } catch (error) {
     console.error('Update lead error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Server Error' },
+      { status: 500 }
+    );
+  }
+}
+
+// GET - Get status and substatus options
+export async function OPTIONS(request) {
+  try {
+    const statusSubstatusMap = Lead.getStatusSubstatusMap();
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          statusOptions: Object.keys(statusSubstatusMap),
+          statusSubstatusMap
+        }
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Get status options error:', error);
     return NextResponse.json(
       { success: false, message: error.message || 'Server Error' },
       { status: 500 }

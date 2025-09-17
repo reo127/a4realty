@@ -1,69 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
-import mongoose from 'mongoose';
+import Lead from '@/models/Lead';
 import { v4 as uuidv4 } from 'uuid';
-
-// Lead Schema (reusing from main route)
-const LeadSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Please provide a name'],
-    trim: true
-  },
-  phone: {
-    type: String,
-    required: [true, 'Please provide a phone number'],
-    trim: true,
-    validate: {
-      validator: function(v) {
-        return v && v.length === 10 && /^\d+$/.test(v);
-      },
-      message: 'Please provide a 10-digit phone number'
-    }
-  },
-  email: {
-    type: String,
-    trim: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email',
-    ],
-  },
-  interestedLocation: {
-    type: String,
-    required: [true, 'Please provide interested location'],
-    trim: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  source: {
-    type: String,
-    default: 'bulk_upload'
-  },
-  status: {
-    type: String,
-    enum: ['new', 'contacted', 'qualified', 'interested', 'not_interested', 'follow_up', 'closed'],
-    default: 'new'
-  },
-  notes: [{
-    content: {
-      type: String,
-      required: true
-    },
-    addedAt: {
-      type: Date,
-      default: Date.now
-    },
-    addedBy: {
-      type: String,
-      default: 'admin'
-    }
-  }]
-});
-
-const Lead = mongoose.models.Lead || mongoose.model('Lead', LeadSchema);
 
 // Helper function to parse CSV data
 function parseCSVData(csvText) {

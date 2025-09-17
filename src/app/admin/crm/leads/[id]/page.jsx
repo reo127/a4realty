@@ -29,9 +29,13 @@ export default function LeadDetailPage() {
   });
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateStatus, setUpdateStatus] = useState('');
+  const [updateSubstatus, setUpdateSubstatus] = useState('');
   const [updateNote, setUpdateNote] = useState('');
+  const [siteVisitDate, setSiteVisitDate] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState('');
+  const [statusOptions, setStatusOptions] = useState({});
+  const [availableSubstatuses, setAvailableSubstatuses] = useState([]);
 
   useEffect(() => {
     if (params.id) {
@@ -45,15 +49,32 @@ export default function LeadDetailPage() {
     }
   }, [lead]);
 
+  useEffect(() => {
+    fetchStatusOptions();
+  }, []);
+
+  useEffect(() => {
+    if (updateStatus && statusOptions[updateStatus]) {
+      setAvailableSubstatuses(statusOptions[updateStatus] || []);
+      // Clear substatus if it's not valid for the new status
+      if (updateSubstatus && !statusOptions[updateStatus].includes(updateSubstatus)) {
+        setUpdateSubstatus('');
+      }
+    } else {
+      setAvailableSubstatuses([]);
+      setUpdateSubstatus('');
+    }
+  }, [updateStatus, statusOptions]);
+
   const fetchLeadDetails = async () => {
     try {
       const response = await fetch('/api/leads');
       const data = await response.json();
-      
+
       if (data.success) {
         // Store all leads for sidebar navigation
         setAllLeads(data.data);
-        
+
         const foundLead = data.data.find(l => l._id === params.id);
         if (foundLead) {
           setLead(foundLead);
@@ -66,6 +87,19 @@ export default function LeadDetailPage() {
     } catch (error) {
       console.error('Error fetching lead:', error);
       setError(error.message);
+    }
+  };
+
+  const fetchStatusOptions = async () => {
+    try {
+      const response = await fetch('/api/leads', { method: 'OPTIONS' });
+      const data = await response.json();
+
+      if (data.success) {
+        setStatusOptions(data.data.statusSubstatusMap || {});
+      }
+    } catch (error) {
+      console.error('Error fetching status options:', error);
     }
   };
 
@@ -173,7 +207,7 @@ export default function LeadDetailPage() {
 
   const handleUpdateLead = async (e) => {
     e.preventDefault();
-    
+
     if (!updateStatus && !updateNote.trim()) {
       setUpdateError('Please provide either a status update or a note');
       return;
@@ -185,9 +219,17 @@ export default function LeadDetailPage() {
     try {
       let action;
       if (updateStatus && updateNote.trim()) {
-        action = 'updateStatusAndNote';
+        if (updateSubstatus) {
+          action = 'updateStatusSubstatusAndNote';
+        } else {
+          action = 'updateStatusAndNote';
+        }
       } else if (updateStatus) {
-        action = 'updateStatus';
+        if (updateSubstatus) {
+          action = 'updateStatusAndSubstatus';
+        } else {
+          action = 'updateStatus';
+        }
       } else {
         action = 'addNote';
       }
@@ -196,7 +238,9 @@ export default function LeadDetailPage() {
         leadId: lead._id,
         action,
         status: updateStatus || undefined,
-        note: updateNote.trim() || undefined
+        substatus: updateSubstatus || undefined,
+        note: updateNote.trim() || undefined,
+        siteVisitDate: (updateSubstatus === 'site_visit_scheduled_with_date' && siteVisitDate) ? siteVisitDate : undefined
       };
 
       const response = await fetch('/api/leads', {
@@ -215,15 +259,17 @@ export default function LeadDetailPage() {
 
       // Update the local lead state
       setLead(data.data);
-      
+
       // Update the lead in allLeads array too
-      setAllLeads(prevLeads => 
+      setAllLeads(prevLeads =>
         prevLeads.map(l => l._id === lead._id ? data.data : l)
       );
 
       // Reset form and close modal
       setUpdateStatus('');
+      setUpdateSubstatus('');
       setUpdateNote('');
+      setSiteVisitDate('');
       setShowUpdateModal(false);
     } catch (error) {
       console.error('Error updating lead:', error);
@@ -236,18 +282,86 @@ export default function LeadDetailPage() {
   const getStatusColor = (status) => {
     const colors = {
       'new': 'bg-blue-100 text-blue-800',
-      'contacted': 'bg-yellow-100 text-yellow-800',
-      'qualified': 'bg-green-100 text-green-800',
-      'interested': 'bg-purple-100 text-purple-800',
+      'not_connected': 'bg-yellow-100 text-yellow-800',
+      'interested': 'bg-green-100 text-green-800',
       'not_interested': 'bg-red-100 text-red-800',
-      'follow_up': 'bg-orange-100 text-orange-800',
-      'closed': 'bg-gray-100 text-gray-800'
+      'call_disconnected': 'bg-orange-100 text-orange-800',
+      'location_mismatch': 'bg-purple-100 text-purple-800',
+      'budget_mismatch': 'bg-pink-100 text-pink-800',
+      'possession_mismatch': 'bg-indigo-100 text-indigo-800',
+      'do_not_disturb': 'bg-gray-100 text-gray-800',
+      'site_visit_done': 'bg-emerald-100 text-emerald-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
   const formatStatusText = (status) => {
-    return status ? status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'New';
+    const statusDisplayNames = {
+      'new': 'New',
+      'not_connected': 'Not Connected',
+      'interested': 'Interested',
+      'not_interested': 'Not Interested',
+      'call_disconnected': 'Call Disconnected',
+      'location_mismatch': 'Location Mismatch',
+      'budget_mismatch': 'Budget Mismatch',
+      'possession_mismatch': 'Possession Mismatch',
+      'do_not_disturb': 'Do Not Disturb',
+      'site_visit_done': 'Site Visit Done'
+    };
+    return statusDisplayNames[status] || 'New';
+  };
+
+  const formatSubstatusText = (substatus) => {
+    if (!substatus) return null;
+
+    const substatusDisplayNames = {
+      // Not Connected
+      'ringing': 'Ringing',
+      'switched_off': 'Switched Off',
+      'call_busy': 'Call Busy',
+      'call_disconnected': 'Call Disconnected',
+      'invalid_number': 'Invalid Number',
+
+      // Interested
+      'site_visit_scheduled_with_date': 'Site Visit Scheduled (With Date)',
+      'site_visit_scheduled_no_date': 'Site Visit Scheduled (No Date)',
+      'follow_up': 'Follow Up',
+
+      // Not Interested
+      'not_actively_searching': 'Not Actively Searching',
+      'require_more_than_6_months': 'Require More Than 6 Months',
+      'not_the_right_party': 'Not The Right Party',
+
+      // Call Disconnected
+      'hang_up_while_talking': 'Hang Up While Talking',
+      'call_drop': 'Call Drop',
+
+      // Location Mismatch
+      'looking_for_other_location': 'Looking For Other Location',
+      'looking_for_other_city': 'Looking For Other City',
+
+      // Budget Mismatch
+      'budget_is_low': 'Budget Is Low',
+      'budget_is_high': 'Budget Is High',
+
+      // Possession Mismatch
+      'looking_for_ready_to_move': 'Looking For Ready To Move',
+      'looking_for_under_construction': 'Looking For Under Construction',
+
+      // Do Not Disturb
+      'already_in_touch_with_builder': 'Already In Touch With Builder',
+      'deal_closed': 'Deal Closed',
+      'plan_drop': 'Plan Drop',
+      'plan_postponed': 'Plan Postponed',
+      'already_purchased': 'Already Purchased',
+      'dnc': 'DNC',
+
+      // Site Visit Done
+      'interested_in_revisit': 'Interested In Re-visit',
+      'plan_cancelled': 'Plan Cancelled'
+    };
+
+    return substatusDisplayNames[substatus] || substatus;
   };
 
   const formatDate = (dateString) => {
@@ -826,15 +940,29 @@ export default function LeadDetailPage() {
                     </svg>
                     <div>
                       <p className="text-sm text-gray-600">Status</p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status || 'new')}`}>
-                        {formatStatusText(lead.status || 'new')}
-                      </span>
+                      <div className="flex flex-col gap-1 ">
+                        <span className={` inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(lead.status || 'new')}`}>
+                          {formatStatusText(lead.status || 'new')}
+                        </span>
+                        {lead.substatus && (
+                          <span className="text-xs text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                            {formatSubstatusText(lead.substatus)}
+                          </span>
+                        )}
+                        {lead.siteVisitDate && (
+                          <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                            Site Visit: {new Date(lead.siteVisitDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <button
                     onClick={() => {
                       setUpdateStatus('');
+                      setUpdateSubstatus('');
                       setUpdateNote('');
+                      setSiteVisitDate('');
                       setUpdateError('');
                       setShowUpdateModal(true);
                     }}
@@ -1291,13 +1419,11 @@ export default function LeadDetailPage() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
                   >
                     <option value="">-- Select Status --</option>
-                    <option value="new">New</option>
-                    <option value="contacted">Contacted</option>
-                    <option value="qualified">Qualified</option>
-                    <option value="interested">Interested</option>
-                    <option value="not_interested">Not Interested</option>
-                    <option value="follow_up">Follow Up</option>
-                    <option value="closed">Closed</option>
+                    {Object.keys(statusOptions).map((status) => (
+                      <option key={status} value={status}>
+                        {formatStatusText(status)}
+                      </option>
+                    ))}
                   </select>
                   {updateStatus && (
                     <div className="mt-2">
@@ -1307,6 +1433,50 @@ export default function LeadDetailPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Substatus Field */}
+                {updateStatus && availableSubstatuses.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Select Substatus <span className="text-gray-500">(Optional)</span>
+                    </label>
+                    <select
+                      value={updateSubstatus}
+                      onChange={(e) => setUpdateSubstatus(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                    >
+                      <option value="">-- Select Substatus --</option>
+                      {availableSubstatuses.map((substatus) => (
+                        <option key={substatus} value={substatus}>
+                          {formatSubstatusText(substatus)}
+                        </option>
+                      ))}
+                    </select>
+                    {updateSubstatus && (
+                      <div className="mt-2">
+                        <span className="text-xs text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                          {formatSubstatusText(updateSubstatus)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Site Visit Date Field */}
+                {updateSubstatus === 'site_visit_scheduled_with_date' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Site Visit Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={siteVisitDate}
+                      onChange={(e) => setSiteVisitDate(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                      required={updateSubstatus === 'site_visit_scheduled_with_date'}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1328,7 +1498,9 @@ export default function LeadDetailPage() {
                       setShowUpdateModal(false);
                       setUpdateError('');
                       setUpdateStatus('');
+                      setUpdateSubstatus('');
                       setUpdateNote('');
+                      setSiteVisitDate('');
                     }}
                     disabled={isUpdating}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
@@ -1337,7 +1509,7 @@ export default function LeadDetailPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={isUpdating || (!updateStatus && !updateNote.trim())}
+                    disabled={isUpdating || (!updateStatus && !updateNote.trim()) || (updateSubstatus === 'site_visit_scheduled_with_date' && !siteVisitDate)}
                     className="px-4 py-2 text-sm font-medium text-white bg-[#D7242A] rounded-md hover:bg-[#D7242A]/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {isUpdating ? (

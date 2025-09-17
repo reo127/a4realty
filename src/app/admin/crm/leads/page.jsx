@@ -133,18 +133,86 @@ export default function CRMLeadsPage() {
   const getStatusColor = (status) => {
     const colors = {
       'new': 'bg-blue-100 text-blue-800',
-      'contacted': 'bg-yellow-100 text-yellow-800',
-      'qualified': 'bg-green-100 text-green-800',
-      'interested': 'bg-purple-100 text-purple-800',
+      'not_connected': 'bg-yellow-100 text-yellow-800',
+      'interested': 'bg-green-100 text-green-800',
       'not_interested': 'bg-red-100 text-red-800',
-      'follow_up': 'bg-orange-100 text-orange-800',
-      'closed': 'bg-gray-100 text-gray-800'
+      'call_disconnected': 'bg-orange-100 text-orange-800',
+      'location_mismatch': 'bg-purple-100 text-purple-800',
+      'budget_mismatch': 'bg-pink-100 text-pink-800',
+      'possession_mismatch': 'bg-indigo-100 text-indigo-800',
+      'do_not_disturb': 'bg-gray-100 text-gray-800',
+      'site_visit_done': 'bg-emerald-100 text-emerald-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
   const formatStatusText = (status) => {
-    return status ? status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'New';
+    const statusDisplayNames = {
+      'new': 'New',
+      'not_connected': 'Not Connected',
+      'interested': 'Interested',
+      'not_interested': 'Not Interested',
+      'call_disconnected': 'Call Disconnected',
+      'location_mismatch': 'Location Mismatch',
+      'budget_mismatch': 'Budget Mismatch',
+      'possession_mismatch': 'Possession Mismatch',
+      'do_not_disturb': 'Do Not Disturb',
+      'site_visit_done': 'Site Visit Done'
+    };
+    return statusDisplayNames[status] || 'New';
+  };
+
+  const formatSubstatusText = (substatus) => {
+    if (!substatus) return null;
+
+    const substatusDisplayNames = {
+      // Not Connected
+      'ringing': 'Ringing',
+      'switched_off': 'Switched Off',
+      'call_busy': 'Call Busy',
+      'call_disconnected': 'Call Disconnected',
+      'invalid_number': 'Invalid Number',
+
+      // Interested
+      'site_visit_scheduled_with_date': 'Site Visit Scheduled (With Date)',
+      'site_visit_scheduled_no_date': 'Site Visit Scheduled (No Date)',
+      'follow_up': 'Follow Up',
+
+      // Not Interested
+      'not_actively_searching': 'Not Actively Searching',
+      'require_more_than_6_months': 'Require More Than 6 Months',
+      'not_the_right_party': 'Not The Right Party',
+
+      // Call Disconnected
+      'hang_up_while_talking': 'Hang Up While Talking',
+      'call_drop': 'Call Drop',
+
+      // Location Mismatch
+      'looking_for_other_location': 'Looking For Other Location',
+      'looking_for_other_city': 'Looking For Other City',
+
+      // Budget Mismatch
+      'budget_is_low': 'Budget Is Low',
+      'budget_is_high': 'Budget Is High',
+
+      // Possession Mismatch
+      'looking_for_ready_to_move': 'Looking For Ready To Move',
+      'looking_for_under_construction': 'Looking For Under Construction',
+
+      // Do Not Disturb
+      'already_in_touch_with_builder': 'Already In Touch With Builder',
+      'deal_closed': 'Deal Closed',
+      'plan_drop': 'Plan Drop',
+      'plan_postponed': 'Plan Postponed',
+      'already_purchased': 'Already Purchased',
+      'dnc': 'DNC',
+
+      // Site Visit Done
+      'interested_in_revisit': 'Interested In Re-visit',
+      'plan_cancelled': 'Plan Cancelled'
+    };
+
+    return substatusDisplayNames[substatus] || substatus;
   };
 
   const handleBulkUploadComplete = (results) => {
@@ -347,9 +415,21 @@ export default function CRMLeadsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap relative">
                         <div className="group relative">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${getStatusColor(lead.status || 'new')}`}>
-                            {formatStatusText(lead.status || 'new')}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className={`justify-center inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${getStatusColor(lead.status || 'new')}`}>
+                              {formatStatusText(lead.status || 'new')}
+                            </span>
+                            {lead.substatus && (
+                              <span className="text-xs text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full max-w-fit">
+                                {formatSubstatusText(lead.substatus)}
+                              </span>
+                            )}
+                            {lead.siteVisitDate && (
+                              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full max-w-fit">
+                                Visit: {new Date(lead.siteVisitDate).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
                           {lead.notes && lead.notes.length > 0 && (
                             <span className="ml-2 inline-flex items-center justify-center w-4 h-4 text-xs bg-indigo-100 text-indigo-600 rounded-full cursor-pointer">
                               {lead.notes.length}
