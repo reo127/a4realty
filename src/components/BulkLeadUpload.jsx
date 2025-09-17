@@ -95,17 +95,36 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
     }
   };
 
-  const downloadTemplate = () => {
-    const csvContent = 'name,phoneNumber,location,email\nJohn Doe,9876543210,Koramangala,john@example.com\nJane Smith,9876543211,BTM Layout,jane@example.com';
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'leads_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+  const downloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/leads/template');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'lead_upload_template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        throw new Error('Failed to download template');
+      }
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      // Fallback to client-side generation
+      const csvContent = 'name,phonenumber,location,email\nJohn Doe,9876543210,Koramangala,john@example.com\nJane Smith,9876543211,BTM Layout,jane@example.com\nSample Lead,9876543212,Electronic City,sample@example.com';
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lead_upload_template.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }
   };
 
   const resetUpload = () => {
@@ -145,14 +164,16 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h3 className="text-lg font-semibold text-blue-900 mb-3">CSV Format Requirements</h3>
                   <div className="text-sm text-blue-800 space-y-2">
-                    <p><strong>Required columns:</strong> name, phoneNumber, location</p>
+                    <p><strong>Required columns:</strong> name, phonenumber, location</p>
                     <p><strong>Optional columns:</strong> email</p>
                     <p><strong>Phone format:</strong> 10-digit numbers only (e.g., 9876543210)</p>
+                    <p className="text-blue-900 font-medium">💡 All new leads will be created with status "New"</p>
                     <p><strong>Sample format:</strong></p>
                     <div className="bg-white p-2 rounded border mt-2 font-mono text-xs">
-                      name,phoneNumber,location,email<br/>
+                      name,phonenumber,location,email<br/>
                       John Doe,9876543210,Koramangala,john@example.com<br/>
-                      Jane Smith,9876543211,BTM Layout,jane@example.com
+                      Jane Smith,9876543211,BTM Layout,jane@example.com<br/>
+                      Sample Lead,9876543212,Electronic City,sample@example.com
                     </div>
                   </div>
                   <button
