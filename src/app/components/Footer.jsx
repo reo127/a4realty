@@ -43,7 +43,19 @@ const Footer = () => {
                             </ul>
                         </div>
                     </div>
-                    <div className="mt-8 text-gray-500">© {new Date().getFullYear()} A4Realty Pvt Ltd</div>
+                    <div className="mt-8 pt-8 border-t border-gray-100">
+                        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4">
+                            <div className="text-gray-500">© {new Date().getFullYear()} A4Realty Pvt Ltd</div>
+                            <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
+                                <div>
+                                    <span className="font-medium">GST:</span> 29AAYPE6461F1Z8
+                                </div>
+                                <div>
+                                    <span className="font-medium">RERA:</span> PRM/KA/RERA/1251/309/AG/250915/006180
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </>
