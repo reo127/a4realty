@@ -23,15 +23,27 @@ const PropertySchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'Please provide property type'],
-    enum: ['flat', 'house', 'land', 'office'],
+    enum: [
+      'apartments', 'independent-house', 'villas', 'gated-communities',
+      'plots', 'builders-floors', 'penthouse', 'cottage',
+      'duplex-house', 'commercial-space', 'industrial-land',
+      // Keep old values for backward compatibility
+      'flat', 'house', 'land', 'office'
+    ],
     userVisible: true
   },
   bhk: {
     type: String,
     required: function() {
-      return this.type === 'flat' || this.type === 'house';
+      return this.type === 'flat' || this.type === 'house' ||
+             this.type === 'apartments' || this.type === 'independent-house' ||
+             this.type === 'villas' || this.type === 'gated-communities' ||
+             this.type === 'builders-floors' || this.type === 'penthouse' ||
+             this.type === 'cottage' || this.type === 'duplex-house';
     },
-    enum: ['1bhk', '2bhk', '3bhk', '4bhk', '5bhk', 'na'],
+    enum: ['>1bhk', '2bhk', '2.5bhk', '3bhk', '3.5bhk', '4bhk', '4.5bhk', '5bhk', 'na',
+           // Keep old values for backward compatibility
+           '1bhk'],
     userVisible: true
   },
   mode: {
@@ -226,6 +238,27 @@ const PropertySchema = new mongoose.Schema({
   locationAdvantages: {
     type: [String],
     default: [],
+    userVisible: true
+  },
+  // New fields added per requirements
+  projectSize: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  bank: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  possession: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  dimension: {
+    type: String,
+    trim: true,
     userVisible: true
   },
   createdAt: {

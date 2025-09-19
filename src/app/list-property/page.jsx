@@ -16,7 +16,8 @@ export default function ListProperty() {
   const [formData, setFormData] = useState({
     title: '',
     location: '',
-    price: '',
+    priceFrom: '',
+    priceTo: '',
     type: '',
     bhk: '',
     mode: '',
@@ -44,9 +45,13 @@ export default function ListProperty() {
     developer: '',
     possessionDate: '',
     projectArea: '',
+    projectSize: '',
     launchDate: '',
     totalUnits: '',
     totalTowers: '',
+    bank: '',
+    possession: '',
+    dimension: '',
     highlights: [],
     locationAdvantages: []
   });
@@ -330,26 +335,38 @@ export default function ListProperty() {
     setSubmitting(true);
     setError('');
     setSuccess('');
-    
+
     try {
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error('You must be logged in');
       }
-      
+
       // Validate form data
       if (formData.gallery.length === 0) {
         throw new Error('Please upload at least one image');
       }
-      
+
+      // Combine price range into single price field for backend compatibility
+      const submitData = { ...formData };
+      if (formData.priceFrom || formData.priceTo) {
+        if (formData.priceFrom && formData.priceTo) {
+          submitData.price = `${formData.priceFrom} - ${formData.priceTo}`;
+        } else if (formData.priceFrom) {
+          submitData.price = `Start from ${formData.priceFrom}`;
+        } else {
+          submitData.price = `Up to ${formData.priceTo}`;
+        }
+      }
+
       const response = await fetch('/api/properties', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
       
       const data = await response.json();
@@ -364,7 +381,8 @@ export default function ListProperty() {
       setFormData({
         title: '',
         location: '',
-        price: '',
+        priceFrom: '',
+        priceTo: '',
         type: '',
         bhk: '',
         mode: '',
@@ -386,7 +404,19 @@ export default function ListProperty() {
         floorNumber: '',
         totalFloors: '',
         furnishingStatus: '',
-        availabilityDate: ''
+        availabilityDate: '',
+        developer: '',
+        possessionDate: '',
+        projectArea: '',
+        projectSize: '',
+        launchDate: '',
+        totalUnits: '',
+        totalTowers: '',
+        bank: '',
+        possession: '',
+        dimension: '',
+        highlights: [],
+        locationAdvantages: []
       });
       setPreviewImages([]);
       setImageUrl('');
@@ -478,19 +508,30 @@ export default function ListProperty() {
               </div>
               
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                  Price*
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price Range*
                 </label>
-                <input
-                  type="text"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  placeholder="e.g. 50 lakhs, 1cr - 1.5cr, 5000000"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    id="priceFrom"
+                    name="priceFrom"
+                    value={formData.priceFrom || ''}
+                    onChange={handleChange}
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="Start from (e.g. 50 lakhs)"
+                  />
+                  <input
+                    type="text"
+                    id="priceTo"
+                    name="priceTo"
+                    value={formData.priceTo || ''}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="Up to (e.g. 1 cr)"
+                  />
+                </div>
               </div>
               
               <div>
@@ -506,14 +547,21 @@ export default function ListProperty() {
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 >
                   <option value="">Select Type</option>
-                  <option value="flat">Flat</option>
-                  <option value="house">House</option>
-                  <option value="land">Land</option>
-                  <option value="office">Office Space</option>
+                  <option value="apartments">Apartments</option>
+                  <option value="independent-house">Independent House</option>
+                  <option value="villas">Villas</option>
+                  <option value="gated-communities">Gated Communities</option>
+                  <option value="plots">Plots</option>
+                  <option value="builders-floors">Builders Floors</option>
+                  <option value="penthouse">Penthouse</option>
+                  <option value="cottage">Cottage</option>
+                  <option value="duplex-house">Duplex House</option>
+                  <option value="commercial-space">Commercial Space</option>
+                  <option value="industrial-land">Industrial Land</option>
                 </select>
               </div>
               
-              {(formData.type === 'flat' || formData.type === 'house') && (
+              {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house') && (
                 <div>
                   <label htmlFor="bhk" className="block text-sm font-medium text-gray-700 mb-1">
                     BHK*
@@ -527,11 +575,14 @@ export default function ListProperty() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
                     <option value="">Select BHK</option>
-                    <option value="1bhk">1 BHK</option>
+                    <option value=">1bhk">&gt;1 BHK</option>
                     <option value="2bhk">2 BHK</option>
+                    <option value="2.5bhk">2.5 BHK</option>
                     <option value="3bhk">3 BHK</option>
+                    <option value="3.5bhk">3.5 BHK</option>
                     <option value="4bhk">4 BHK</option>
-                    <option value="5bhk">5+ BHK</option>
+                    <option value="4.5bhk">4.5 BHK</option>
+                    <option value="5bhk">5 BHK</option>
                   </select>
                 </div>
               )}
@@ -706,8 +757,8 @@ export default function ListProperty() {
                 </div>
               </div>
 
-              {/* Floor Information - Only for flats */}
-              {(formData.type === 'flat' || formData.type === 'office') && (
+              {/* Floor Information - Only for apartments, commercial spaces etc */}
+              {(formData.type === 'apartments' || formData.type === 'commercial-space' || formData.type === 'builders-floors' || formData.type === 'penthouse') && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label htmlFor="floorNumber" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1244,6 +1295,73 @@ export default function ListProperty() {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                     placeholder="e.g. 2, 5"
+                  />
+                </div>
+
+                {/* Project Size */}
+                <div>
+                  <label htmlFor="projectSize" className="block text-sm font-medium text-gray-700 mb-1">
+                    Project Size
+                  </label>
+                  <input
+                    type="text"
+                    id="projectSize"
+                    name="projectSize"
+                    value={formData.projectSize}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 5 Acres, 10,000 sq ft"
+                  />
+                </div>
+
+                {/* Bank */}
+                <div>
+                  <label htmlFor="bank" className="block text-sm font-medium text-gray-700 mb-1">
+                    Bank Approved
+                  </label>
+                  <input
+                    type="text"
+                    id="bank"
+                    name="bank"
+                    value={formData.bank}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. SBI, HDFC, ICICI"
+                  />
+                </div>
+              </div>
+
+              {/* Additional Fields Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Possession */}
+                <div>
+                  <label htmlFor="possession" className="block text-sm font-medium text-gray-700 mb-1">
+                    Possession Status
+                  </label>
+                  <input
+                    type="text"
+                    id="possession"
+                    name="possession"
+                    value={formData.possession}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Ready to Move, Under Construction"
+                  />
+                </div>
+
+                {/* Dimension */}
+                <div>
+                  <label htmlFor="dimension" className="block text-sm font-medium text-gray-700 mb-1">
+                    Dimension
+                  </label>
+                  <input
+                    type="text"
+                    id="dimension"
+                    name="dimension"
+                    value={formData.dimension}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 30x40, 1200 sq ft"
                   />
                 </div>
               </div>

@@ -7,6 +7,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
   const [formData, setFormData] = useState({
     title: '',
     location: '',
+    priceFrom: '',
+    priceTo: '',
     price: '',
     type: '',
     bhk: '',
@@ -35,9 +37,13 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     developer: '',
     possessionDate: '',
     projectArea: '',
+    projectSize: '',
     launchDate: '',
     totalUnits: '',
     totalTowers: '',
+    bank: '',
+    possession: '',
+    dimension: '',
     highlights: [],
     locationAdvantages: []
   });
@@ -57,9 +63,26 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
 
   useEffect(() => {
     if (property) {
+      // Parse price range if it exists
+      let priceFrom = '';
+      let priceTo = '';
+      const price = property.price || '';
+
+      if (price.includes(' - ')) {
+        const [from, to] = price.split(' - ');
+        priceFrom = from;
+        priceTo = to;
+      } else if (price.startsWith('Start from ')) {
+        priceFrom = price.replace('Start from ', '');
+      } else if (price.startsWith('Up to ')) {
+        priceTo = price.replace('Up to ', '');
+      }
+
       setFormData({
         title: property.title || '',
         location: property.location || '',
+        priceFrom: priceFrom,
+        priceTo: priceTo,
         price: property.price || '',
         type: property.type || '',
         bhk: property.bhk || '',
@@ -88,9 +111,13 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         developer: property.developer || '',
         possessionDate: property.possessionDate || '',
         projectArea: property.projectArea || '',
+        projectSize: property.projectSize || '',
         launchDate: property.launchDate || '',
         totalUnits: property.totalUnits || '',
         totalTowers: property.totalTowers || '',
+        bank: property.bank || '',
+        possession: property.possession || '',
+        dimension: property.dimension || '',
         highlights: property.highlights || [],
         locationAdvantages: property.locationAdvantages || []
       });
@@ -344,14 +371,14 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     e.preventDefault();
     setSubmitting(true);
     setError('');
-    
+
     try {
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error('You must be logged in');
       }
-      
+
       if (formData.gallery.length === 0) {
         throw new Error('Please provide at least one image');
       }
@@ -367,6 +394,17 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
           cleanFormData[key] = value;
         }
       });
+
+      // Combine price range into single price field for backend compatibility
+      if (formData.priceFrom || formData.priceTo) {
+        if (formData.priceFrom && formData.priceTo) {
+          cleanFormData.price = `${formData.priceFrom} - ${formData.priceTo}`;
+        } else if (formData.priceFrom) {
+          cleanFormData.price = `Start from ${formData.priceFrom}`;
+        } else if (formData.priceTo) {
+          cleanFormData.price = `Up to ${formData.priceTo}`;
+        }
+      }
       
       const response = await fetch(`/api/properties/${property._id}`, {
         method: 'PUT',
@@ -461,19 +499,30 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
               </div>
               
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                  Price*
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price Range*
                 </label>
-                <input
-                  type="text"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  placeholder="e.g. 50 lakhs, 1cr - 1.5cr, 5000000"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    id="priceFrom"
+                    name="priceFrom"
+                    value={formData.priceFrom || ''}
+                    onChange={handleChange}
+                    required
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="Start from (e.g. 50 lakhs)"
+                  />
+                  <input
+                    type="text"
+                    id="priceTo"
+                    name="priceTo"
+                    value={formData.priceTo || ''}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                    placeholder="Up to (e.g. 1 cr)"
+                  />
+                </div>
               </div>
               
               <div>
@@ -489,14 +538,21 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                 >
                   <option value="">Select Type</option>
-                  <option value="flat">Flat</option>
-                  <option value="house">House</option>
-                  <option value="land">Land</option>
-                  <option value="office">Office Space</option>
+                  <option value="apartments">Apartments</option>
+                  <option value="independent-house">Independent House</option>
+                  <option value="villas">Villas</option>
+                  <option value="gated-communities">Gated Communities</option>
+                  <option value="plots">Plots</option>
+                  <option value="builders-floors">Builders Floors</option>
+                  <option value="penthouse">Penthouse</option>
+                  <option value="cottage">Cottage</option>
+                  <option value="duplex-house">Duplex House</option>
+                  <option value="commercial-space">Commercial Space</option>
+                  <option value="industrial-land">Industrial Land</option>
                 </select>
               </div>
               
-              {(formData.type === 'flat' || formData.type === 'house') && (
+              {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house') && (
                 <div>
                   <label htmlFor="bhk" className="block text-sm font-medium text-gray-700 mb-1">
                     BHK*
@@ -510,11 +566,14 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
                     <option value="">Select BHK</option>
-                    <option value="1bhk">1 BHK</option>
+                    <option value=">1bhk">&gt;1 BHK</option>
                     <option value="2bhk">2 BHK</option>
+                    <option value="2.5bhk">2.5 BHK</option>
                     <option value="3bhk">3 BHK</option>
+                    <option value="3.5bhk">3.5 BHK</option>
                     <option value="4bhk">4 BHK</option>
-                    <option value="5bhk">5+ BHK</option>
+                    <option value="4.5bhk">4.5 BHK</option>
+                    <option value="5bhk">5 BHK</option>
                   </select>
                 </div>
               )}
@@ -859,8 +918,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </div>
               </div>
 
-              {/* Floor Information - Only for flats */}
-              {(formData.type === 'flat' || formData.type === 'office') && (
+              {/* Floor Information - Only for apartments, commercial spaces etc */}
+              {(formData.type === 'apartments' || formData.type === 'commercial-space' || formData.type === 'builders-floors' || formData.type === 'penthouse') && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label htmlFor="edit-floorNumber" className="block text-sm font-medium text-gray-700 mb-1">
@@ -1224,6 +1283,73 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
                     placeholder="e.g. 2, 5"
+                  />
+                </div>
+
+                {/* Project Size */}
+                <div>
+                  <label htmlFor="edit-projectSize" className="block text-sm font-medium text-gray-700 mb-1">
+                    Project Size
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-projectSize"
+                    name="projectSize"
+                    value={formData.projectSize}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 5 Acres, 10,000 sq ft"
+                  />
+                </div>
+
+                {/* Bank */}
+                <div>
+                  <label htmlFor="edit-bank" className="block text-sm font-medium text-gray-700 mb-1">
+                    Bank Approved
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-bank"
+                    name="bank"
+                    value={formData.bank}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. SBI, HDFC, ICICI"
+                  />
+                </div>
+              </div>
+
+              {/* Additional Fields Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Possession */}
+                <div>
+                  <label htmlFor="edit-possession" className="block text-sm font-medium text-gray-700 mb-1">
+                    Possession Status
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-possession"
+                    name="possession"
+                    value={formData.possession}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. Ready to Move, Under Construction"
+                  />
+                </div>
+
+                {/* Dimension */}
+                <div>
+                  <label htmlFor="edit-dimension" className="block text-sm font-medium text-gray-700 mb-1">
+                    Dimension
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-dimension"
+                    name="dimension"
+                    value={formData.dimension}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    placeholder="e.g. 30x40, 1200 sq ft"
                   />
                 </div>
               </div>
