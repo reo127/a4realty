@@ -12,7 +12,7 @@ export default function Home() {
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
     const [properties, setProperties] = useState([]);
-    const [visibleProperties, setVisibleProperties] = useState(3);
+    const [visibleProperties, setVisibleProperties] = useState(30);
     const [loading, setLoading] = useState(true);
     const [banners, setBanners] = useState([]);
 
@@ -136,7 +136,7 @@ export default function Home() {
     };
 
     const handleSeeMore = () => {
-        setVisibleProperties(prev => prev + 3);
+        setVisibleProperties(prev => prev + 30);
     };
 
     return (
