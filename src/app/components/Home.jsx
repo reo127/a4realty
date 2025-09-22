@@ -372,16 +372,18 @@ export default function Home() {
                                         <div className="p-4">
                                             <h3 className="text-base font-semibold">{property.title}</h3>
                                             <p className="text-sm text-gray-600">{property.location}</p>
-                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">💰 Price on Request</p>
-                                            <div className="mt-3 flex items-center gap-2">
-                                                <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-green-50 text-green-700">
+                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">
+                                                💰 {property.price ? formatPrice(property.price) : 'Price not available'}
+                                            </p>
+                                            <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-green-50 text-green-700">
                                                     Verified
                                                 </span>
-                                                <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-[#D7242A]/10 text-[#D7242A]">
+                                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-[#D7242A]/10 text-[#D7242A]">
                                                     {property.type}
                                                 </span>
                                                 {property.bhk && property.bhk !== 'na' && (
-                                                    <span className="inline-flex items-center px-2 py-1 text-[11px] rounded bg-blue-50 text-blue-700">
+                                                    <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-blue-50 text-blue-700">
                                                         {property.bhk}
                                                     </span>
                                                 )}
