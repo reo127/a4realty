@@ -44,6 +44,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     bank: '',
     possession: '',
     dimension: '',
+    carpetArea: '',
+    superbuiltArea: '',
     highlights: [],
     locationAdvantages: []
   });
@@ -118,6 +120,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         bank: property.bank || '',
         possession: property.possession || '',
         dimension: property.dimension || '',
+        carpetArea: property.carpetArea || '',
+        superbuiltArea: property.superbuiltArea || '',
         highlights: property.highlights || [],
         locationAdvantages: property.locationAdvantages || []
       });
@@ -141,7 +145,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name === 'contactNumber') {
       const numericValue = value.replace(/\D/g, '').slice(0, 10);
       setFormData({ ...formData, [name]: numericValue });
@@ -152,33 +156,33 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length === 0) return;
-    
+
     setUploadingImages(true);
     setError('');
-    
+
     const newPreviewImages = files.map(file => ({
       file,
       preview: URL.createObjectURL(file),
       isUrl: false
     }));
-    
+
     setPreviewImages([...previewImages, ...newPreviewImages]);
-    
+
     try {
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error('You must be logged in');
       }
-      
+
       const uploadedUrls = [];
-      
+
       for (const item of newPreviewImages) {
         const uploadFormData = new FormData();
         uploadFormData.append('file', item.file);
-        
+
         const response = await fetch('/api/upload', {
           method: 'POST',
           headers: {
@@ -186,21 +190,21 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
           },
           body: uploadFormData
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(data.message || 'Failed to upload image');
         }
-        
+
         uploadedUrls.push(data.url);
       }
-      
+
       setFormData(prev => ({
         ...prev,
         gallery: [...prev.gallery, ...uploadedUrls]
       }));
-      
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -212,7 +216,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     const newPreviewImages = [...previewImages];
     newPreviewImages.splice(index, 1);
     setPreviewImages(newPreviewImages);
-    
+
     const newGallery = [...formData.gallery];
     newGallery.splice(index, 1);
     setFormData({ ...formData, gallery: newGallery });
@@ -228,14 +232,14 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
       preview: imageUrl,
       isUrl: true
     };
-    
+
     setPreviewImages([...previewImages, newPreviewImage]);
-    
+
     setFormData(prev => ({
       ...prev,
       gallery: [...prev.gallery, imageUrl]
     }));
-    
+
     setImageUrl('');
     setError('');
   };
@@ -257,14 +261,14 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
       thumbnail: getThumbnailUrl(videoUrl),
       platform: getPlatformName(videoUrl)
     };
-    
+
     setPreviewVideos([...previewVideos, newPreviewVideo]);
-    
+
     setFormData(prev => ({
       ...prev,
       videos: [...prev.videos, videoUrl]
     }));
-    
+
     setVideoUrl('');
     setError('');
   };
@@ -273,7 +277,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
     const newPreviewVideos = [...previewVideos];
     newPreviewVideos.splice(index, 1);
     setPreviewVideos(newPreviewVideos);
-    
+
     const newVideos = [...formData.videos];
     newVideos.splice(index, 1);
     setFormData({ ...formData, videos: newVideos });
@@ -405,7 +409,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
           cleanFormData.price = `Up to ${formData.priceTo}`;
         }
       }
-      
+
       const response = await fetch(`/api/properties/${property._id}`, {
         method: 'PUT',
         headers: {
@@ -414,18 +418,18 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         },
         body: JSON.stringify(cleanFormData)
       });
-      
+
       console.log('Submitted form data:', cleanFormData);
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to update property');
       }
-      
+
       onUpdate(data.data);
       onClose();
-      
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -481,7 +485,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   placeholder="e.g. Modern 2BHK Apartment"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
                   Location*
@@ -497,7 +501,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   placeholder="e.g. Koramangala, Bangalore"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Price Range*
@@ -524,7 +528,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
                   Property Type*
@@ -551,7 +555,9 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   <option value="industrial-land">Industrial Land</option>
                 </select>
               </div>
-              
+
+
+
               {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house') && (
                 <div>
                   <label htmlFor="bhk" className="block text-sm font-medium text-gray-700 mb-1">
@@ -577,7 +583,67 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   </select>
                 </div>
               )}
-              
+
+              <div>
+                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                  Property Type*
+                </label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                >
+                  <option value="">Select Type</option>
+                  <option value="apartments">Apartments</option>
+                  <option value="independent-house">Independent House</option>
+                  <option value="villas">Villas</option>
+                  <option value="gated-communities">Gated Communities</option>
+                  <option value="plots">Plots</option>
+                  <option value="villa-plot">Villa Plot</option>
+                  <option value="builders-floors">Builders Floors</option>
+                  <option value="penthouse">Penthouse</option>
+                  <option value="cottage">Cottage</option>
+                  <option value="duplex-house">Duplex House</option>
+                  <option value="commercial-space">Commercial Space</option>
+                  <option value="industrial-land">Industrial Land</option>
+                </select>
+              </div>
+
+              {/* Add the dimension fields right after the property type dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dimensions
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <input
+                      type="text"
+                      id="carpetArea"
+                      name="carpetArea"
+                      value={formData.carpetArea || ''}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                      placeholder="Carpet Area (sq ft)"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      id="superbuiltArea"
+                      name="superbuiltArea"
+                      value={formData.superbuiltArea || ''}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                      placeholder="Superbuilt Area (sq ft)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+
               <div>
                 <label htmlFor="mode" className="block text-sm font-medium text-gray-700 mb-1">
                   Mode*
@@ -597,7 +663,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </select>
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description*
@@ -613,7 +679,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 placeholder="Describe your property in detail..."
               />
             </div>
-            
+
             <div>
               <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">
                 Contact Number*
@@ -629,7 +695,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 placeholder="e.g. 9876543210"
               />
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-md">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Property Images*
@@ -642,12 +708,12 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   <div className="flex text-sm text-gray-600 justify-center">
                     <label htmlFor="file-upload-edit" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
                       <span>Upload new images</span>
-                      <input 
-                        id="file-upload-edit" 
-                        name="file-upload-edit" 
-                        type="file" 
-                        className="sr-only" 
-                        multiple 
+                      <input
+                        id="file-upload-edit"
+                        name="file-upload-edit"
+                        type="file"
+                        className="sr-only"
+                        multiple
                         accept="image/*"
                         onChange={handleImageUpload}
                         disabled={uploadingImages}
@@ -657,7 +723,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                 </div>
               </div>
-              
+
               {uploadingImages && (
                 <div className="mt-2 text-sm text-gray-500 flex items-center justify-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -667,7 +733,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   Uploading images...
                 </div>
               )}
-              
+
               <div className="mt-4 p-4 bg-blue-50 rounded-md border border-blue-200">
                 <h3 className="text-sm font-medium text-blue-900 mb-2">Or Add Image URL</h3>
                 <div className="flex gap-2">
@@ -692,22 +758,21 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {previewImages.map((image, index) => (
                     <div key={index} className="relative group rounded-md overflow-hidden shadow-sm">
-                      <img 
-                        src={image.preview} 
-                        alt={`Preview ${index}`} 
+                      <img
+                        src={image.preview}
+                        alt={`Preview ${index}`}
                         className="h-24 w-full object-cover"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextElementSibling.style.display = 'flex';
                         }}
                       />
-                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-xs text-gray-500" style={{display: 'none'}}>
+                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-xs text-gray-500" style={{ display: 'none' }}>
                         Image Not Found
                       </div>
                       <div className="absolute top-1 left-1">
-                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                          image.isUrl ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                        }`}>
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${image.isUrl ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                          }`}>
                           {image.isUrl ? 'URL' : 'File'}
                         </span>
                       </div>
@@ -732,7 +797,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 Property Videos <span className="text-gray-400">(Optional)</span>
               </label>
               <p className="text-xs text-gray-500 mb-3">Add YouTube, Vimeo, Dailymotion, or direct video URLs to showcase your property</p>
-              
+
               <div className="flex gap-2">
                 <input
                   type="url"
@@ -757,8 +822,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                     <div key={index} className="flex items-center p-3 bg-white rounded-lg border">
                       <div className="flex-shrink-0 mr-3">
                         {video.thumbnail ? (
-                          <img 
-                            src={video.thumbnail} 
+                          <img
+                            src={video.thumbnail}
                             alt={`Video ${index + 1} thumbnail`}
                             className="h-12 w-20 object-cover rounded"
                             onError={(e) => {
@@ -767,9 +832,9 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                             }}
                           />
                         ) : null}
-                        <div 
+                        <div
                           className="h-12 w-20 bg-purple-100 rounded flex items-center justify-center"
-                          style={{display: video.thumbnail ? 'none' : 'flex'}}
+                          style={{ display: video.thumbnail ? 'none' : 'flex' }}
                         >
                           <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -808,7 +873,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </svg>
                 Property Specifications
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Year Built */}
                 <div>
@@ -1188,7 +1253,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </svg>
                 Project Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Developer */}
                 <div>
@@ -1461,7 +1526,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 )}
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-4 pt-4 border-t">
               <button
                 type="button"

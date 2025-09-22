@@ -41,6 +41,8 @@ export default function ListProperty() {
     totalFloors: '',
     furnishingStatus: '',
     availabilityDate: '',
+    carpetArea: '',
+    superbuiltArea: '',
     // PropertyDetails specific fields
     developer: '',
     possessionDate: '',
@@ -405,6 +407,8 @@ export default function ListProperty() {
         totalFloors: '',
         furnishingStatus: '',
         availabilityDate: '',
+        carpetArea: '',
+        superbuiltArea: '',
         developer: '',
         possessionDate: '',
         projectArea: '',
@@ -552,6 +556,7 @@ export default function ListProperty() {
                   <option value="villas">Villas</option>
                   <option value="gated-communities">Gated Communities</option>
                   <option value="plots">Plots</option>
+                  <option value="villa-plot">Villa Plot</option>
                   <option value="builders-floors">Builders Floors</option>
                   <option value="penthouse">Penthouse</option>
                   <option value="cottage">Cottage</option>
@@ -559,6 +564,36 @@ export default function ListProperty() {
                   <option value="commercial-space">Commercial Space</option>
                   <option value="industrial-land">Industrial Land</option>
                 </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dimensions
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <input
+                      type="text"
+                      id="carpetArea"
+                      name="carpetArea"
+                      value={formData.carpetArea}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                      placeholder="Carpet Area (sq ft)"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      id="superbuiltArea"
+                      name="superbuiltArea"
+                      value={formData.superbuiltArea}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                      placeholder="Superbuilt Area (sq ft)"
+                    />
+                  </div>
+                </div>
               </div>
               
               {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house') && (

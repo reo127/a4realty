@@ -261,6 +261,16 @@ const PropertySchema = new mongoose.Schema({
     trim: true,
     userVisible: true
   },
+  carpetArea: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
+  superbuiltArea: {
+    type: String,
+    trim: true,
+    userVisible: true
+  },
   createdAt: {
     type: Date,
     default: Date.now,
