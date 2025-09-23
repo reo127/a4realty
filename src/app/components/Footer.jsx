@@ -57,7 +57,7 @@ const Footer = () => {
                             
                             <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
                                 <div>
-                                    <span className="font-medium">RERA:</span> PRM/KA/RERA/1251/309/AG/250915/006180
+                                    <span className="font-medium">Address:</span> No.184, A4 Realty, Hennur Cross, 3rd Cross, Narayanappa Road, Kalyan Nagar Post, Kalyan Nagar Post, Bengaluru, 560043,
                                 </div>
                                 <div>
                                     <span className="font-medium">Phone :</span> +91 8250230198
