@@ -54,6 +54,15 @@ const Footer = () => {
                                     <span className="font-medium">RERA:</span> PRM/KA/RERA/1251/309/AG/250915/006180
                                 </div>
                             </div>
+                            
+                            <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
+                                <div>
+                                    <span className="font-medium">RERA:</span> PRM/KA/RERA/1251/309/AG/250915/006180
+                                </div>
+                                <div>
+                                    <span className="font-medium">Phone :</span> +91 8250230198
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
