@@ -7,6 +7,7 @@ import Footer from "./Footer";
 import LeadCaptureModal from "./LeadCaptureModal";
 import Banner from "./Banner";
 import { formatPrice } from '../../utils/formatPrice';
+import PropertyCard from '@/components/PropertyCard';
 
 export default function Home() {
     const [showLeadModal, setShowLeadModal] = useState(false);
@@ -352,44 +353,11 @@ export default function Home() {
                         <>
                             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                                 {properties.slice(0, visibleProperties).map((property) => (
-                                    <Link
+                                    <PropertyCard
                                         key={property._id}
-                                        href={`/property/${property._id}`}
-                                        className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
-                                    >
-                                        <div className="relative h-48">
-                                            <img
-                                                src={property.gallery?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
-                                                alt={property.title}
-                                                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
-                                            />
-                                            <div className="absolute left-3 top-3">
-                                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-white/90">
-                                                    For {property.mode}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="p-4">
-                                            <h3 className="text-base font-semibold">{property.title}</h3>
-                                            <p className="text-sm text-gray-600">{property.location}</p>
-                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">
-                                                💰 {property.price ? formatPrice(property.price) : 'Price not available'}
-                                            </p>
-                                            <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-green-50 text-green-700">
-                                                    Verified
-                                                </span>
-                                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-[#D7242A]/10 text-[#D7242A]">
-                                                    {property.type}
-                                                </span>
-                                                {property.bhk && property.bhk !== 'na' && (
-                                                    <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-blue-50 text-blue-700">
-                                                        {property.bhk}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Link>
+                                        property={property}
+                                        viewMode="grid"
+                                    />
                                 ))}
                             </div>
                             

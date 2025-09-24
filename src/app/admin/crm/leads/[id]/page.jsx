@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import PropertyCard from '@/components/PropertyCard';
 import { getLocationDisplayName, getNearbyLocations, normalizeLocationName } from '@/utils/locations';
 import { formatPrice } from '@/utils/formatPrice';
 
@@ -374,207 +375,33 @@ export default function LeadDetailPage() {
     });
   };
 
-  const PropertyCard = ({ property, isNearby = false }) => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Property Image */}
-      {property.gallery && property.gallery.length > 0 && (
-        <div className="relative h-48 bg-gray-200">
-          <img 
-            src={property.gallery[0]} 
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
-          {isNearby && (
-            <span className="absolute top-2 left-2 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-              Nearby
-            </span>
-          )}
-          <div className="absolute top-2 right-2 flex flex-col gap-1">
-            <div className="bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-              📸 {property.gallery.length} photos
-            </div>
-            {property.videos && property.videos.length > 0 && (
-              <div className="bg-purple-600 bg-opacity-90 text-white px-2 py-1 rounded text-xs">
-                🎬 {property.videos.length} videos
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-      
-      <div className="p-4">
-        {/* Property Title & Price */}
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-            {property.title}
-          </h3>
-          <div className="text-right ml-4">
-            <div className="text-lg font-bold text-[#D7242A]">
-              {formatPrice(property.price)}
-            </div>
-          </div>
-        </div>
-
-        {/* Location */}
-        <div className="flex items-center mb-2">
-          <svg className="w-4 h-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="text-sm text-gray-600">{getLocationDisplayName(property.location)}</span>
-        </div>
-
-        {/* Property Details */}
-        <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
-          <div className="flex items-center">
-            <span className="font-medium">{property.type}</span>
-          </div>
-          {property.bhk && property.bhk !== 'na' && (
-            <div className="flex items-center">
-              <span className="font-medium">{property.bhk}</span>
-            </div>
-          )}
-          <div className="flex items-center">
-            <span className="capitalize">{property.mode}</span>
-          </div>
-        </div>
-
-        {/* CRM-specific details */}
-        <div className="border-t pt-3 space-y-2">
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {property.squareFootage && (
-              <div>
-                <span className="text-gray-500">Area:</span>
-                <span className="ml-1 font-medium">{property.squareFootage} sq ft</span>
-              </div>
-            )}
-            {property.yearBuilt && (
-              <div>
-                <span className="text-gray-500">Built:</span>
-                <span className="ml-1 font-medium">{property.yearBuilt}</span>
-              </div>
-            )}
-            {property.parkingSpaces && (
-              <div>
-                <span className="text-gray-500">Parking:</span>
-                <span className="ml-1 font-medium">{property.parkingSpaces} spaces</span>
-              </div>
-            )}
-            {property.furnishingStatus && (
-              <div>
-                <span className="text-gray-500">Furnishing:</span>
-                <span className="ml-1 font-medium capitalize">{property.furnishingStatus}</span>
-              </div>
-            )}
-            {property.floorNumber && (
-              <div>
-                <span className="text-gray-500">Floor:</span>
-                <span className="ml-1 font-medium">{property.floorNumber}/{property.totalFloors || 'N/A'}</span>
-              </div>
-            )}
-            {property.propertyCondition && (
-              <div>
-                <span className="text-gray-500">Condition:</span>
-                <span className="ml-1 font-medium capitalize">{property.propertyCondition}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Contact Information */}
-          <div className="pt-2 border-t">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Contact:</span>
-              <a 
-                href={`tel:${property.contactNumber}`}
-                className="text-xs text-[#D7242A] hover:text-[#D7242A]/80 font-medium"
-              >
-                {property.contactNumber}
-              </a>
-            </div>
-          </div>
-
-          {/* Property Actions */}
-          <div className="flex gap-2 pt-2">
-            <Link
-              href={`/admin/crm/property/${property._id}`}
-              className="flex-1 text-center px-3 py-2 bg-[#D7242A] text-white text-xs font-medium rounded hover:bg-[#D7242A]/90 transition-colors"
-            >
-              View Details
-            </Link>
-            <a
-              href={`tel:${property.contactNumber}`}
-              className="px-3 py-2 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors"
-              title="Call property owner"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        {/* Additional Details for CRM */}
-        {(property.amenities?.length > 0 || property.nearbyAmenities?.length > 0 || property.nearbyLocations?.length > 0) && (
-          <div className="mt-3 pt-3 border-t">
-            {property.amenities?.length > 0 && (
-              <div className="mb-2">
-                <span className="text-xs text-gray-500 block mb-1">Amenities:</span>
-                <div className="flex flex-wrap gap-1">
-                  {property.amenities.slice(0, 3).map((amenity, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                      {amenity}
-                    </span>
-                  ))}
-                  {property.amenities.length > 3 && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                      +{property.amenities.length - 3} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {property.nearbyAmenities?.length > 0 && (
-              <div className="mb-2">
-                <span className="text-xs text-gray-500 block mb-1">Nearby Amenities:</span>
-                <div className="flex flex-wrap gap-1">
-                  {property.nearbyAmenities.slice(0, 2).map((amenity, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                      {amenity}
-                    </span>
-                  ))}
-                  {property.nearbyAmenities.length > 2 && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                      +{property.nearbyAmenities.length - 2} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {property.nearbyLocations?.length > 0 && (
-              <div>
-                <span className="text-xs text-gray-500 block mb-1">
-                  {isNearby ? 'Matches via Nearby Areas:' : 'Also serves:'}
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {property.nearbyLocations.slice(0, 2).map((location, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
-                      {location}
-                    </span>
-                  ))}
-                  {property.nearbyLocations.length > 2 && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                      +{property.nearbyLocations.length - 2} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+  const CRMPropertyCard = ({ property, isNearby = false }) => (
+    <PropertyCard 
+      property={property} 
+      viewMode="grid"
+      customBadges={[
+        ...(isNearby ? [{ text: 'Nearby', color: 'blue' }] : []),
+        ...(property.gallery?.length > 0 ? [{ text: `📸 ${property.gallery.length}`, color: 'black' }] : []),
+        ...(property.videos?.length > 0 ? [{ text: `🎬 ${property.videos.length}`, color: 'purple' }] : [])
+      ]}
+      showContact={true}
+      showActions={true}
+      actionButtons={[
+        {
+          text: 'View Details',
+          href: `/admin/crm/property/${property._id}`,
+          color: 'red',
+          fullWidth: true
+        },
+        {
+          text: '📞',
+          href: `tel:${property.contactNumber}`,
+          color: 'green',
+          icon: true,
+          title: 'Call property owner'
+        }
+      ]}
+    />
   );
 
   if (loading) {
@@ -1158,10 +985,10 @@ export default function LeadDetailPage() {
                 <div>
                   {relatedProperties.length > 0 ? (
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                      {relatedProperties.map(property => (
-                        <PropertyCard key={property._id} property={property} />
-                      ))}
-                    </div>
+                  {relatedProperties.map(property => (
+                    <CRMPropertyCard key={property._id} property={property} />
+                  ))}
+                </div>
                   ) : (
                     <div className="text-center py-12">
                       <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1179,7 +1006,7 @@ export default function LeadDetailPage() {
                   {nearbyProperties.length > 0 ? (
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                       {nearbyProperties.map(property => (
-                        <PropertyCard key={property._id} property={property} isNearby={true} />
+                        <CRMPropertyCard key={property._id} property={property} isNearby={true} />
                       ))}
                     </div>
                   ) : (
@@ -1337,7 +1164,7 @@ export default function LeadDetailPage() {
                         </div>
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                           {searchResults.map(property => (
-                            <PropertyCard key={property._id} property={property} isNearby={false} />
+                            <CRMPropertyCard key={property._id} property={property} isNearby={false} />
                           ))}
                         </div>
                       </div>

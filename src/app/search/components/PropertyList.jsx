@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import PropertyCard from '@/components/PropertyCard';
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from '../../../utils/formatPrice';
 
@@ -362,81 +362,11 @@ export default function PropertyList() {
                         : "space-y-6"
                     }>
                         {properties.map((property) => (
-                            <Link href={`/property/${property._id}`} key={property._id}>
-                                <div className={`group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl border border-gray-100 transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
-                                    viewMode === 'list' ? 'flex' : ''
-                                }`}>
-                                    <div className={`relative ${viewMode === 'list' ? 'w-80 flex-shrink-0' : 'h-64'}`}>
-                                        <img
-                                            src={property.gallery[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
-                                            alt={property.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                        <div className="absolute top-4 left-4">
-                                            <span className="px-3 py-1 bg-gradient-to-r from-[#D7242A] to-[#D7242A]/90 text-white text-sm font-semibold rounded-full shadow-lg">
-                                                For {property.mode}
-                                            </span>
-                                        </div>
-                                        <div className="absolute bottom-4 right-4 flex flex-col gap-1">
-                                            {property.gallery && property.gallery.length > 1 && (
-                                                <span className="px-2 py-1 bg-black/70 text-white text-xs rounded-md">
-                                                    📸 {property.gallery.length} photos
-                                                </span>
-                                            )}
-                                            {property.videos && property.videos.length > 0 && (
-                                                <span className="px-2 py-1 bg-purple-600/80 text-white text-xs rounded-md">
-                                                    🎬 {property.videos.length} videos
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="p-6 flex-1">
-                                        <div className="mb-3">
-                                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#D7242A] transition-colors line-clamp-2">
-                                                {property.title}
-                                            </h3>
-                                            <p className="text-gray-600 mt-1 flex items-center">
-                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                {property.location}
-                                            </p>
-                                        </div>
-                                        
-                                        <div className="mb-4">
-                                            <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D7242A] to-[#D7242A]/90">
-                                                💰 Price on Enquiry
-                                            </p>
-                                        </div>
-                                        
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            <span className="px-3 py-1 bg-[#D7242A]/10 text-[#D7242A] text-sm font-medium rounded-full">
-                                                {property.type}
-                                            </span>
-                                            {property.bhk && property.bhk !== 'na' && (
-                                                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                                                    {property.bhk}
-                                                </span>
-                                            )}
-                                        </div>
-                                        
-                                        
-                                        <div className="flex items-center justify-between text-sm text-gray-500">
-                                            <span className="flex items-center">
-                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                {new Date(property.createdAt).toLocaleDateString()}
-                                            </span>
-                                            <span className="text-[#D7242A] font-medium group-hover:text-[#D7242A]/80">
-                                                View Details →
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
+                            <PropertyCard 
+                                key={property._id} 
+                                property={property} 
+                                viewMode={viewMode}
+                            />
                         ))}
                     </div>
                 ) : (
