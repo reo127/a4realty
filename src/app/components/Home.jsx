@@ -7,7 +7,6 @@ import Footer from "./Footer";
 import LeadCaptureModal from "./LeadCaptureModal";
 import Banner from "./Banner";
 import { formatPrice } from '../../utils/formatPrice';
-import PropertyCard from '@/components/PropertyCard';
 
 export default function Home() {
     const [showLeadModal, setShowLeadModal] = useState(false);
@@ -41,13 +40,13 @@ export default function Home() {
         try {
             setLoading(true);
             const response = await fetch('/api/properties');
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (data.success && data.data && Array.isArray(data.data)) {
                 setProperties(data.data);
             } else {
@@ -90,9 +89,9 @@ export default function Home() {
                     link: "/search?q=ready+to+move"
                 }
             ];
-            
+
             setBanners(sampleBanners);
-            
+
             // TODO: Replace with actual API call
             // const response = await fetch('/api/banners');
             // if (response.ok) {
@@ -144,7 +143,7 @@ export default function Home() {
         <main className="min-h-screen bg-white text-gray-900">
             {/* Banner Section */}
             <Banner banners={banners} />
-        
+
             {/* Hero with segmented search */}
             <section className="relative bg-white">
                 {/* Decorative background elements */}
@@ -156,7 +155,7 @@ export default function Home() {
                 <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-24">
                     <div className="max-w-4xl text-center mx-auto">
                         <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 leading-tight">
-                            Discover new projects and 
+                            Discover new projects and
                             <span className="text-[#D7242A]"> verified listings</span>
                         </h1>
                         <p className="mt-6 text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto">
@@ -353,14 +352,47 @@ export default function Home() {
                         <>
                             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                                 {properties.slice(0, visibleProperties).map((property) => (
-                                    <PropertyCard
+                                    <Link
                                         key={property._id}
-                                        property={property}
-                                        viewMode="grid"
-                                    />
+                                        href={`/property/${property._id}`}
+                                        className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
+                                    >
+                                        <div className="relative h-48">
+                                            <img
+                                                src={property.gallery?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+                                                alt={property.title}
+                                                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+                                            />
+                                            <div className="absolute left-3 top-3">
+                                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-white/90">
+                                                    For {property.mode}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="text-base font-semibold">{property.title}</h3>
+                                            <p className="text-sm text-gray-600">{property.location}</p>
+                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">💰 Price on Request</p>
+                                            <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                                <span className="font-bold text-[17px] border border-black px-[13px] py-[1px] inline-flex items-center   rounded bg-green-50 text-green-700">
+                                                    Verified
+                                                </span>
+                                                
+                                                <span className="inline-flex items-center px-[13px] py-[1px] text-[17px] font-bold uppercase  border border-black rounded  bg-[#D7242A]/10 text-[#D7242A]">
+                                                    {property.type}
+                                                </span>
+
+                                                {property.bhk && property.bhk !== 'na' && (
+                                                    <span className="inline-flex text-[17px] border border-black px-[13px] py-[1px] uppercase font-bold items-center   rounded bg-[#D7242A]/10 text-[#D7242A]">
+                                                        {property.bhk}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
                                 ))}
                             </div>
-                            
+
                             {/* See More Button */}
                             {properties.length > visibleProperties && (
                                 <div className="mt-8 text-center">
@@ -372,7 +404,7 @@ export default function Home() {
                                     </button>
                                 </div>
                             )}
-                            
+
                             {properties.length === 0 && (
                                 <div className="mt-6 text-center py-12 bg-gray-50 rounded-xl">
                                     <p className="text-gray-600">No properties found. Properties will appear here once they are added.</p>
@@ -442,7 +474,7 @@ export default function Home() {
             </section>
 
             {/* Footer */}
-           <Footer/>
+            <Footer />
 
             {/* Lead Capture Modal */}
             <LeadCaptureModal
