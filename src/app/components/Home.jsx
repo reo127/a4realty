@@ -139,6 +139,7 @@ export default function Home() {
         setVisibleProperties(prev => prev + 30);
     };
 
+
     return (
         <main className="min-h-screen bg-white text-gray-900">
             {/* Banner Section */}
@@ -372,21 +373,29 @@ export default function Home() {
                                         <div className="p-4">
                                             <h3 className="text-base font-semibold">{property.title}</h3>
                                             <p className="text-sm text-gray-600">{property.location}</p>
-                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">💰 Price on Request</p>
+                                            <p className="mt-2 text-sm font-medium text-[#D7242A]">💰 {property.price ? formatPrice(property.price) : 'Price on Request'}</p>
                                             <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                                <span className="font-bold text-[17px] border border-black px-[13px] py-[1px] inline-flex items-center   rounded bg-green-50 text-green-700">
+                                                <span className="font-bold text-[17px] border-1 border-black px-[13px] py-[1px] inline-flex items-center   rounded bg-green-50 text-green-700">
                                                     Verified
                                                 </span>
-                                                
-                                                <span className="inline-flex items-center px-[13px] py-[1px] text-[17px] font-bold uppercase  border border-black rounded  bg-[#D7242A]/10 text-[#D7242A]">
+
+                                                <span className="inline-flex items-center px-[13px] py-[1px] text-[17px] font-bold uppercase  border-1 border-black rounded  bg-[#D7242A]/10 text-[#D7242A]">
                                                     {property.type}
                                                 </span>
 
                                                 {property.bhk && property.bhk !== 'na' && (
-                                                    <span className="inline-flex text-[17px] border border-black px-[13px] py-[1px] uppercase font-bold items-center   rounded bg-[#D7242A]/10 text-[#D7242A]">
+                                                    <span className="inline-flex text-[17px] border-1 border-black px-[13px] py-[1px] uppercase font-bold items-center   rounded bg-[#D7242A]/10 text-[#D7242A]">
                                                         {property.bhk}
                                                     </span>
                                                 )}
+
+                                                {
+                                                    property.dimension && property.dimension !== "" ? (
+                                                        <span className={`inline-flex items-center px-[13px] border-1 border-black py-[1px] text-[17px] font-bold uppercase rounded bg-[#D7242A]/10 text-[#D7242A]`}>
+                                                            {property.dimension} SQFT
+                                                        </span>
+                                                    ) : ""
+                                                }
                                             </div>
                                         </div>
                                     </Link>

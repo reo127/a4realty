@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PropertyCard from '@/components/PropertyCard';
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from '../../../utils/formatPrice';
 
@@ -357,16 +357,46 @@ export default function PropertyList() {
 
                 {/* Property Grid/List */}
                 {properties.length > 0 ? (
-                    <div className={viewMode === 'grid' 
-                        ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
-                        : "space-y-6"
-                    }>
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         {properties.map((property) => (
-                            <PropertyCard 
-                                key={property._id} 
-                                property={property} 
-                                viewMode={viewMode}
-                            />
+                            <Link
+                                key={property._id}
+                                href={`/property/${property._id}`}
+                                className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
+                            >
+                                <div className="relative h-48">
+                                    <img
+                                        src={property.gallery?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+                                        alt={property.title}
+                                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+                                    />
+                                    <div className="absolute left-3 top-3">
+                                        <span className="text-black inline-flex items-center px-2 py-1 text-xs font-medium rounded-md bg-white/90">
+                                            For {property.mode}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="text-base font-semibold text-black">{property.title}</h3>
+                                    <p className="text-sm text-gray-600">{property.location}</p>
+                                    <p className="mt-2 text-sm font-medium text-[#D7242A]">💰 {property.price ? formatPrice(property.price) : 'Price on Request'}</p>
+                                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold text-[17px] border border-black px-[13px] py-[1px] inline-flex items-center   rounded bg-green-50 text-green-700">
+                                            Verified
+                                        </span>
+                                        
+                                        <span className="inline-flex items-center px-[13px] py-[1px] text-[17px] font-bold uppercase  border border-black rounded  bg-[#D7242A]/10 text-[#D7242A]">
+                                            {property.type}
+                                        </span>
+
+                                        {property.bhk && property.bhk !== 'na' && (
+                                            <span className="inline-flex text-[17px] border border-black px-[13px] py-[1px] uppercase font-bold items-center   rounded bg-[#D7242A]/10 text-[#D7242A]">
+                                                {property.bhk}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (

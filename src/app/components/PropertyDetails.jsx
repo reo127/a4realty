@@ -657,12 +657,12 @@ export default function PropertyDetails() {
 
                         <div className='mt-6'>
                             <div className='mb-4'>
-                                <p className='text-lg sm:text-[18px] text-[#999999] font-semibold'>Price Available On Request</p>
+                                <p className='text-lg sm:text-[18px] text-[#D7242A] font-semibold'>💰 {property.price ? formatPrice(property.price) : 'Price Available On Request'}</p>
                                 <p className='text-sm text-[#606060]'>{property.bhk} Flat</p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                                 {/* Get Price Button */}
-                                <button 
+                                {/* <button 
                                     onClick={handlePriceClick}
                                     className="flex cursor-pointer items-center justify-center gap-2 px-4 sm:px-5 py-3 bg-[#D7242A] hover:bg-[#D7242A]/90 text-white font-medium rounded-lg shadow-md transition w-full sm:w-auto"
                                 >
@@ -670,7 +670,7 @@ export default function PropertyDetails() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span className='text-sm sm:text-base'>Get Price</span>
-                                </button>
+                                </button> */}
 
                                 {/* Download Brochure Button */}
                                 <button 
@@ -859,7 +859,7 @@ export default function PropertyDetails() {
                                                                     {similarProperty.bhk}
                                                                 </span>
                                                                 <span className="font-semibold text-[#D7242A] text-xs sm:text-sm lg:text-base">
-                                                                    Price on Request
+                                                                    {similarProperty.price ? formatPrice(similarProperty.price) : 'Price on Request'}
                                                                 </span>
                                                             </div>
                                                         </div>
