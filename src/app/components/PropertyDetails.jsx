@@ -691,7 +691,7 @@ export default function PropertyDetails() {
                         {property.amenities && property.amenities.length > 0 ? (
                             <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'>
                                 {property.amenities.map((amenity, index) => (
-                                    <div key={index} className='text-[#606060] rounded-md font-thin flex flex-col border items-center justify-center h-[70px] sm:h-[80px] p-2'>
+                                    <div key={index} className='text-black rounded-md font-thin flex flex-col border items-center justify-center h-[70px] sm:h-[80px] p-2'>
                                         <div className="mb-1">
                                             {getAmenityIcon(amenity)}
                                         </div>
