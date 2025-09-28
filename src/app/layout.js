@@ -30,7 +30,7 @@ export const metadata = {
   icons: {
     icon: [
       { url: "/finalLogo.jpeg", type: "image/jpeg" },
-      { url: "/favicon.ico" },
+      { url: "/serachLogo.png" },
     ],
     apple: "/finalLogo.jpeg",
   },
@@ -41,7 +41,9 @@ export const metadata = {
     siteName: "A4Realty",
     images: [
       {
-        url: "/finalLogo.jpeg",
+        url: "/serachLogo.png",
+        // url: "/finalLogo.jpeg",
+
         width: 1200,
         height: 600,
         alt: "A4Realty - Built on Trust",
@@ -54,7 +56,9 @@ export const metadata = {
     card: "summary_large_image",
     title: "A4Realty - Premium Property Solutions",
     description: "Discover premium properties, new projects, and verified listings with A4Realty. Your trusted partner for buying, selling, and renting properties across India.",
-    images: ["/finalLogo.jpeg"],
+    images: ["/serachLogo.png"],
+    // images: ["/finalLogo.jpeg"],
+
   },
   robots: {
     index: true,
@@ -102,11 +106,11 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#D7242A" />
         <meta name="msapplication-TileColor" content="#D7242A" />
         <meta name="msapplication-TileImage" content="/finalLogo.jpeg" />
-        <meta property="og:image" content="/finalLogo.jpeg" />
-        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image" content="/serachLogo.png" />
+        <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="600" />
-        <meta name="twitter:image" content="/finalLogo.jpeg" />
+        <meta name="twitter:image" content="/serachLogo.png" />
         <link rel="shortcut icon" href="/finalLogo.jpeg" />
         <link rel="manifest" href="/site.webmanifest" />
       </head>
