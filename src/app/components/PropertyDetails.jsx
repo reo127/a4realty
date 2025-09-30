@@ -1196,7 +1196,7 @@ export default function PropertyDetails() {
 
             {/* Brochure Success Modal */}
             {showBrochureSuccessModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" id="propertiespagesuccessmessage">
                     <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleCloseBrochureSuccessModal}></div>
                     <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 text-center mx-4">
                         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1204,7 +1204,7 @@ export default function PropertyDetails() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Request Received!</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2" id="propertiespagesuccessmessageparagraph">Request Received!</h3>
                         <p className="text-gray-600 mb-6">
                             Thank you for your interest! Our team will contact you soon with the property brochure and additional details.
                         </p>
