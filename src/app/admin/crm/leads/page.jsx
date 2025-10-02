@@ -16,6 +16,10 @@ export default function CRMLeadsPage() {
   const [addingLead, setAddingLead] = useState(false);
   const [addError, setAddError] = useState('');
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [downloading, setDownloading] = useState(false);
   const [newLead, setNewLead] = useState({
     name: '',
     phone: '',
@@ -98,21 +102,32 @@ export default function CRMLeadsPage() {
   };
 
   const filteredAndSortedLeads = leads
-    .filter(lead => 
-      lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.phone.includes(searchTerm) ||
-      (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (lead.interestedLocation && lead.interestedLocation.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter(lead => {
+      // Search filter
+      const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.phone.includes(searchTerm) ||
+        (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (lead.interestedLocation && lead.interestedLocation.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      // Status filter
+      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+
+      // Date range filter
+      const leadDate = new Date(lead.createdAt);
+      const matchesDateFrom = !dateFrom || leadDate >= new Date(dateFrom);
+      const matchesDateTo = !dateTo || leadDate <= new Date(new Date(dateTo).setHours(23, 59, 59, 999));
+
+      return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
+    })
     .sort((a, b) => {
       let aValue = a[sortBy];
       let bValue = b[sortBy];
-      
+
       if (sortBy === 'createdAt') {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -254,6 +269,68 @@ export default function CRMLeadsPage() {
     }
   };
 
+  const handleDownloadCSV = async () => {
+    try {
+      setDownloading(true);
+      const params = new URLSearchParams({
+        format: 'csv',
+        ...(searchTerm && { search: searchTerm }),
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo }),
+      });
+
+      const response = await fetch(`/api/leads/export?${params}`);
+      if (!response.ok) throw new Error('Failed to download CSV');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      alert('Failed to download CSV. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      setDownloading(true);
+      const params = new URLSearchParams({
+        format: 'excel',
+        ...(searchTerm && { search: searchTerm }),
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo }),
+      });
+
+      const response = await fetch(`/api/leads/export?${params}`);
+      if (!response.ok) throw new Error('Failed to download Excel');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      alert('Failed to download Excel. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -295,42 +372,62 @@ export default function CRMLeadsPage() {
               <h1 className="text-2xl font-bold text-gray-900">CRM - Sales Leads</h1>
               <p className="text-gray-600 mt-1">Manage and track your sales leads</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
                 {filteredAndSortedLeads.length} Total Leads
               </span>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span>Add New Lead</span>
+                <span>Add Lead</span>
               </button>
               <button
                 onClick={downloadTemplate}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>Download Template</span>
+                <span>Template</span>
               </button>
               <button
                 onClick={() => setShowBulkUpload(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <span>Bulk Upload</span>
               </button>
+              <button
+                onClick={handleDownloadCSV}
+                disabled={downloading || filteredAndSortedLeads.length === 0}
+                className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>CSV</span>
+              </button>
+              <button
+                onClick={handleDownloadExcel}
+                disabled={downloading || filteredAndSortedLeads.length === 0}
+                className="px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Excel</span>
+              </button>
               <Link
                 href="/admin"
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
               >
-                Back to Admin
+                Back
               </Link>
             </div>
           </div>
@@ -340,7 +437,8 @@ export default function CRMLeadsPage() {
       <div className="max-w-7xl mx-auto p-6 text-black">
         {/* Search and Filter */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4">
+            {/* Search Bar */}
             <div className="flex-1">
               <input
                 type="text"
@@ -350,22 +448,98 @@ export default function CRMLeadsPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
-            <div className="flex gap-2">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="createdAt">Date Added</option>
-                <option value="name">Name</option>
-                <option value="interestedLocation">Location</option>
-              </select>
-              <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
+
+            {/* Filters Row */}
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              {/* Status Filter */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Filter by Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="new">New</option>
+                  <option value="not_connected">Not Connected</option>
+                  <option value="interested">Interested</option>
+                  <option value="not_interested">Not Interested</option>
+                  <option value="call_disconnected">Call Disconnected</option>
+                  <option value="location_mismatch">Location Mismatch</option>
+                  <option value="budget_mismatch">Budget Mismatch</option>
+                  <option value="possession_mismatch">Possession Mismatch</option>
+                  <option value="do_not_disturb">Do Not Disturb</option>
+                  <option value="site_visit_done">Site Visit Done</option>
+                </select>
+              </div>
+
+              {/* Date From */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              {/* Date To */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              {/* Sort By */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sort By
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="createdAt">Date Added</option>
+                    <option value="name">Name</option>
+                    <option value="interestedLocation">Location</option>
+                  </select>
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Clear Filters Button */}
+              {(statusFilter !== 'all' || dateFrom || dateTo || searchTerm) && (
+                <button
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setDateFrom('');
+                    setDateTo('');
+                    setSearchTerm('');
+                  }}
+                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
         </div>
