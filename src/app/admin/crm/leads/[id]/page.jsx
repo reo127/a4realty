@@ -33,6 +33,10 @@ export default function LeadDetailPage() {
   const [updateSubstatus, setUpdateSubstatus] = useState('');
   const [updateNote, setUpdateNote] = useState('');
   const [siteVisitDate, setSiteVisitDate] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
+  const [visitReason, setVisitReason] = useState('');
+  const [rescheduleReason, setRescheduleReason] = useState('');
+  const [followUpNotes, setFollowUpNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState('');
   const [statusOptions, setStatusOptions] = useState({});
@@ -241,7 +245,11 @@ export default function LeadDetailPage() {
         status: updateStatus || undefined,
         substatus: updateSubstatus || undefined,
         note: updateNote.trim() || undefined,
-        siteVisitDate: (updateSubstatus === 'site_visit_scheduled_with_date' && siteVisitDate) ? siteVisitDate : undefined
+        siteVisitDate: (updateStatus === 'site_visit_scheduled' && siteVisitDate) ? siteVisitDate : undefined,
+        followUpDate: (updateStatus === 'follow_up_scheduled' && followUpDate) ? followUpDate : undefined,
+        visitReason: ((updateStatus === 'site_visit_scheduled' || updateStatus === 'visit_rescheduled') && visitReason) ? visitReason : undefined,
+        rescheduleReason: (updateStatus === 'visit_rescheduled' && rescheduleReason) ? rescheduleReason : undefined,
+        followUpNotes: (updateStatus === 'follow_up_scheduled' && followUpNotes) ? followUpNotes : undefined
       };
 
       const response = await fetch('/api/leads', {
@@ -285,13 +293,16 @@ export default function LeadDetailPage() {
       'new': 'bg-blue-100 text-blue-800',
       'not_connected': 'bg-yellow-100 text-yellow-800',
       'interested': 'bg-green-100 text-green-800',
+      'site_visit_scheduled': 'bg-purple-100 text-purple-800',
+      'follow_up_scheduled': 'bg-cyan-100 text-cyan-800',
+      'visit_rescheduled': 'bg-orange-100 text-orange-800',
+      'site_visit_done': 'bg-emerald-100 text-emerald-800',
       'not_interested': 'bg-red-100 text-red-800',
       'call_disconnected': 'bg-orange-100 text-orange-800',
       'location_mismatch': 'bg-purple-100 text-purple-800',
       'budget_mismatch': 'bg-pink-100 text-pink-800',
       'possession_mismatch': 'bg-indigo-100 text-indigo-800',
-      'do_not_disturb': 'bg-gray-100 text-gray-800',
-      'site_visit_done': 'bg-emerald-100 text-emerald-800'
+      'do_not_disturb': 'bg-gray-100 text-gray-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -301,13 +312,16 @@ export default function LeadDetailPage() {
       'new': 'New',
       'not_connected': 'Not Connected',
       'interested': 'Interested',
+      'site_visit_scheduled': 'Site Visit Scheduled',
+      'follow_up_scheduled': 'Follow-up Scheduled',
+      'visit_rescheduled': 'Visit Rescheduled',
+      'site_visit_done': 'Site Visit Done',
       'not_interested': 'Not Interested',
       'call_disconnected': 'Call Disconnected',
       'location_mismatch': 'Location Mismatch',
       'budget_mismatch': 'Budget Mismatch',
       'possession_mismatch': 'Possession Mismatch',
-      'do_not_disturb': 'Do Not Disturb',
-      'site_visit_done': 'Site Visit Done'
+      'do_not_disturb': 'Do Not Disturb'
     };
     return statusDisplayNames[status] || 'New';
   };
@@ -778,7 +792,12 @@ export default function LeadDetailPage() {
                         )}
                         {lead.siteVisitDate && (
                           <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
-                            Site Visit: {new Date(lead.siteVisitDate).toLocaleDateString()}
+                            Site Visit: {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                        {lead.followUpDate && (
+                          <span className="text-xs text-cyan-600 bg-cyan-100 px-2 py-0.5 rounded-full">
+                            Follow-up: {new Date(lead.followUpDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
                       </div>
@@ -1289,20 +1308,109 @@ export default function LeadDetailPage() {
                   </div>
                 )}
 
-                {/* Site Visit Date Field */}
-                {updateSubstatus === 'site_visit_scheduled_with_date' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Site Visit Date <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={siteVisitDate}
-                      onChange={(e) => setSiteVisitDate(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
-                      required={updateSubstatus === 'site_visit_scheduled_with_date'}
-                    />
-                  </div>
+                {/* Site Visit Scheduled Fields */}
+                {updateStatus === 'site_visit_scheduled' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Site Visit Date & Time <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={siteVisitDate}
+                        onChange={(e) => setSiteVisitDate(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Visit Reason/Notes <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={visitReason}
+                        onChange={(e) => setVisitReason(e.target.value)}
+                        rows="2"
+                        placeholder="e.g., Customer wants to see 2BHK properties, interested in amenities..."
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Follow-up Scheduled Fields */}
+                {updateStatus === 'follow_up_scheduled' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Follow-up Date & Time <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={followUpDate}
+                        onChange={(e) => setFollowUpDate(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Follow-up Notes <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={followUpNotes}
+                        onChange={(e) => setFollowUpNotes(e.target.value)}
+                        rows="2"
+                        placeholder="e.g., Customer needs more time to decide, call back next week..."
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Visit Rescheduled Fields */}
+                {updateStatus === 'visit_rescheduled' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        New Visit Date & Time <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={siteVisitDate}
+                        onChange={(e) => setSiteVisitDate(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Why was the visit rescheduled? <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={rescheduleReason}
+                        onChange={(e) => setRescheduleReason(e.target.value)}
+                        rows="2"
+                        placeholder="e.g., Customer was busy, bad weather, personal emergency..."
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Additional Notes
+                      </label>
+                      <textarea
+                        value={visitReason}
+                        onChange={(e) => setVisitReason(e.target.value)}
+                        rows="2"
+                        placeholder="Any additional information about the rescheduled visit..."
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                      />
+                    </div>
+                  </>
                 )}
 
                 <div>
@@ -1328,6 +1436,10 @@ export default function LeadDetailPage() {
                       setUpdateSubstatus('');
                       setUpdateNote('');
                       setSiteVisitDate('');
+                      setFollowUpDate('');
+                      setVisitReason('');
+                      setRescheduleReason('');
+                      setFollowUpNotes('');
                     }}
                     disabled={isUpdating}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
@@ -1336,7 +1448,10 @@ export default function LeadDetailPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={isUpdating || (!updateStatus && !updateNote.trim()) || (updateSubstatus === 'site_visit_scheduled_with_date' && !siteVisitDate)}
+                    disabled={isUpdating || (!updateStatus && !updateNote.trim()) ||
+                      (updateStatus === 'site_visit_scheduled' && (!siteVisitDate || !visitReason)) ||
+                      (updateStatus === 'follow_up_scheduled' && (!followUpDate || !followUpNotes)) ||
+                      (updateStatus === 'visit_rescheduled' && (!siteVisitDate || !rescheduleReason))}
                     className="px-4 py-2 text-sm font-medium text-white bg-[#D7242A] rounded-md hover:bg-[#D7242A]/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {isUpdating ? (

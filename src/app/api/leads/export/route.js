@@ -33,6 +33,7 @@ const formatStatus = (status) => {
     'new': 'New',
     'not_connected': 'Not Connected',
     'interested': 'Interested',
+    'follow_up': 'Follow Up',
     'not_interested': 'Not Interested',
     'call_disconnected': 'Call Disconnected',
     'location_mismatch': 'Location Mismatch',
@@ -145,6 +146,7 @@ export async function GET(request) {
       'Status': formatStatus(lead.status),
       'Sub-Status': formatSubstatus(lead.substatus),
       'Site Visit Date': lead.siteVisitDate ? formatDate(lead.siteVisitDate) : '',
+      'Follow-up Date': lead.followUpDate ? formatDate(lead.followUpDate) : '',
       'Source': lead.source || 'website',
       'Date Added': formatDate(lead.createdAt),
       'Last Updated': formatDate(lead.updatedAt),
@@ -166,7 +168,8 @@ export async function GET(request) {
         { wch: 20 },  // Interested Location
         { wch: 18 },  // Status
         { wch: 25 },  // Sub-Status
-        { wch: 18 },  // Site Visit Date
+        { wch: 20 },  // Site Visit Date
+        { wch: 20 },  // Follow-up Date
         { wch: 12 },  // Source
         { wch: 18 },  // Date Added
         { wch: 18 },  // Last Updated

@@ -10,11 +10,11 @@ const STATUS_SUBSTATUS_MAP = {
     'call_disconnected',
     'invalid_number'
   ],
-  'interested': [
-    'site_visit_scheduled_with_date',
-    'site_visit_scheduled_no_date',
-    'follow_up'
-  ],
+  'interested': [],
+  'site_visit_scheduled': [], // Site visit scheduled - main status
+  'follow_up_scheduled': [], // Follow-up scheduled - main status
+  'visit_rescheduled': [], // Visit was rescheduled - main status
+  'site_visit_done': [],
   'not_interested': [
     'not_actively_searching',
     'require_more_than_6_months',
@@ -43,12 +43,6 @@ const STATUS_SUBSTATUS_MAP = {
     'plan_postponed',
     'already_purchased',
     'dnc'
-  ],
-  'site_visit_done': [
-    'deal_closed',
-    'follow_up',
-    'interested_in_revisit',
-    'plan_cancelled'
   ]
 };
 
@@ -119,8 +113,61 @@ const LeadSchema = new mongoose.Schema({
   },
   siteVisitDate: {
     type: Date,
-    default: null // Only set when substatus is site_visit_scheduled_with_date
+    default: null // Current scheduled site visit date
   },
+  followUpDate: {
+    type: Date,
+    default: null // Current follow-up date
+  },
+  visitHistory: [{
+    type: {
+      type: String,
+      enum: ['scheduled', 'rescheduled', 'completed', 'cancelled'],
+      required: true
+    },
+    scheduledDate: {
+      type: Date,
+      required: true
+    },
+    reason: {
+      type: String, // Why scheduled, rescheduled, or cancelled
+      default: ''
+    },
+    rescheduleReason: {
+      type: String, // Specific reason for reschedule/cancellation
+      default: ''
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    },
+    addedBy: {
+      type: String,
+      default: 'admin'
+    }
+  }],
+  followUpHistory: [{
+    scheduledDate: {
+      type: Date,
+      required: true
+    },
+    notes: {
+      type: String,
+      default: ''
+    },
+    completed: {
+      type: Boolean,
+      default: false
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    },
+    addedBy: {
+      type: String,
+      default: 'admin'
+    }
+  }],
   notes: [{
     content: {
       type: String,
@@ -188,13 +235,16 @@ LeadSchema.methods.getStatusDisplay = function() {
     'new': 'New',
     'not_connected': 'Not Connected',
     'interested': 'Interested',
+    'site_visit_scheduled': 'Site Visit Scheduled',
+    'follow_up_scheduled': 'Follow-up Scheduled',
+    'visit_rescheduled': 'Visit Rescheduled',
+    'site_visit_done': 'Site Visit Done',
     'not_interested': 'Not Interested',
     'call_disconnected': 'Call Disconnected',
     'location_mismatch': 'Location Mismatch',
     'budget_mismatch': 'Budget Mismatch',
     'possession_mismatch': 'Possession Mismatch',
-    'do_not_disturb': 'Do Not Disturb',
-    'site_visit_done': 'Site Visit Done'
+    'do_not_disturb': 'Do Not Disturb'
   };
   return statusDisplayNames[this.status] || this.status;
 };

@@ -150,6 +150,7 @@ export default function CRMLeadsPage() {
       'new': 'bg-blue-100 text-blue-800',
       'not_connected': 'bg-yellow-100 text-yellow-800',
       'interested': 'bg-green-100 text-green-800',
+      'follow_up': 'bg-cyan-100 text-cyan-800',
       'not_interested': 'bg-red-100 text-red-800',
       'call_disconnected': 'bg-orange-100 text-orange-800',
       'location_mismatch': 'bg-purple-100 text-purple-800',
@@ -166,6 +167,7 @@ export default function CRMLeadsPage() {
       'new': 'New',
       'not_connected': 'Not Connected',
       'interested': 'Interested',
+      'follow_up': 'Follow Up',
       'not_interested': 'Not Interested',
       'call_disconnected': 'Call Disconnected',
       'location_mismatch': 'Location Mismatch',
@@ -465,6 +467,7 @@ export default function CRMLeadsPage() {
                   <option value="new">New</option>
                   <option value="not_connected">Not Connected</option>
                   <option value="interested">Interested</option>
+                  <option value="follow_up">Follow Up</option>
                   <option value="not_interested">Not Interested</option>
                   <option value="call_disconnected">Call Disconnected</option>
                   <option value="location_mismatch">Location Mismatch</option>
@@ -641,7 +644,12 @@ export default function CRMLeadsPage() {
                             )}
                             {lead.siteVisitDate && (
                               <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full max-w-fit">
-                                Visit: {new Date(lead.siteVisitDate).toLocaleDateString()}
+                                Visit: {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                            {lead.followUpDate && (
+                              <span className="text-xs text-cyan-600 bg-cyan-100 px-2 py-0.5 rounded-full max-w-fit">
+                                Follow-up: {new Date(lead.followUpDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </span>
                             )}
                           </div>

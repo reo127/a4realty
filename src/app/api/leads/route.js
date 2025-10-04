@@ -68,7 +68,7 @@ export async function PUT(request) {
     await connectToDatabase();
 
     const data = await request.json();
-    const { leadId, action, status, substatus, note, siteVisitDate } = data;
+    const { leadId, action, status, substatus, note, siteVisitDate, followUpDate, visitReason, rescheduleReason, followUpNotes } = data;
 
     if (!leadId || !action) {
       return NextResponse.json(
@@ -88,6 +88,12 @@ export async function PUT(request) {
     // Initialize fields if they don't exist (for existing leads)
     if (!lead.notes) {
       lead.notes = [];
+    }
+    if (!lead.visitHistory) {
+      lead.visitHistory = [];
+    }
+    if (!lead.followUpHistory) {
+      lead.followUpHistory = [];
     }
     if (!lead.status) {
       lead.status = 'new';
@@ -119,11 +125,56 @@ export async function PUT(request) {
       lead.status = status;
       lead.substatus = substatus || null;
 
-      // Handle site visit date for specific substatus
-      if (substatus === 'site_visit_scheduled_with_date' && siteVisitDate) {
+      // Handle site_visit_scheduled status
+      if (status === 'site_visit_scheduled' && siteVisitDate && visitReason) {
         lead.siteVisitDate = new Date(siteVisitDate);
-      } else if (substatus !== 'site_visit_scheduled_with_date') {
-        lead.siteVisitDate = null;
+        lead.visitHistory.push({
+          type: 'scheduled',
+          scheduledDate: new Date(siteVisitDate),
+          reason: visitReason,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+
+      // Handle follow_up_scheduled status
+      if (status === 'follow_up_scheduled' && followUpDate && followUpNotes) {
+        lead.followUpDate = new Date(followUpDate);
+        lead.followUpHistory.push({
+          scheduledDate: new Date(followUpDate),
+          notes: followUpNotes,
+          completed: false,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+
+      // Handle visit_rescheduled status
+      if (status === 'visit_rescheduled' && siteVisitDate && rescheduleReason) {
+        lead.siteVisitDate = new Date(siteVisitDate);
+        lead.visitHistory.push({
+          type: 'rescheduled',
+          scheduledDate: new Date(siteVisitDate),
+          reason: visitReason || '',
+          rescheduleReason: rescheduleReason,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+
+      // Handle site_visit_done status
+      if (status === 'site_visit_done') {
+        lead.visitHistory.push({
+          type: 'completed',
+          scheduledDate: lead.siteVisitDate || new Date(),
+          reason: 'Site visit completed',
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+        // Mark the last follow-up as completed if exists
+        if (lead.followUpHistory.length > 0) {
+          lead.followUpHistory[lead.followUpHistory.length - 1].completed = true;
+        }
       }
 
       // Add automatic note for status change
@@ -174,11 +225,56 @@ export async function PUT(request) {
       lead.status = status;
       lead.substatus = substatus || null;
 
-      // Handle site visit date
-      if (substatus === 'site_visit_scheduled_with_date' && siteVisitDate) {
+      // Handle site_visit_scheduled status
+      if (status === 'site_visit_scheduled' && siteVisitDate && visitReason) {
         lead.siteVisitDate = new Date(siteVisitDate);
-      } else if (substatus !== 'site_visit_scheduled_with_date') {
-        lead.siteVisitDate = null;
+        lead.visitHistory.push({
+          type: 'scheduled',
+          scheduledDate: new Date(siteVisitDate),
+          reason: visitReason,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+
+      // Handle follow_up_scheduled status
+      if (status === 'follow_up_scheduled' && followUpDate && followUpNotes) {
+        lead.followUpDate = new Date(followUpDate);
+        lead.followUpHistory.push({
+          scheduledDate: new Date(followUpDate),
+          notes: followUpNotes,
+          completed: false,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+
+      // Handle visit_rescheduled status
+      if (status === 'visit_rescheduled' && siteVisitDate && rescheduleReason) {
+        lead.siteVisitDate = new Date(siteVisitDate);
+        lead.visitHistory.push({
+          type: 'rescheduled',
+          scheduledDate: new Date(siteVisitDate),
+          reason: visitReason || '',
+          rescheduleReason: rescheduleReason,
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+      }
+
+      // Handle site_visit_done status
+      if (status === 'site_visit_done') {
+        lead.visitHistory.push({
+          type: 'completed',
+          scheduledDate: lead.siteVisitDate || new Date(),
+          reason: 'Site visit completed',
+          addedAt: new Date(),
+          addedBy: 'admin'
+        });
+        // Mark the last follow-up as completed if exists
+        if (lead.followUpHistory.length > 0) {
+          lead.followUpHistory[lead.followUpHistory.length - 1].completed = true;
+        }
       }
 
       // Add automatic note for status change
