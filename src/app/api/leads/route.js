@@ -42,15 +42,79 @@ export async function POST(request) {
   }
 }
 
-// GET - Get all leads (admin only)
+// GET - Get all leads (admin only) with pagination and filtering
 export async function GET(request) {
   try {
     await connectToDatabase();
-    
-    const leads = await Lead.find({}).sort({ createdAt: -1 });
-    
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page')) || 1;
+    const limit = parseInt(searchParams.get('limit')) || 30;
+    const search = searchParams.get('search') || '';
+    const status = searchParams.get('status') || 'all';
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
+
+    // Build filter query
+    const filter = {};
+
+    // Search filter
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { interestedLocation: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Status filter
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) {
+        filter.createdAt.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        const endDate = new Date(dateTo);
+        endDate.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = endDate;
+      }
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const totalCount = await Lead.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // Fetch leads with pagination
+    const leads = await Lead.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
+
     return NextResponse.json(
-      { success: true, count: leads.length, data: leads },
+      {
+        success: true,
+        count: leads.length,
+        totalCount,
+        totalPages,
+        currentPage: page,
+        data: leads
+      },
       { status: 200 }
     );
   } catch (error) {

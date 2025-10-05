@@ -20,6 +20,9 @@ export default function CRMLeadsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [newLead, setNewLead] = useState({
     name: '',
     phone: '',
@@ -29,16 +32,31 @@ export default function CRMLeadsPage() {
 
   useEffect(() => {
     fetchLeads();
-  }, []);
+  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo]);
 
   const fetchLeads = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/leads');
+
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '30',
+        sortBy,
+        sortOrder,
+        ...(searchTerm && { search: searchTerm }),
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo })
+      });
+
+      const response = await fetch(`/api/leads?${params}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setLeads(data.data);
+        setTotalPages(data.totalPages);
+        setTotalCount(data.totalCount);
       } else {
         throw new Error(data.message || 'Failed to fetch leads');
       }
@@ -70,9 +88,10 @@ export default function CRMLeadsPage() {
         throw new Error(data.message || 'Failed to add lead');
       }
 
-      // Add the new lead to the list
-      setLeads(prevLeads => [data.data, ...prevLeads]);
-      
+      // Reset to page 1 and refresh leads
+      setCurrentPage(1);
+      fetchLeads();
+
       // Reset form and close modal
       setNewLead({
         name: '',
@@ -101,39 +120,12 @@ export default function CRMLeadsPage() {
     }
   };
 
-  const filteredAndSortedLeads = leads
-    .filter(lead => {
-      // Search filter
-      const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone.includes(searchTerm) ||
-        (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (lead.interestedLocation && lead.interestedLocation.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      // Status filter
-      const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
-
-      // Date range filter
-      const leadDate = new Date(lead.createdAt);
-      const matchesDateFrom = !dateFrom || leadDate >= new Date(dateFrom);
-      const matchesDateTo = !dateTo || leadDate <= new Date(new Date(dateTo).setHours(23, 59, 59, 999));
-
-      return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
-    })
-    .sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
-
-      if (sortBy === 'createdAt') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [searchTerm, statusFilter, dateFrom, dateTo, sortBy, sortOrder]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -233,8 +225,9 @@ export default function CRMLeadsPage() {
   };
 
   const handleBulkUploadComplete = (results) => {
-    // Refresh the leads list after successful upload
+    // Reset to page 1 and refresh the leads list after successful upload
     if (results.createdCount > 0) {
+      setCurrentPage(1);
       fetchLeads();
     }
   };
@@ -376,7 +369,7 @@ export default function CRMLeadsPage() {
             </div>
             <div className="flex items-center space-x-3">
               <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                {filteredAndSortedLeads.length} Total Leads
+                {totalCount} Total Leads
               </span>
               <button
                 onClick={() => setShowAddModal(true)}
@@ -407,7 +400,7 @@ export default function CRMLeadsPage() {
               </button>
               <button
                 onClick={handleDownloadCSV}
-                disabled={downloading || filteredAndSortedLeads.length === 0}
+                disabled={downloading || totalCount === 0}
                 className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,7 +410,7 @@ export default function CRMLeadsPage() {
               </button>
               <button
                 onClick={handleDownloadExcel}
-                disabled={downloading || filteredAndSortedLeads.length === 0}
+                disabled={downloading || totalCount === 0}
                 className="px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -436,7 +429,7 @@ export default function CRMLeadsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 text-black">
+      <div className="max-w-full mx-auto px-4 py-6 text-black">
         {/* Search and Filter */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col gap-4">
@@ -537,6 +530,7 @@ export default function CRMLeadsPage() {
                     setDateFrom('');
                     setDateTo('');
                     setSearchTerm('');
+                    setCurrentPage(1);
                   }}
                   className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap"
                 >
@@ -547,8 +541,19 @@ export default function CRMLeadsPage() {
           </div>
         </div>
 
+        {/* Pagination Info */}
+        {totalCount > 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>
+                Showing {((currentPage - 1) * 30) + 1} to {Math.min(currentPage * 30, totalCount)} of {totalCount} leads
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Leads Table */}
-        {filteredAndSortedLeads.length === 0 ? (
+        {leads.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="text-gray-400 mb-4">
               <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -562,8 +567,8 @@ export default function CRMLeadsPage() {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+            <div>
+              <table className="w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -581,14 +586,15 @@ export default function CRMLeadsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date Added
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredAndSortedLeads.map((lead) => (
-                    <tr key={lead._id} className="hover:bg-gray-50">
+                  {leads.map((lead) => (
+                    <tr
+                      key={lead._id}
+                      onClick={() => window.location.href = `/admin/crm/leads/${lead._id}`}
+                      className="hover:bg-indigo-50 transition-colors duration-200 cursor-pointer"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -659,7 +665,7 @@ export default function CRMLeadsPage() {
                             </span>
                           )}
                           {lead.notes && lead.notes.length > 0 && (
-                            <div className="invisible group-hover:visible absolute z-50 left-0 top-8 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-64 overflow-y-auto">
+                             <div className="invisible group-hover:visible absolute z-50 left-0 top-8 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-64 overflow-y-auto">
                               <div className="text-sm font-semibold text-gray-900 mb-2">Notes ({lead.notes.length})</div>
                               <div className="space-y-3">
                                 {lead.notes.slice().reverse().map((note, index) => (
@@ -678,19 +684,112 @@ export default function CRMLeadsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(lead.createdAt)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link
-                          href={`/admin/crm/leads/${lead._id}`}
-                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                        >
-                          View Details
-                        </Link>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Previous
+                  </button>
+
+                  {/* Page Numbers */}
+                  <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap justify-center">
+                    {(() => {
+                      const pages = [];
+                      const maxVisiblePages = 7;
+
+                      if (totalPages <= maxVisiblePages) {
+                        // Show all pages if total is less than max
+                        for (let i = 1; i <= totalPages; i++) {
+                          pages.push(i);
+                        }
+                      } else {
+                        // Show first page
+                        pages.push(1);
+
+                        // Calculate range around current page
+                        let startPage = Math.max(2, currentPage - 1);
+                        let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+                        // Adjust if we're near the start
+                        if (currentPage <= 3) {
+                          startPage = 2;
+                          endPage = 5;
+                        }
+
+                        // Adjust if we're near the end
+                        if (currentPage >= totalPages - 2) {
+                          startPage = totalPages - 4;
+                          endPage = totalPages - 1;
+                        }
+
+                        // Add ellipsis after first page if needed
+                        if (startPage > 2) {
+                          pages.push('...');
+                        }
+
+                        // Add middle pages
+                        for (let i = startPage; i <= endPage; i++) {
+                          pages.push(i);
+                        }
+
+                        // Add ellipsis before last page if needed
+                        if (endPage < totalPages - 1) {
+                          pages.push('...');
+                        }
+
+                        // Show last page
+                        pages.push(totalPages);
+                      }
+
+                      return pages.map((page, index) => {
+                        if (page === '...') {
+                          return (
+                            <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
+                              ...
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              currentPage === page
+                                ? 'bg-indigo-600 text-white'
+                                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      });
+                    })()}
+                  </div>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
