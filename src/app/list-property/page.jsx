@@ -67,7 +67,10 @@ export default function ListProperty() {
   const [highlightInput, setHighlightInput] = useState('');
   const [locationAdvantageInput, setLocationAdvantageInput] = useState('');
   const [nearbyLocationInput, setNearbyLocationInput] = useState('');
-  
+  const [bhkConfigs, setBhkConfigs] = useState([]);
+  const [currentBhk, setCurrentBhk] = useState('');
+  const [currentBhkPrice, setCurrentBhkPrice] = useState('');
+
   useEffect(() => {
     // Check if user is logged in
     const storedUser = localStorage.getItem('user');
@@ -331,7 +334,34 @@ export default function ListProperty() {
       locationAdvantages: prev.locationAdvantages.filter(a => a !== advantage)
     }));
   };
-  
+
+  // BHK Configuration management
+  const addBhkConfig = () => {
+    if (currentBhk && currentBhkPrice.trim()) {
+      const newConfig = {
+        bhk: currentBhk,
+        price: currentBhkPrice.trim()
+      };
+
+      // Check if BHK already exists
+      if (bhkConfigs.some(config => config.bhk === currentBhk)) {
+        setError('This BHK type is already added');
+        return;
+      }
+
+      setBhkConfigs([...bhkConfigs, newConfig]);
+      setCurrentBhk('');
+      setCurrentBhkPrice('');
+      setError('');
+    } else {
+      setError('Please select BHK and enter price');
+    }
+  };
+
+  const removeBhkConfig = (bhk) => {
+    setBhkConfigs(bhkConfigs.filter(config => config.bhk !== bhk));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -352,6 +382,14 @@ export default function ListProperty() {
 
       // Combine price range into single price field for backend compatibility
       const submitData = { ...formData };
+
+      // Add BHK configurations if available
+      if (bhkConfigs.length > 0) {
+        submitData.bhkConfigurations = bhkConfigs;
+        // Set bhk field to comma-separated list for search/filter compatibility
+        submitData.bhk = bhkConfigs.map(c => c.bhk).join(', ');
+      }
+
       if (formData.priceFrom || formData.priceTo) {
         if (formData.priceFrom && formData.priceTo) {
           submitData.price = `${formData.priceFrom} - ${formData.priceTo}`;
@@ -428,7 +466,10 @@ export default function ListProperty() {
       setVideoUrl('');
       setAmenityInput('');
       setNearbyAmenityInput('');
-      
+      setBhkConfigs([]);
+      setCurrentBhk('');
+      setCurrentBhkPrice('');
+
     } catch (error) {
       setError(error.message);
     } finally {
@@ -597,28 +638,84 @@ export default function ListProperty() {
               </div>
               
               {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house') && (
-                <div>
-                  <label htmlFor="bhk" className="block text-sm font-medium text-gray-700 mb-1">
-                    BHK*
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    BHK Configurations* <span className="text-gray-400">(Add multiple BHK types with prices)</span>
                   </label>
-                  <select
-                    id="bhk"
-                    name="bhk"
-                    value={formData.bhk}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                  >
-                    <option value="">Select BHK</option>
-                    <option value=">1bhk">&gt;1 BHK</option>
-                    <option value="2bhk">2 BHK</option>
-                    <option value="2.5bhk">2.5 BHK</option>
-                    <option value="3bhk">3 BHK</option>
-                    <option value="3.5bhk">3.5 BHK</option>
-                    <option value="4bhk">4 BHK</option>
-                    <option value="4.5bhk">4.5 BHK</option>
-                    <option value="5bhk">5 BHK</option>
-                  </select>
+
+                  {/* Add BHK Form */}
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mb-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">BHK Type</label>
+                        <select
+                          value={currentBhk}
+                          onChange={(e) => setCurrentBhk(e.target.value)}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm"
+                        >
+                          <option value="">Select BHK</option>
+                          <option value="1bhk">1 BHK</option>
+                          <option value="2bhk">2 BHK</option>
+                          <option value="2.5bhk">2.5 BHK</option>
+                          <option value="3bhk">3 BHK</option>
+                          <option value="3.5bhk">3.5 BHK</option>
+                          <option value="4bhk">4 BHK</option>
+                          <option value="4.5bhk">4.5 BHK</option>
+                          <option value="5bhk">5 BHK</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Price</label>
+                        <input
+                          type="text"
+                          value={currentBhkPrice}
+                          onChange={(e) => setCurrentBhkPrice(e.target.value)}
+                          placeholder="e.g. 50 lakhs - 60 lakhs"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm text-sm"
+                        />
+                      </div>
+
+                      <div className="flex items-end">
+                        <button
+                          type="button"
+                          onClick={addBhkConfig}
+                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                          Add BHK
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Display Added BHK Configurations */}
+                  {bhkConfigs.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-600 font-medium">Added Configurations:</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {bhkConfigs.map((config, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md"
+                          >
+                            <div>
+                              <p className="text-sm font-semibold text-green-900">{config.bhk.toUpperCase()}</p>
+                              <p className="text-xs text-green-700">{config.price}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeBhkConfig(config.bhk)}
+                              className="text-red-600 hover:text-red-800 transition-colors"
+                            >
+                              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
