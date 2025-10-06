@@ -45,6 +45,7 @@ export default function LeadDetailPage() {
   useEffect(() => {
     if (params.id) {
       fetchLeadDetails();
+      fetchAllLeadsForNavigation();
     }
   }, [params.id]);
 
@@ -73,25 +74,36 @@ export default function LeadDetailPage() {
 
   const fetchLeadDetails = async () => {
     try {
-      const response = await fetch('/api/leads');
+      // Fetch the specific lead by ID
+      const response = await fetch(`/api/leads/${params.id}`);
       const data = await response.json();
 
       if (data.success) {
-        // Store all leads for sidebar navigation
-        setAllLeads(data.data);
-
-        const foundLead = data.data.find(l => l._id === params.id);
-        if (foundLead) {
-          setLead(foundLead);
-        } else {
-          throw new Error('Lead not found');
-        }
+        setLead(data.data);
       } else {
         throw new Error(data.message || 'Failed to fetch lead details');
       }
     } catch (error) {
       console.error('Error fetching lead:', error);
       setError(error.message);
+    }
+  };
+
+  const fetchAllLeadsForNavigation = async () => {
+    try {
+      // Fetch a reasonable number of recent leads for navigation
+      // You can adjust the limit or add pagination controls later
+      const response = await fetch('/api/leads?limit=100&sortBy=createdAt&sortOrder=desc');
+      const data = await response.json();
+
+      if (data.success) {
+        setAllLeads(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching leads for navigation:', error);
+      // Non-critical error, don't block the page
+    } finally {
+      setLoading(false);
     }
   };
 

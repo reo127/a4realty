@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { getLocationDisplayName } from '@/utils/locations';
 import BulkLeadUpload from '@/components/BulkLeadUpload';
@@ -30,43 +30,53 @@ export default function CRMLeadsPage() {
     interestedLocation: ''
   });
 
+  // Track previous filter values to prevent unnecessary page resets
+  const prevFiltersRef = useRef({ searchTerm, statusFilter, dateFrom, dateTo });
+
+  // Fetch leads whenever dependencies change
   useEffect(() => {
-    fetchLeads();
-  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo]);
+    const fetchLeadsData = async () => {
+      try {
+        setLoading(true);
 
-  const fetchLeads = async () => {
-    try {
-      setLoading(true);
+        // Build query parameters
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: '30',
+          sortBy,
+          sortOrder,
+          ...(searchTerm && { search: searchTerm }),
+          ...(statusFilter !== 'all' && { status: statusFilter }),
+          ...(dateFrom && { dateFrom }),
+          ...(dateTo && { dateTo })
+        });
 
-      // Build query parameters
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '30',
-        sortBy,
-        sortOrder,
-        ...(searchTerm && { search: searchTerm }),
-        ...(statusFilter !== 'all' && { status: statusFilter }),
-        ...(dateFrom && { dateFrom }),
-        ...(dateTo && { dateTo })
-      });
+        const response = await fetch(`/api/leads?${params}`);
+        const data = await response.json();
 
-      const response = await fetch(`/api/leads?${params}`);
-      const data = await response.json();
+        if (data.success) {
+          setLeads(data.data);
+          setTotalPages(data.totalPages);
+          setTotalCount(data.totalCount);
+          setError(null);
 
-      if (data.success) {
-        setLeads(data.data);
-        setTotalPages(data.totalPages);
-        setTotalCount(data.totalCount);
-      } else {
-        throw new Error(data.message || 'Failed to fetch leads');
+          // If current page exceeds total pages, reset to last valid page
+          if (data.totalPages > 0 && currentPage > data.totalPages) {
+            setCurrentPage(data.totalPages);
+          }
+        } else {
+          throw new Error(data.message || 'Failed to fetch leads');
+        }
+      } catch (error) {
+        console.error('Error fetching leads:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchLeadsData();
+  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo]);
 
   const handleAddLead = async (e) => {
     e.preventDefault();
@@ -88,9 +98,8 @@ export default function CRMLeadsPage() {
         throw new Error(data.message || 'Failed to add lead');
       }
 
-      // Reset to page 1 and refresh leads
+      // Reset to page 1 (this will trigger useEffect to fetch)
       setCurrentPage(1);
-      fetchLeads();
 
       // Reset form and close modal
       setNewLead({
@@ -120,12 +129,22 @@ export default function CRMLeadsPage() {
     }
   };
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters change (but not sort order which should preserve page)
   useEffect(() => {
-    if (currentPage !== 1) {
+    const prevFilters = prevFiltersRef.current;
+    const filtersChanged =
+      prevFilters.searchTerm !== searchTerm ||
+      prevFilters.statusFilter !== statusFilter ||
+      prevFilters.dateFrom !== dateFrom ||
+      prevFilters.dateTo !== dateTo;
+
+    if (filtersChanged && currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchTerm, statusFilter, dateFrom, dateTo, sortBy, sortOrder]);
+
+    // Update ref with current filter values
+    prevFiltersRef.current = { searchTerm, statusFilter, dateFrom, dateTo };
+  }, [searchTerm, statusFilter, dateFrom, dateTo, currentPage]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -225,10 +244,9 @@ export default function CRMLeadsPage() {
   };
 
   const handleBulkUploadComplete = (results) => {
-    // Reset to page 1 and refresh the leads list after successful upload
+    // Reset to page 1 (this will trigger useEffect to fetch)
     if (results.createdCount > 0) {
       setCurrentPage(1);
-      fetchLeads();
     }
   };
 
