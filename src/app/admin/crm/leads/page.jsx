@@ -708,21 +708,112 @@ export default function CRMLeadsPage() {
                               {lead.notes.length}
                             </span>
                           )}
-                          {lead.notes && lead.notes.length > 0 && (
+                          {(lead.notes && lead.notes.length > 0) || lead.followUpDate || lead.siteVisitDate || (lead.followUpHistory && lead.followUpHistory.length > 0) || (lead.visitHistory && lead.visitHistory.length > 0) ? (
                              <div className="invisible group-hover:visible absolute z-50 left-0 top-8 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-64 overflow-y-auto">
-                              <div className="text-sm font-semibold text-gray-900 mb-2">Notes ({lead.notes.length})</div>
-                              <div className="space-y-3">
-                                {lead.notes.slice().reverse().map((note, index) => (
-                                  <div key={index} className="border-l-2 border-indigo-200 pl-3">
-                                    <div className="text-sm text-gray-700">{note.content}</div>
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      {formatDate(note.addedAt)} • {note.addedBy}
-                                    </div>
+                              {/* Current Follow-up */}
+                              {lead.followUpDate && (
+                                <div className="mb-3 p-2 bg-cyan-50 border-l-2 border-cyan-400 rounded">
+                                  <div className="text-xs font-semibold text-cyan-800">📅 Next Follow-up</div>
+                                  <div className="text-sm text-cyan-700 mt-1">
+                                    {new Date(lead.followUpDate).toLocaleDateString('en-IN', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
                                   </div>
-                                ))}
-                              </div>
+                                </div>
+                              )}
+
+                              {/* Follow-up History */}
+                              {lead.followUpHistory && lead.followUpHistory.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="text-xs font-semibold text-gray-600 mb-2">Follow-up History</div>
+                                  <div className="space-y-2">
+                                    {lead.followUpHistory.slice().reverse().slice(0, 3).map((followUp, index) => (
+                                      <div key={index} className="text-xs p-2 bg-gray-50 border-l-2 border-gray-300 rounded">
+                                        <div className="text-gray-700">
+                                          {new Date(followUp.scheduledDate).toLocaleDateString('en-IN', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </div>
+                                        {followUp.notes && (
+                                          <div className="text-gray-500 mt-1">{followUp.notes}</div>
+                                        )}
+                                        <div className="text-gray-400 mt-1">
+                                          {followUp.completed ? '✓ Completed' : 'Scheduled'} • {formatDate(followUp.addedAt).split(',')[0]}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Current Site Visit */}
+                              {lead.siteVisitDate && (
+                                <div className="mb-3 p-2 bg-blue-50 border-l-2 border-blue-400 rounded">
+                                  <div className="text-xs font-semibold text-blue-800">🏠 Next Site Visit</div>
+                                  <div className="text-sm text-blue-700 mt-1">
+                                    {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Visit History */}
+                              {lead.visitHistory && lead.visitHistory.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="text-xs font-semibold text-gray-600 mb-2">Visit History</div>
+                                  <div className="space-y-2">
+                                    {lead.visitHistory.slice().reverse().slice(0, 3).map((visit, index) => (
+                                      <div key={index} className="text-xs p-2 bg-gray-50 border-l-2 border-gray-300 rounded">
+                                        <div className="text-gray-700">
+                                          {new Date(visit.scheduledDate).toLocaleDateString('en-IN', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </div>
+                                        {visit.reason && (
+                                          <div className="text-gray-500 mt-1">{visit.reason}</div>
+                                        )}
+                                        <div className="text-gray-400 mt-1">
+                                          {visit.type === 'completed' ? '✓ Completed' : visit.type === 'rescheduled' ? '↻ Rescheduled' : 'Scheduled'}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Notes */}
+                              {lead.notes && lead.notes.length > 0 && (
+                                <>
+                                  <div className="text-sm font-semibold text-gray-900 mb-2">Notes ({lead.notes.length})</div>
+                                  <div className="space-y-3">
+                                    {lead.notes.slice().reverse().map((note, index) => (
+                                      <div key={index} className="border-l-2 border-indigo-200 pl-3">
+                                        <div className="text-sm text-gray-700">{note.content}</div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                          {formatDate(note.addedAt)} • {note.addedBy}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
                             </div>
-                          )}
+                          ) : null}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

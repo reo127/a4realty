@@ -202,11 +202,11 @@ export async function PUT(request) {
       }
 
       // Handle follow_up_scheduled status
-      if (status === 'follow_up_scheduled' && followUpDate && followUpNotes) {
+      if (status === 'follow_up_scheduled' && followUpDate) {
         lead.followUpDate = new Date(followUpDate);
         lead.followUpHistory.push({
           scheduledDate: new Date(followUpDate),
-          notes: followUpNotes,
+          notes: note || 'Follow-up scheduled', // Use note from "Add Note" field or default
           completed: false,
           addedAt: new Date(),
           addedBy: 'admin'
@@ -302,11 +302,11 @@ export async function PUT(request) {
       }
 
       // Handle follow_up_scheduled status
-      if (status === 'follow_up_scheduled' && followUpDate && followUpNotes) {
+      if (status === 'follow_up_scheduled' && followUpDate) {
         lead.followUpDate = new Date(followUpDate);
         lead.followUpHistory.push({
           scheduledDate: new Date(followUpDate),
-          notes: followUpNotes,
+          notes: note || 'Follow-up scheduled', // Use note from "Add Note" field or default
           completed: false,
           addedAt: new Date(),
           addedBy: 'admin'

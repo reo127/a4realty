@@ -260,8 +260,7 @@ export default function LeadDetailPage() {
         siteVisitDate: (updateStatus === 'site_visit_scheduled' && siteVisitDate) ? siteVisitDate : undefined,
         followUpDate: (updateStatus === 'follow_up_scheduled' && followUpDate) ? followUpDate : undefined,
         visitReason: ((updateStatus === 'site_visit_scheduled' || updateStatus === 'visit_rescheduled') && visitReason) ? visitReason : undefined,
-        rescheduleReason: (updateStatus === 'visit_rescheduled' && rescheduleReason) ? rescheduleReason : undefined,
-        followUpNotes: (updateStatus === 'follow_up_scheduled' && followUpNotes) ? followUpNotes : undefined
+        rescheduleReason: (updateStatus === 'visit_rescheduled' && rescheduleReason) ? rescheduleReason : undefined
       };
 
       const response = await fetch('/api/leads', {
@@ -834,35 +833,139 @@ export default function LeadDetailPage() {
                 </div>
               </div>
 
-              {/* Notes Section */}
+              {/* Activity Section (Follow-ups, Site Visits, Notes) */}
               <div className="mt-6 pt-6 border-t">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">
-                  Lead Notes {lead.notes && lead.notes.length > 0 && (
-                    <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full ml-2">
-                      {lead.notes.length}
-                    </span>
-                  )}
+                  Lead Activity
                 </h4>
-                {lead.notes && lead.notes.length > 0 ? (
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {lead.notes.slice().reverse().map((note, index) => (
-                      <div key={index} className="border-l-2 border-indigo-200 pl-3 py-2 bg-indigo-50/50 rounded-r">
-                        <div className="text-sm text-gray-700 mb-1">{note.content}</div>
-                        <div className="text-xs text-gray-500">
-                          {formatDate(note.addedAt)} • {note.addedBy}
-                        </div>
+
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {/* Current Follow-up */}
+                  {lead.followUpDate && (
+                    <div className="border-l-2 border-cyan-400 pl-3 py-2 bg-cyan-50/50 rounded-r">
+                      <div className="flex items-center mb-1">
+                        <svg className="w-4 h-4 text-cyan-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <div className="text-sm font-semibold text-cyan-800">Next Follow-up</div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="text-sm">No notes yet</p>
-                    <p className="text-xs text-gray-400 mt-1">Add a note to track communication with this lead</p>
-                  </div>
-                )}
+                      <div className="text-sm text-cyan-700">
+                        📅 {new Date(lead.followUpDate).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Follow-up History */}
+                  {lead.followUpHistory && lead.followUpHistory.length > 0 && (
+                    <div className="border-l-2 border-gray-300 pl-3 py-2 bg-gray-50/50 rounded-r">
+                      <div className="text-xs font-semibold text-gray-700 mb-2">Follow-up History ({lead.followUpHistory.length})</div>
+                      <div className="space-y-2">
+                        {lead.followUpHistory.slice().reverse().map((followUp, index) => (
+                          <div key={index} className="text-xs p-2 bg-white border border-gray-200 rounded">
+                            <div className="font-medium text-gray-700">
+                              📅 {new Date(followUp.scheduledDate).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            {followUp.notes && (
+                              <div className="text-gray-600 mt-1">{followUp.notes}</div>
+                            )}
+                            <div className="text-gray-400 mt-1">
+                              {followUp.completed ? '✓ Completed' : 'Scheduled'} • {formatDate(followUp.addedAt)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Current Site Visit */}
+                  {lead.siteVisitDate && (
+                    <div className="border-l-2 border-blue-400 pl-3 py-2 bg-blue-50/50 rounded-r">
+                      <div className="flex items-center mb-1">
+                        <svg className="w-4 h-4 text-blue-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <div className="text-sm font-semibold text-blue-800">Next Site Visit</div>
+                      </div>
+                      <div className="text-sm text-blue-700">
+                        🏠 {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Visit History */}
+                  {lead.visitHistory && lead.visitHistory.length > 0 && (
+                    <div className="border-l-2 border-gray-300 pl-3 py-2 bg-gray-50/50 rounded-r">
+                      <div className="text-xs font-semibold text-gray-700 mb-2">Site Visit History ({lead.visitHistory.length})</div>
+                      <div className="space-y-2">
+                        {lead.visitHistory.slice().reverse().map((visit, index) => (
+                          <div key={index} className="text-xs p-2 bg-white border border-gray-200 rounded">
+                            <div className="font-medium text-gray-700">
+                              🏠 {new Date(visit.scheduledDate).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                            {visit.reason && (
+                              <div className="text-gray-600 mt-1">{visit.reason}</div>
+                            )}
+                            {visit.rescheduleReason && (
+                              <div className="text-orange-600 mt-1">Reschedule reason: {visit.rescheduleReason}</div>
+                            )}
+                            <div className="text-gray-400 mt-1">
+                              {visit.type === 'completed' ? '✓ Completed' : visit.type === 'rescheduled' ? '↻ Rescheduled' : visit.type === 'cancelled' ? '✗ Cancelled' : 'Scheduled'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {lead.notes && lead.notes.length > 0 ? (
+                    <>
+                      <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide pt-2">
+                        Notes ({lead.notes.length})
+                      </div>
+                      {lead.notes.slice().reverse().map((note, index) => (
+                        <div key={index} className="border-l-2 border-indigo-200 pl-3 py-2 bg-indigo-50/50 rounded-r">
+                          <div className="text-sm text-gray-700 mb-1">{note.content}</div>
+                          <div className="text-xs text-gray-500">
+                            {formatDate(note.addedAt)} • {note.addedBy}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  ) : !lead.followUpDate && !lead.siteVisitDate ? (
+                    <div className="text-center py-4 text-gray-500">
+                      <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-sm">No activity yet</p>
+                      <p className="text-xs text-gray-400 mt-1">Add notes, schedule follow-ups or site visits</p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               {/* CRM Action Buttons */}
@@ -1353,33 +1456,21 @@ export default function LeadDetailPage() {
 
                 {/* Follow-up Scheduled Fields */}
                 {updateStatus === 'follow_up_scheduled' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Follow-up Date & Time <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={followUpDate}
-                        onChange={(e) => setFollowUpDate(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Follow-up Notes <span className="text-red-500">*</span>
-                      </label>
-                      <textarea
-                        value={followUpNotes}
-                        onChange={(e) => setFollowUpNotes(e.target.value)}
-                        rows="2"
-                        placeholder="e.g., Customer needs more time to decide, call back next week..."
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
-                        required
-                      />
-                    </div>
-                  </>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Follow-up Date & Time <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={followUpDate}
+                      onChange={(e) => setFollowUpDate(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D7242A] focus:border-[#D7242A] shadow-sm"
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can add notes below using the "Add Note" field
+                    </p>
+                  </div>
                 )}
 
                 {/* Visit Rescheduled Fields */}
@@ -1462,7 +1553,7 @@ export default function LeadDetailPage() {
                     type="submit"
                     disabled={isUpdating || (!updateStatus && !updateNote.trim()) ||
                       (updateStatus === 'site_visit_scheduled' && (!siteVisitDate || !visitReason)) ||
-                      (updateStatus === 'follow_up_scheduled' && (!followUpDate || !followUpNotes)) ||
+                      (updateStatus === 'follow_up_scheduled' && !followUpDate) ||
                       (updateStatus === 'visit_rescheduled' && (!siteVisitDate || !rescheduleReason))}
                     className="px-4 py-2 text-sm font-medium text-white bg-[#D7242A] rounded-md hover:bg-[#D7242A]/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
