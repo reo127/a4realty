@@ -20,6 +20,7 @@ export default function LeadDetailPage() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [urlParams, setUrlParams] = useState({});
   const [searchFilters, setSearchFilters] = useState({
     location: '',
     type: '',
@@ -41,13 +42,50 @@ export default function LeadDetailPage() {
   const [updateError, setUpdateError] = useState('');
   const [statusOptions, setStatusOptions] = useState({});
   const [availableSubstatuses, setAvailableSubstatuses] = useState([]);
+  const [visitedLeads, setVisitedLeads] = useState(new Set());
 
   useEffect(() => {
-    if (params.id) {
+    // Parse URL parameters from the current URL
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const parsedParams = {
+        sortBy: searchParams.get('sortBy') || 'createdAt',
+        sortOrder: searchParams.get('sortOrder') || 'desc',
+        page: searchParams.get('page') || '1',
+        search: searchParams.get('search') || '',
+        status: searchParams.get('status') || '',
+        dateFrom: searchParams.get('dateFrom') || '',
+        dateTo: searchParams.get('dateTo') || ''
+      };
+      setUrlParams(parsedParams);
+
+      // Load visited leads from session storage
+      const savedVisited = sessionStorage.getItem('visitedLeads');
+      if (savedVisited) {
+        try {
+          setVisitedLeads(new Set(JSON.parse(savedVisited)));
+        } catch (e) {
+          console.error('Error loading visited leads:', e);
+        }
+      }
+
+      // Mark current lead as visited
+      const currentLeadId = params.id;
+      if (currentLeadId) {
+        const newVisited = savedVisited ? new Set(JSON.parse(savedVisited)) : new Set();
+        newVisited.add(currentLeadId);
+        setVisitedLeads(newVisited);
+        sessionStorage.setItem('visitedLeads', JSON.stringify([...newVisited]));
+      }
+    }
+  }, [params.id]);
+
+  useEffect(() => {
+    if (params.id && Object.keys(urlParams).length > 0) {
       fetchLeadDetails();
       fetchAllLeadsForNavigation();
     }
-  }, [params.id]);
+  }, [params.id, urlParams]);
 
   useEffect(() => {
     if (lead?.interestedLocation) {
@@ -91,9 +129,18 @@ export default function LeadDetailPage() {
 
   const fetchAllLeadsForNavigation = async () => {
     try {
-      // Fetch a reasonable number of recent leads for navigation
-      // You can adjust the limit or add pagination controls later
-      const response = await fetch('/api/leads?limit=100&sortBy=createdAt&sortOrder=desc');
+      // Use the same sorting/filtering params from the leads list page
+      const queryParams = new URLSearchParams({
+        limit: '1000', // Fetch more leads to ensure we have all from current filter
+        sortBy: urlParams.sortBy || 'createdAt',
+        sortOrder: urlParams.sortOrder || 'desc',
+        ...(urlParams.search && { search: urlParams.search }),
+        ...(urlParams.status && { status: urlParams.status }),
+        ...(urlParams.dateFrom && { dateFrom: urlParams.dateFrom }),
+        ...(urlParams.dateTo && { dateTo: urlParams.dateTo })
+      });
+
+      const response = await fetch(`/api/leads?${queryParams.toString()}`);
       const data = await response.json();
 
       if (data.success) {
@@ -475,7 +522,17 @@ export default function LeadDetailPage() {
   };
 
   const navigateToLead = (leadId) => {
-    router.push(`/admin/crm/leads/${leadId}`);
+    // Preserve URL params when navigating to next/previous lead
+    const queryParams = new URLSearchParams({
+      sortBy: urlParams.sortBy || 'createdAt',
+      sortOrder: urlParams.sortOrder || 'desc',
+      page: urlParams.page || '1',
+      ...(urlParams.search && { search: urlParams.search }),
+      ...(urlParams.status && { status: urlParams.status }),
+      ...(urlParams.dateFrom && { dateFrom: urlParams.dateFrom }),
+      ...(urlParams.dateTo && { dateTo: urlParams.dateTo })
+    });
+    router.push(`/admin/crm/leads/${leadId}?${queryParams.toString()}`);
   };
 
   const getNextLead = () => {
@@ -522,6 +579,7 @@ export default function LeadDetailPage() {
             <div className="p-2">
               {allLeads.map((leadItem) => {
                 const isActive = leadItem._id === params.id;
+                const isVisited = visitedLeads.has(leadItem._id);
                 return (
                   <div
                     key={leadItem._id}
@@ -532,6 +590,8 @@ export default function LeadDetailPage() {
                     className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
                       isActive
                         ? 'bg-[#D7242A]/10 border-l-4 border-[#D7242A] text-[#D7242A]'
+                        : isVisited
+                        ? 'bg-green-50 hover:bg-green-100 border-l-4 border-green-400'
                         : 'hover:bg-gray-50 border-l-4 border-transparent'
                     }`}
                   >
@@ -641,7 +701,15 @@ export default function LeadDetailPage() {
                 </svg>
               </button>
               <Link
-                href="/admin/crm/leads"
+                href={`/admin/crm/leads?${new URLSearchParams({
+                  sortBy: urlParams.sortBy || 'createdAt',
+                  sortOrder: urlParams.sortOrder || 'desc',
+                  page: urlParams.page || '1',
+                  ...(urlParams.search && { search: urlParams.search }),
+                  ...(urlParams.status && urlParams.status !== 'all' && { status: urlParams.status }),
+                  ...(urlParams.dateFrom && { dateFrom: urlParams.dateFrom }),
+                  ...(urlParams.dateTo && { dateTo: urlParams.dateTo })
+                }).toString()}`}
                 className="text-[#D7242A] hover:text-[#D7242A]/80 flex-shrink-0"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

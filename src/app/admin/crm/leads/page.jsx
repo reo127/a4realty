@@ -24,6 +24,8 @@ export default function CRMLeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [urlParamsInitialized, setUrlParamsInitialized] = useState(false);
+  const [visitedLeads, setVisitedLeads] = useState(new Set());
   const [newLead, setNewLead] = useState({
     name: '',
     phone: '',
@@ -33,6 +35,44 @@ export default function CRMLeadsPage() {
 
   // Track previous filter values to prevent unnecessary page resets
   const prevFiltersRef = useRef({ searchTerm, statusFilter, dateFrom, dateTo });
+
+  // Initialize state from URL params and load visited leads on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !urlParamsInitialized) {
+      const searchParams = new URLSearchParams(window.location.search);
+
+      const urlSortBy = searchParams.get('sortBy');
+      const urlSortOrder = searchParams.get('sortOrder');
+      const urlPage = searchParams.get('page');
+      const urlSearch = searchParams.get('search');
+      const urlStatus = searchParams.get('status');
+      const urlDateFrom = searchParams.get('dateFrom');
+      const urlDateTo = searchParams.get('dateTo');
+
+      if (urlSortBy) setSortBy(urlSortBy);
+      if (urlSortOrder) setSortOrder(urlSortOrder);
+      if (urlPage) setCurrentPage(parseInt(urlPage));
+      if (urlSearch) {
+        setSearchInput(urlSearch);
+        setSearchTerm(urlSearch);
+      }
+      if (urlStatus) setStatusFilter(urlStatus);
+      if (urlDateFrom) setDateFrom(urlDateFrom);
+      if (urlDateTo) setDateTo(urlDateTo);
+
+      // Load visited leads from session storage
+      const savedVisited = sessionStorage.getItem('visitedLeads');
+      if (savedVisited) {
+        try {
+          setVisitedLeads(new Set(JSON.parse(savedVisited)));
+        } catch (e) {
+          console.error('Error loading visited leads:', e);
+        }
+      }
+
+      setUrlParamsInitialized(true);
+    }
+  }, [urlParamsInitialized]);
 
   // Handle search action (button click or Enter key)
   const handleSearch = () => {
@@ -633,11 +673,33 @@ export default function CRMLeadsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {leads.map((lead) => (
+                  {leads.map((lead) => {
+                    const isVisited = visitedLeads.has(lead._id);
+                    return (
                     <tr
                       key={lead._id}
-                      onClick={() => window.location.href = `/admin/crm/leads/${lead._id}`}
-                      className="hover:bg-indigo-50 transition-colors duration-200 cursor-pointer"
+                      onClick={() => {
+                        // Mark lead as visited
+                        const newVisited = new Set(visitedLeads);
+                        newVisited.add(lead._id);
+                        setVisitedLeads(newVisited);
+                        sessionStorage.setItem('visitedLeads', JSON.stringify([...newVisited]));
+
+                        // Build URL with current filter/sort params
+                        const params = new URLSearchParams({
+                          sortBy,
+                          sortOrder,
+                          page: currentPage.toString(),
+                          ...(searchTerm && { search: searchTerm }),
+                          ...(statusFilter !== 'all' && { status: statusFilter }),
+                          ...(dateFrom && { dateFrom }),
+                          ...(dateTo && { dateTo })
+                        });
+                        window.location.href = `/admin/crm/leads/${lead._id}?${params.toString()}`;
+                      }}
+                      className={`hover:bg-indigo-50 transition-colors duration-200 cursor-pointer ${
+                        isVisited ? 'bg-green-50 border-l-4 border-green-400' : ''
+                      }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -820,7 +882,8 @@ export default function CRMLeadsPage() {
                         {formatDate(lead.createdAt)}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
