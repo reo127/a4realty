@@ -543,14 +543,16 @@ export default function CRMLeadsPage() {
                   <option value="new">New</option>
                   <option value="not_connected">Not Connected</option>
                   <option value="interested">Interested</option>
-                  <option value="follow_up">Follow Up</option>
+                  <option value="site_visit_scheduled">Site Visit Scheduled</option>
+                  <option value="follow_up_scheduled">Follow-up Scheduled</option>
+                  <option value="visit_rescheduled">Visit Rescheduled</option>
+                  <option value="site_visit_done">Site Visit Done</option>
                   <option value="not_interested">Not Interested</option>
                   <option value="call_disconnected">Call Disconnected</option>
                   <option value="location_mismatch">Location Mismatch</option>
                   <option value="budget_mismatch">Budget Mismatch</option>
                   <option value="possession_mismatch">Possession Mismatch</option>
                   <option value="do_not_disturb">Do Not Disturb</option>
-                  <option value="site_visit_done">Site Visit Done</option>
                 </select>
               </div>
 
