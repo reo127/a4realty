@@ -12,6 +12,7 @@ export default function LeadDetailPage() {
   const router = useRouter();
   const [lead, setLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
+  const [totalLeadsCount, setTotalLeadsCount] = useState(0);
   const [relatedProperties, setRelatedProperties] = useState([]);
   const [nearbyProperties, setNearbyProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,9 +130,10 @@ export default function LeadDetailPage() {
 
   const fetchAllLeadsForNavigation = async () => {
     try {
-      // Use the same sorting/filtering params from the leads list page
+      // Use the same sorting/filtering/pagination params from the leads list page
       const queryParams = new URLSearchParams({
-        limit: '1000', // Fetch more leads to ensure we have all from current filter
+        limit: '30', // Match the leads list page limit for consistency
+        page: urlParams.page || '1', // Respect the current page
         sortBy: urlParams.sortBy || 'createdAt',
         sortOrder: urlParams.sortOrder || 'desc',
         ...(urlParams.search && { search: urlParams.search }),
@@ -145,6 +147,7 @@ export default function LeadDetailPage() {
 
       if (data.success) {
         setAllLeads(data.data);
+        setTotalLeadsCount(data.totalCount || 0);
       }
     } catch (error) {
       console.error('Error fetching leads for navigation:', error);
@@ -521,6 +524,13 @@ export default function LeadDetailPage() {
     return allLeads.findIndex(l => l._id === params.id);
   };
 
+  const getCurrentLeadActualPosition = () => {
+    const currentPage = parseInt(urlParams.page || '1');
+    const indexInCurrentPage = getCurrentLeadIndex();
+    if (indexInCurrentPage === -1) return 0;
+    return ((currentPage - 1) * 30) + indexInCurrentPage + 1;
+  };
+
   const navigateToLead = (leadId) => {
     // Preserve URL params when navigating to next/previous lead
     const queryParams = new URLSearchParams({
@@ -561,7 +571,7 @@ export default function LeadDetailPage() {
           {/* Sidebar Header */}
           <div className="bg-[#D7242A] text-white px-4 py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">All Leads ({allLeads.length})</h3>
+              <h3 className="text-lg font-semibold">Current Page Leads ({allLeads.length})</h3>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="text-white hover:text-white/80 transition-colors"
@@ -571,7 +581,7 @@ export default function LeadDetailPage() {
                 </svg>
               </button>
             </div>
-            <p className="text-white/90 text-sm mt-1">Click any lead to navigate instantly</p>
+            <p className="text-white/90 text-sm mt-1">Showing leads from current page • {totalLeadsCount} total</p>
           </div>
 
           {/* Leads List */}
@@ -639,7 +649,7 @@ export default function LeadDetailPage() {
           {/* Sidebar Footer */}
           <div className="bg-gray-50 px-4 py-3 border-t">
             <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>Lead {getCurrentLeadIndex() + 1} of {allLeads.length}</span>
+              <span>Lead {getCurrentLeadActualPosition()} of {totalLeadsCount}</span>
               <div className="flex space-x-2">
                 <button
                   onClick={() => {
@@ -719,7 +729,7 @@ export default function LeadDetailPage() {
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Lead Details</h1>
                 <p className="text-sm sm:text-base text-gray-600 mt-1 truncate">
-                  ID: {lead._id.slice(-8)} • {getCurrentLeadIndex() + 1} of {allLeads.length} leads
+                  ID: {lead._id.slice(-8)} • {getCurrentLeadActualPosition()} of {totalLeadsCount} leads
                 </p>
               </div>
             </div>
@@ -759,7 +769,7 @@ export default function LeadDetailPage() {
                   
                   {/* Lead Position Indicator */}
                   <div className="ml-2 px-2 sm:px-3 py-2 bg-[#D7242A]/5 text-[#D7242A] rounded-md text-xs sm:text-sm font-medium border border-[#D7242A]/20 whitespace-nowrap">
-                    {getCurrentLeadIndex() + 1} / {allLeads.length}
+                    {getCurrentLeadActualPosition()} / {totalLeadsCount}
                   </div>
                 </>
               ) : (
@@ -1082,7 +1092,7 @@ export default function LeadDetailPage() {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
-                  Browse All Leads ({allLeads.length})
+                  Browse Page Leads ({allLeads.length})
                 </button>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <button
