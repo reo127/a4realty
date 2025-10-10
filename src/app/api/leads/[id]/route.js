@@ -29,6 +29,44 @@ export async function GET(request, { params }) {
   }
 }
 
+// PUT - Update lead information (name, email, phone, location)
+export async function PUT(request, { params }) {
+  try {
+    await connectToDatabase();
+
+    const data = await request.json();
+    const { name, email, phone, interestedLocation } = data;
+
+    const lead = await Lead.findById(params.id);
+
+    if (!lead) {
+      return NextResponse.json(
+        { success: false, message: 'Lead not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update fields if provided
+    if (name) lead.name = name;
+    if (email !== undefined) lead.email = email;
+    if (phone) lead.phone = phone;
+    if (interestedLocation) lead.interestedLocation = interestedLocation;
+
+    const updatedLead = await lead.save();
+
+    return NextResponse.json(
+      { success: true, data: updatedLead, message: 'Lead updated successfully' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Update lead error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Server Error' },
+      { status: 500 }
+    );
+  }
+}
+
 // DELETE - Delete a lead by ID
 export async function DELETE(request, { params }) {
   try {
