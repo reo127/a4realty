@@ -23,8 +23,29 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'builder', 'admin'],
+    enum: ['user', 'builder', 'admin', 'agent'],
     default: 'user',
+  },
+  phone: {
+    type: String,
+    default: null,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  // Agent statistics
+  assignedLeadsCount: {
+    type: Number,
+    default: 0,
+  },
+  completedLeadsCount: {
+    type: Number,
+    default: 0,
+  },
+  lastActiveAt: {
+    type: Date,
+    default: Date.now,
   },
   createdAt: {
     type: Date,

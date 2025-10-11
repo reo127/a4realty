@@ -57,6 +57,8 @@ export async function GET(request) {
     const sortOrder = searchParams.get('sortOrder') || 'desc';
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
+    const assignedTo = searchParams.get('assignedTo'); // For filtering by agent
+    const assignmentStatus = searchParams.get('assignmentStatus'); // 'assigned', 'unassigned', 'all'
 
     // Build filter query
     const filter = {};
@@ -74,6 +76,19 @@ export async function GET(request) {
     // Status filter
     if (status && status !== 'all') {
       filter.status = status;
+    }
+
+    // Assignment status filter
+    if (assignmentStatus === 'assigned') {
+      filter.isAssigned = true;
+    } else if (assignmentStatus === 'unassigned') {
+      filter.isAssigned = false;
+    }
+
+    // Filter by specific agent
+    if (assignedTo) {
+      filter.assignedTo = assignedTo;
+      filter.isAssigned = true;
     }
 
     // Date range filter
@@ -100,8 +115,9 @@ export async function GET(request) {
     const totalCount = await Lead.countDocuments(filter);
     const totalPages = Math.ceil(totalCount / limit);
 
-    // Fetch leads with pagination
+    // Fetch leads with pagination and populate assignedTo field
     const leads = await Lead.find(filter)
+      .populate('assignedTo', 'name email')
       .sort(sort)
       .skip(skip)
       .limit(limit);

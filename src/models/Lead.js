@@ -89,6 +89,39 @@ const LeadSchema = new mongoose.Schema({
     type: String,
     default: 'website'
   },
+  // Assignment fields
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  assignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  assignedAt: {
+    type: Date,
+    default: null
+  },
+  isAssigned: {
+    type: Boolean,
+    default: false
+  },
+  // Lead locking fields
+  lockedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  lockedAt: {
+    type: Date,
+    default: null
+  },
+  lockExpiry: {
+    type: Date,
+    default: null
+  },
   status: {
     type: String,
     enum: Object.keys(STATUS_SUBSTATUS_MAP),

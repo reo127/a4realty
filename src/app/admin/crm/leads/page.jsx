@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getLocationDisplayName } from '@/utils/locations';
 import BulkLeadUpload from '@/components/BulkLeadUpload';
 import EditLeadModal from '@/components/EditLeadModal';
+import BulkAssignModal from '@/components/BulkAssignModal';
 
 export default function CRMLeadsPage() {
   const router = useRouter();
@@ -32,6 +33,7 @@ export default function CRMLeadsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showBulkAssign, setShowBulkAssign] = useState(false);
 
   // Read all filter values from URL (source of truth)
   const currentPage = parseInt(searchParams.get('page')) || 1;
@@ -41,6 +43,7 @@ export default function CRMLeadsPage() {
   const statusFilter = searchParams.get('status') || 'all';
   const dateFrom = searchParams.get('dateFrom') || '';
   const dateTo = searchParams.get('dateTo') || '';
+  const assignmentFilter = searchParams.get('assignment') || 'all';
 
   // Helper function to update URL params
   const updateURLParams = (updates, addToHistory = false) => {
@@ -55,6 +58,7 @@ export default function CRMLeadsPage() {
       status: statusFilter,
       dateFrom: dateFrom,
       dateTo: dateTo,
+      assignment: assignmentFilter,
     };
 
     // Merge with updates
@@ -68,6 +72,7 @@ export default function CRMLeadsPage() {
     if (merged.status && merged.status !== 'all') params.set('status', merged.status);
     if (merged.dateFrom) params.set('dateFrom', merged.dateFrom);
     if (merged.dateTo) params.set('dateTo', merged.dateTo);
+    if (merged.assignment && merged.assignment !== 'all') params.set('assignment', merged.assignment);
 
     // Use push for pagination (adds to history), replace for filters (doesn't pollute history)
     if (addToHistory) {
@@ -137,7 +142,8 @@ export default function CRMLeadsPage() {
           ...(searchTerm && { search: searchTerm }),
           ...(statusFilter !== 'all' && { status: statusFilter }),
           ...(dateFrom && { dateFrom }),
-          ...(dateTo && { dateTo })
+          ...(dateTo && { dateTo }),
+          ...(assignmentFilter !== 'all' && { assignmentStatus: assignmentFilter })
         });
 
         const response = await fetch(`/api/leads?${params}`);
@@ -165,7 +171,7 @@ export default function CRMLeadsPage() {
     };
 
     fetchLeadsData();
-  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo]);
+  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo, assignmentFilter]);
 
   const handleAddLead = async (e) => {
     e.preventDefault();
@@ -455,6 +461,11 @@ export default function CRMLeadsPage() {
     );
   };
 
+  const handleBulkAssignComplete = () => {
+    // Refresh leads data after bulk assignment
+    updateURLParams({ page: '1' });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -508,6 +519,15 @@ export default function CRMLeadsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span>Add Lead</span>
+              </button>
+              <button
+                onClick={() => setShowBulkAssign(true)}
+                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2 text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Bulk Assign</span>
               </button>
               <button
                 onClick={downloadTemplate}
@@ -614,6 +634,22 @@ export default function CRMLeadsPage() {
                 </select>
               </div>
 
+              {/* Assignment Filter */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assignment Status
+                </label>
+                <select
+                  value={assignmentFilter}
+                  onChange={(e) => updateURLParams({ assignment: e.target.value, page: '1' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">All Leads</option>
+                  <option value="assigned">Assigned</option>
+                  <option value="unassigned">Unassigned</option>
+                </select>
+              </div>
+
               {/* Date From */}
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -666,7 +702,7 @@ export default function CRMLeadsPage() {
               </div>
 
               {/* Clear Filters Button */}
-              {(statusFilter !== 'all' || dateFrom || dateTo || searchTerm || searchInput) && (
+              {(statusFilter !== 'all' || assignmentFilter !== 'all' || dateFrom || dateTo || searchTerm || searchInput) && (
                 <button
                   onClick={() => {
                     setSearchInput('');
@@ -722,6 +758,9 @@ export default function CRMLeadsPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Assigned To
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date Added
@@ -938,6 +977,27 @@ export default function CRMLeadsPage() {
                             </div>
                           ) : null}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {lead.assignedTo ? (
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-8 w-8">
+                              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                                <span className="text-green-700 font-medium text-xs">
+                                  {lead.assignedTo.name?.charAt(0)?.toUpperCase() || 'A'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="ml-2">
+                              <div className="text-sm font-medium text-gray-900">{lead.assignedTo.name || 'Unknown'}</div>
+                              <div className="text-xs text-gray-500">{lead.assignedTo.email || ''}</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            Unassigned
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(lead.createdAt)}
@@ -1232,6 +1292,14 @@ export default function CRMLeadsPage() {
             setEditingLead(null);
           }}
           onUpdate={handleUpdateLead}
+        />
+      )}
+
+      {/* Bulk Assign Modal */}
+      {showBulkAssign && (
+        <BulkAssignModal
+          onClose={() => setShowBulkAssign(false)}
+          onAssign={handleBulkAssignComplete}
         />
       )}
     </div>
