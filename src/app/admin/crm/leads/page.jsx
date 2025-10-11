@@ -1,31 +1,27 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getLocationDisplayName } from '@/utils/locations';
 import BulkLeadUpload from '@/components/BulkLeadUpload';
 import EditLeadModal from '@/components/EditLeadModal';
 
 export default function CRMLeadsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchInput, setSearchInput] = useState(''); // What user types
-  const [searchTerm, setSearchTerm] = useState(''); // What actually triggers search
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState('desc');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addingLead, setAddingLead] = useState(false);
   const [addError, setAddError] = useState('');
   const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
   const [downloading, setDownloading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [urlParamsInitialized, setUrlParamsInitialized] = useState(false);
   const [visitedLeads, setVisitedLeads] = useState(new Set());
   const [newLead, setNewLead] = useState({
     name: '',
@@ -37,8 +33,49 @@ export default function CRMLeadsPage() {
   const [editingLead, setEditingLead] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Track previous filter values to prevent unnecessary page resets
-  const prevFiltersRef = useRef({ searchTerm, statusFilter, dateFrom, dateTo });
+  // Read all filter values from URL (source of truth)
+  const currentPage = parseInt(searchParams.get('page')) || 1;
+  const searchTerm = searchParams.get('search') || '';
+  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const sortOrder = searchParams.get('sortOrder') || 'desc';
+  const statusFilter = searchParams.get('status') || 'all';
+  const dateFrom = searchParams.get('dateFrom') || '';
+  const dateTo = searchParams.get('dateTo') || '';
+
+  // Helper function to update URL params
+  const updateURLParams = (updates, addToHistory = false) => {
+    const params = new URLSearchParams();
+
+    // Get current values
+    const current = {
+      page: currentPage.toString(),
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+      search: searchTerm,
+      status: statusFilter,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+    };
+
+    // Merge with updates
+    const merged = { ...current, ...updates };
+
+    // Only add non-empty values to URL
+    if (merged.page && merged.page !== '1') params.set('page', merged.page);
+    if (merged.sortBy && merged.sortBy !== 'createdAt') params.set('sortBy', merged.sortBy);
+    if (merged.sortOrder && merged.sortOrder !== 'desc') params.set('sortOrder', merged.sortOrder);
+    if (merged.search) params.set('search', merged.search);
+    if (merged.status && merged.status !== 'all') params.set('status', merged.status);
+    if (merged.dateFrom) params.set('dateFrom', merged.dateFrom);
+    if (merged.dateTo) params.set('dateTo', merged.dateTo);
+
+    // Use push for pagination (adds to history), replace for filters (doesn't pollute history)
+    if (addToHistory) {
+      router.push(`/admin/crm/leads?${params.toString()}`, { scroll: false });
+    } else {
+      router.replace(`/admin/crm/leads?${params.toString()}`, { scroll: false });
+    }
+  };
 
   // Check if user is admin
   useEffect(() => {
@@ -53,31 +90,14 @@ export default function CRMLeadsPage() {
     }
   }, []);
 
-  // Initialize state from URL params and load visited leads on component mount
+  // Initialize searchInput from URL on mount and when searchTerm changes
   useEffect(() => {
-    if (typeof window !== 'undefined' && !urlParamsInitialized) {
-      const searchParams = new URLSearchParams(window.location.search);
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
 
-      const urlSortBy = searchParams.get('sortBy');
-      const urlSortOrder = searchParams.get('sortOrder');
-      const urlPage = searchParams.get('page');
-      const urlSearch = searchParams.get('search');
-      const urlStatus = searchParams.get('status');
-      const urlDateFrom = searchParams.get('dateFrom');
-      const urlDateTo = searchParams.get('dateTo');
-
-      if (urlSortBy) setSortBy(urlSortBy);
-      if (urlSortOrder) setSortOrder(urlSortOrder);
-      if (urlPage) setCurrentPage(parseInt(urlPage));
-      if (urlSearch) {
-        setSearchInput(urlSearch);
-        setSearchTerm(urlSearch);
-      }
-      if (urlStatus) setStatusFilter(urlStatus);
-      if (urlDateFrom) setDateFrom(urlDateFrom);
-      if (urlDateTo) setDateTo(urlDateTo);
-
-      // Load visited leads from session storage
+  // Load visited leads from session storage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
       const savedVisited = sessionStorage.getItem('visitedLeads');
       if (savedVisited) {
         try {
@@ -86,14 +106,13 @@ export default function CRMLeadsPage() {
           console.error('Error loading visited leads:', e);
         }
       }
-
-      setUrlParamsInitialized(true);
     }
-  }, [urlParamsInitialized]);
+  }, []);
 
   // Handle search action (button click or Enter key)
   const handleSearch = () => {
-    setSearchTerm(searchInput);
+    // Update URL with search term and reset to page 1
+    updateURLParams({ search: searchInput, page: '1' });
   };
 
   // Handle Enter key in search input
@@ -132,7 +151,7 @@ export default function CRMLeadsPage() {
 
           // If current page exceeds total pages, reset to last valid page
           if (data.totalPages > 0 && currentPage > data.totalPages) {
-            setCurrentPage(data.totalPages);
+            updateURLParams({ page: data.totalPages.toString() }, false);
           }
         } else {
           throw new Error(data.message || 'Failed to fetch leads');
@@ -168,8 +187,8 @@ export default function CRMLeadsPage() {
         throw new Error(data.message || 'Failed to add lead');
       }
 
-      // Reset to page 1 (this will trigger useEffect to fetch)
-      setCurrentPage(1);
+      // Reset to page 1 by updating URL
+      updateURLParams({ page: '1' });
 
       // Reset form and close modal
       setNewLead({
@@ -199,22 +218,6 @@ export default function CRMLeadsPage() {
     }
   };
 
-  // Reset to page 1 when filters change (but not sort order which should preserve page)
-  useEffect(() => {
-    const prevFilters = prevFiltersRef.current;
-    const filtersChanged =
-      prevFilters.searchTerm !== searchTerm ||
-      prevFilters.statusFilter !== statusFilter ||
-      prevFilters.dateFrom !== dateFrom ||
-      prevFilters.dateTo !== dateTo;
-
-    if (filtersChanged && currentPage !== 1) {
-      setCurrentPage(1);
-    }
-
-    // Update ref with current filter values
-    prevFiltersRef.current = { searchTerm, statusFilter, dateFrom, dateTo };
-  }, [searchTerm, statusFilter, dateFrom, dateTo, currentPage]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -314,9 +317,9 @@ export default function CRMLeadsPage() {
   };
 
   const handleBulkUploadComplete = (results) => {
-    // Reset to page 1 (this will trigger useEffect to fetch)
+    // Reset to page 1 by updating URL
     if (results.createdCount > 0) {
-      setCurrentPage(1);
+      updateURLParams({ page: '1' });
     }
   };
 
@@ -471,8 +474,8 @@ export default function CRMLeadsPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Leads</h2>
             <p className="text-red-600">{error}</p>
-            <button 
-              onClick={fetchLeads}
+            <button
+              onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Retry
@@ -567,7 +570,7 @@ export default function CRMLeadsPage() {
                   placeholder="Search by name, phone, email, or location..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyPress={handleSearchKeyPress}
+                  onKeyDown={handleSearchKeyPress}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
                 <button
@@ -591,7 +594,7 @@ export default function CRMLeadsPage() {
                 </label>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e) => updateURLParams({ status: e.target.value, page: '1' })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="all">All Statuses</option>
@@ -619,7 +622,7 @@ export default function CRMLeadsPage() {
                 <input
                   type="date"
                   value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
+                  onChange={(e) => updateURLParams({ dateFrom: e.target.value, page: '1' })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -632,7 +635,7 @@ export default function CRMLeadsPage() {
                 <input
                   type="date"
                   value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
+                  onChange={(e) => updateURLParams({ dateTo: e.target.value, page: '1' })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -645,7 +648,7 @@ export default function CRMLeadsPage() {
                 <div className="flex gap-2">
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => updateURLParams({ sortBy: e.target.value })}
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="createdAt">Date Added</option>
@@ -653,7 +656,7 @@ export default function CRMLeadsPage() {
                     <option value="interestedLocation">Location</option>
                   </select>
                   <button
-                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    onClick={() => updateURLParams({ sortOrder: sortOrder === 'asc' ? 'desc' : 'asc' })}
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
                   >
@@ -666,12 +669,8 @@ export default function CRMLeadsPage() {
               {(statusFilter !== 'all' || dateFrom || dateTo || searchTerm || searchInput) && (
                 <button
                   onClick={() => {
-                    setStatusFilter('all');
-                    setDateFrom('');
-                    setDateTo('');
-                    setSearchTerm('');
                     setSearchInput('');
-                    setCurrentPage(1);
+                    router.replace('/admin/crm/leads', { scroll: false });
                   }}
                   className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap"
                 >
@@ -980,7 +979,7 @@ export default function CRMLeadsPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   {/* Previous Button */}
                   <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    onClick={() => updateURLParams({ page: Math.max(1, currentPage - 1).toString() }, true)}
                     disabled={currentPage === 1}
                     className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
@@ -1049,7 +1048,7 @@ export default function CRMLeadsPage() {
                         return (
                           <button
                             key={page}
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => updateURLParams({ page: page.toString() }, true)}
                             className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                               currentPage === page
                                 ? 'bg-indigo-600 text-white'
@@ -1065,7 +1064,7 @@ export default function CRMLeadsPage() {
 
                   {/* Next Button */}
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    onClick={() => updateURLParams({ page: Math.min(totalPages, currentPage + 1).toString() }, true)}
                     disabled={currentPage === totalPages}
                     className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
