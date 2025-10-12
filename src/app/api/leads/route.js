@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Lead from '@/models/Lead';
+import User from '@/models/User';
 
 // POST - Create a new lead
 export async function POST(request) {
