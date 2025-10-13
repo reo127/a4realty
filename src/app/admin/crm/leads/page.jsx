@@ -34,6 +34,7 @@ export default function CRMLeadsPage() {
   const [editingLead, setEditingLead] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showBulkAssign, setShowBulkAssign] = useState(false);
+  const [agents, setAgents] = useState([]);
 
   // Read all filter values from URL (source of truth)
   const currentPage = parseInt(searchParams.get('page')) || 1;
@@ -44,6 +45,7 @@ export default function CRMLeadsPage() {
   const dateFrom = searchParams.get('dateFrom') || '';
   const dateTo = searchParams.get('dateTo') || '';
   const assignmentFilter = searchParams.get('assignment') || 'all';
+  const agentFilter = searchParams.get('agent') || 'all';
 
   // Helper function to update URL params
   const updateURLParams = (updates, addToHistory = false) => {
@@ -59,6 +61,7 @@ export default function CRMLeadsPage() {
       dateFrom: dateFrom,
       dateTo: dateTo,
       assignment: assignmentFilter,
+      agent: agentFilter,
     };
 
     // Merge with updates
@@ -73,6 +76,7 @@ export default function CRMLeadsPage() {
     if (merged.dateFrom) params.set('dateFrom', merged.dateFrom);
     if (merged.dateTo) params.set('dateTo', merged.dateTo);
     if (merged.assignment && merged.assignment !== 'all') params.set('assignment', merged.assignment);
+    if (merged.agent && merged.agent !== 'all') params.set('agent', merged.agent);
 
     // Use push for pagination (adds to history), replace for filters (doesn't pollute history)
     if (addToHistory) {
@@ -93,6 +97,22 @@ export default function CRMLeadsPage() {
         setIsAdmin(false);
       }
     }
+  }, []);
+
+  // Fetch agents list
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const response = await fetch('/api/agents');
+        const data = await response.json();
+        if (data.success) {
+          setAgents(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching agents:', error);
+      }
+    };
+    fetchAgents();
   }, []);
 
   // Initialize searchInput from URL on mount and when searchTerm changes
@@ -143,7 +163,8 @@ export default function CRMLeadsPage() {
           ...(statusFilter !== 'all' && { status: statusFilter }),
           ...(dateFrom && { dateFrom }),
           ...(dateTo && { dateTo }),
-          ...(assignmentFilter !== 'all' && { assignmentStatus: assignmentFilter })
+          ...(assignmentFilter !== 'all' && { assignmentStatus: assignmentFilter }),
+          ...(agentFilter !== 'all' && { assignedTo: agentFilter })
         });
 
         const response = await fetch(`/api/leads?${params}`);
@@ -171,7 +192,7 @@ export default function CRMLeadsPage() {
     };
 
     fetchLeadsData();
-  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo, assignmentFilter]);
+  }, [currentPage, searchTerm, sortBy, sortOrder, statusFilter, dateFrom, dateTo, assignmentFilter, agentFilter]);
 
   const handleAddLead = async (e) => {
     e.preventDefault();
@@ -650,6 +671,25 @@ export default function CRMLeadsPage() {
                 </select>
               </div>
 
+              {/* Agent Filter */}
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Filter by Agent
+                </label>
+                <select
+                  value={agentFilter}
+                  onChange={(e) => updateURLParams({ agent: e.target.value, page: '1' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">All Agents</option>
+                  {agents.map((agent) => (
+                    <option key={agent._id} value={agent._id}>
+                      {agent.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Date From */}
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -702,7 +742,7 @@ export default function CRMLeadsPage() {
               </div>
 
               {/* Clear Filters Button */}
-              {(statusFilter !== 'all' || assignmentFilter !== 'all' || dateFrom || dateTo || searchTerm || searchInput) && (
+              {(statusFilter !== 'all' || assignmentFilter !== 'all' || agentFilter !== 'all' || dateFrom || dateTo || searchTerm || searchInput) && (
                 <button
                   onClick={() => {
                     setSearchInput('');
@@ -813,6 +853,13 @@ export default function CRMLeadsPage() {
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{lead.name}</div>
                             <div className="text-sm text-gray-500">ID: {lead._id.slice(-6)}</div>
+                            <div className="text-xs text-gray-500">
+                              {lead.assignedTo ? (
+                                <span className="text-green-600">Assigned to: {lead.assignedTo.name}</span>
+                              ) : (
+                                <span className="text-orange-600">Not Assigned</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>

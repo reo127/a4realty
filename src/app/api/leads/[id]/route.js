@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
   try {
     await connectToDatabase();
 
-    const lead = await Lead.findById(params.id);
+    const lead = await Lead.findById(params.id).populate('assignedTo', 'name email');
 
     if (!lead) {
       return NextResponse.json(

@@ -795,6 +795,13 @@ export default function LeadDetailPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">{lead.name}</h2>
                 <p className="text-gray-600">Lead ID: {lead._id.slice(-8)}</p>
+                <p className="text-sm mt-1">
+                  {lead.assignedTo ? (
+                    <span className="text-green-600 font-medium">Assigned to: {lead.assignedTo.name}</span>
+                  ) : (
+                    <span className="text-orange-600 font-medium">Not Assigned</span>
+                  )}
+                </p>
               </div>
 
               <div className="space-y-4">
