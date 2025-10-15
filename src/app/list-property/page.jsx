@@ -75,20 +75,20 @@ export default function ListProperty() {
     // Check if user is logged in
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (storedUser && token) {
       const userData = JSON.parse(storedUser);
       setUser(userData);
-      
-      // Check if user is admin
-      if (userData.role !== 'admin') {
+
+      // Check if user is admin or builder
+      if (userData.role !== 'admin' && userData.role !== 'builder') {
         router.push('/');
         return;
       }
     } else {
       router.push('/login');
     }
-    
+
     setLoading(false);
   }, [router]);
   
@@ -414,8 +414,13 @@ export default function ListProperty() {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to create property');
       }
-      
-      setSuccess('Property listed successfully!');
+
+      // Different success messages based on user role
+      if (user.role === 'admin') {
+        setSuccess('Property listed successfully!');
+      } else {
+        setSuccess('Property submitted successfully! It will be reviewed by an admin before being published.');
+      }
       
       // Reset form
       setFormData({

@@ -30,68 +30,80 @@ export async function GET(request, { params }) {
     const { location, mode } = currentProperty;
     const limit = 6;
     let similarProperties = [];
-    
+
+    // Base filter to only show approved properties (or old ones without status field)
+    const statusFilter = {
+      $or: [
+        { status: 'approved' },
+        { status: { $exists: false } }
+      ]
+    };
+
     // Step 1: Try to find properties in the same exact location with same mode
     if (similarProperties.length < limit) {
       const sameLocationProps = await Property.find({
         _id: { $ne: id }, // Exclude current property
         location: location,
-        mode: mode
+        mode: mode,
+        ...statusFilter
       })
       .limit(limit - similarProperties.length)
       .sort({ createdAt: -1 });
-      
+
       similarProperties.push(...sameLocationProps);
     }
-    
+
     // Step 2: If not enough, try partial location matching (same city/area)
     if (similarProperties.length < limit) {
       // Extract keywords from location for broader matching
       const locationKeywords = location.toLowerCase().split(/[,\s]+/).filter(word => word.length > 2);
       const regexPattern = locationKeywords.join('|');
-      
+
       const partialLocationProps = await Property.find({
-        _id: { 
+        _id: {
           $ne: id,
           $nin: similarProperties.map(prop => prop._id) // Exclude already found properties
         },
         location: { $regex: regexPattern, $options: 'i' },
-        mode: mode
+        mode: mode,
+        ...statusFilter
       })
       .limit(limit - similarProperties.length)
       .sort({ createdAt: -1 });
-      
+
       similarProperties.push(...partialLocationProps);
     }
-    
+
     // Step 3: If still not enough, get random properties from Bangalore with same mode
     if (similarProperties.length < limit) {
       const bangaloreProps = await Property.find({
-        _id: { 
+        _id: {
           $ne: id,
           $nin: similarProperties.map(prop => prop._id) // Exclude already found properties
         },
         location: { $regex: 'bangalore', $options: 'i' },
-        mode: mode
+        mode: mode,
+        ...statusFilter
       })
       .limit(limit - similarProperties.length)
       .sort({ createdAt: -1 });
-      
+
       similarProperties.push(...bangaloreProps);
     }
-    
+
     // Step 4: If still not enough, get any random properties with same mode (last resort)
     if (similarProperties.length < limit) {
       const anyProps = await Property.find({
-        _id: { 
+        _id: {
           $ne: id,
           $nin: similarProperties.map(prop => prop._id) // Exclude already found properties
         },
-        mode: mode
+        mode: mode,
+        ...statusFilter
       })
       .limit(limit - similarProperties.length)
       .sort({ createdAt: -1 });
-      
+
       similarProperties.push(...anyProps);
     }
     

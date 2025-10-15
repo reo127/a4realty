@@ -17,6 +17,7 @@ export default function AdminProperties() {
   const [exporting, setExporting] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importResults, setImportResults] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all'); // all, pending, approved
 
   useEffect(() => {
     fetchProperties();
@@ -90,12 +91,78 @@ export default function AdminProperties() {
   };
 
   const handleUpdateProperty = (updatedProperty) => {
-    setProperties(properties.map(p => 
+    setProperties(properties.map(p =>
       p._id === updatedProperty._id ? updatedProperty : p
     ));
     setSuccess('Property updated successfully');
     setEditingProperty(null);
   };
+
+  const handleApprove = async (propertyId) => {
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/properties/${propertyId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'approved' })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess('Property approved successfully');
+        setProperties(properties.map(p =>
+          p._id === propertyId ? { ...p, status: 'approved' } : p
+        ));
+      } else {
+        setError(data.message || 'Failed to approve property');
+      }
+    } catch (error) {
+      setError('Error approving property');
+    }
+  };
+
+  const handleReject = async (propertyId) => {
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/properties/${propertyId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'rejected' })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess('Property rejected');
+        setProperties(properties.map(p =>
+          p._id === propertyId ? { ...p, status: 'rejected' } : p
+        ));
+      } else {
+        setError(data.message || 'Failed to reject property');
+      }
+    } catch (error) {
+      setError('Error rejecting property');
+    }
+  };
+
+  const filteredProperties = properties.filter(property => {
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'pending') return property.status === 'pending';
+    if (statusFilter === 'approved') return property.status === 'approved';
+    return true;
+  });
+
+  const pendingCount = properties.filter(p => p.status === 'pending').length;
+  const approvedCount = properties.filter(p => p.status === 'approved').length;
 
   const formatPrice = (price) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -223,9 +290,60 @@ export default function AdminProperties() {
           </div>
         )}
 
+        {/* Status Filter Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`${
+                statusFilter === 'all'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              All Properties
+              <span className="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium bg-gray-100 text-gray-900">
+                {properties.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter('pending')}
+              className={`${
+                statusFilter === 'pending'
+                  ? 'border-yellow-500 text-yellow-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              Pending Approval
+              {pendingCount > 0 && (
+                <span className="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setStatusFilter('approved')}
+              className={`${
+                statusFilter === 'approved'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              Approved
+              <span className="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                {approvedCount}
+              </span>
+            </button>
+          </nav>
+        </div>
+
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="bg-blue-700 text-white py-4 px-6 flex justify-between items-center">
-            <h2 className="text-xl font-semibold">All Properties ({properties.length})</h2>
+            <h2 className="text-xl font-semibold">
+              {statusFilter === 'all' && `All Properties (${filteredProperties.length})`}
+              {statusFilter === 'pending' && `Pending Approval (${filteredProperties.length})`}
+              {statusFilter === 'approved' && `Approved Properties (${filteredProperties.length})`}
+            </h2>
             <div className="flex space-x-3">
               <a
                 href="/api/properties/template"
@@ -272,13 +390,17 @@ export default function AdminProperties() {
             </div>
           </div>
 
-          {properties.length === 0 ? (
+          {filteredProperties.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               <p className="text-lg">No properties found</p>
-              <p className="text-sm mt-1">Properties will appear here once they are created</p>
+              <p className="text-sm mt-1">
+                {statusFilter === 'pending' ? 'No pending properties' :
+                 statusFilter === 'approved' ? 'No approved properties' :
+                 'Properties will appear here once they are created'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -301,6 +423,9 @@ export default function AdminProperties() {
                       Mode
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -312,7 +437,7 @@ export default function AdminProperties() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {properties.map((property) => (
+                  {filteredProperties.map((property) => (
                     <tr key={property._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -360,6 +485,16 @@ export default function AdminProperties() {
                           {property.mode}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+                          property.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          property.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {property.status || 'approved'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(property.createdAt)}
                       </td>
@@ -377,7 +512,29 @@ export default function AdminProperties() {
                         </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <div className="flex flex-wrap gap-2">
+                          {property.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(property._id)}
+                                className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+                              >
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleReject(property._id)}
+                                className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                              >
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Reject
+                              </button>
+                            </>
+                          )}
                           <button
                             onClick={() => handleEdit(property)}
                             className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"

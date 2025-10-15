@@ -22,7 +22,10 @@ const verifyToken = (request) => {
 export async function GET(request) {
   try {
     await connectToDatabase();
-    
+
+    // Verify token to check if user is admin
+    const decoded = verifyToken(request);
+
     // Get query parameters for filtering
     const { searchParams } = new URL(request.url);
     const location = searchParams.get('location');
@@ -30,40 +33,59 @@ export async function GET(request) {
     const type = searchParams.get('type');
     const bhk = searchParams.get('bhk');
     const price = searchParams.get('price');
-    
+
     // Build filter object
     const filter = {};
-    
+    const andConditions = [];
+
+    // Only show approved properties to non-admin users
+    // Admins and builders can see all properties (for admin panel)
+    if (!decoded || (decoded.role !== 'admin' && decoded.role !== 'builder')) {
+      andConditions.push({
+        $or: [
+          { status: 'approved' },
+          { status: { $exists: false } }  // Include old properties without status field
+        ]
+      });
+    }
+
     if (location) {
       filter.location = { $regex: location, $options: 'i' }; // Case-insensitive search
     }
-    
+
     if (mode) {
       filter.mode = mode;
     }
-    
+
     if (type) {
       filter.type = type;
     }
-    
+
     if (bhk) {
       filter.bhk = bhk;
     }
-    
+
     if (price) {
       // For string prices, we can do text search or regex matching
       // Convert to number if it's a numeric string, otherwise use text search
       const numericPrice = parseInt(price);
       if (!isNaN(numericPrice)) {
         // If price is numeric, still support numeric comparison for backward compatibility
-        filter.$or = [
-          { price: { $lte: numericPrice } }, // For old numeric prices
-          { price: { $regex: price, $options: 'i' } } // For string prices containing the number
-        ];
+        andConditions.push({
+          $or: [
+            { price: { $lte: numericPrice } }, // For old numeric prices
+            { price: { $regex: price, $options: 'i' } } // For string prices containing the number
+          ]
+        });
       } else {
         // For non-numeric price strings, use text search
         filter.price = { $regex: price, $options: 'i' };
       }
+    }
+
+    // Combine all conditions
+    if (andConditions.length > 0) {
+      filter.$and = andConditions;
     }
     
     const properties = await Property.find(filter).sort({ createdAt: -1 });
@@ -96,19 +118,23 @@ export async function POST(request) {
       );
     }
     
-    // Check if user is admin (role is in the JWT token)
-    if (decoded.role !== 'admin') {
+    // Check if user is admin or builder
+    if (decoded.role !== 'admin' && decoded.role !== 'builder') {
       return NextResponse.json(
-        { success: false, message: 'Admin access required' },
+        { success: false, message: 'Only admins and builders can list properties' },
         { status: 403 }
       );
     }
-    
+
     const data = await request.json();
-    
+
     // Add user ID to property data
     data.user = decoded.id;
-    
+
+    // Set status based on user role
+    // Admin properties are auto-approved, builder properties need approval
+    data.status = decoded.role === 'admin' ? 'approved' : 'pending';
+
     // Create property
     const property = await Property.create(data);
     

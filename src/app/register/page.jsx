@@ -10,7 +10,7 @@ export default function Register() {
     name: '',
     email: '',
     password: '',
-    role: 'user', // Default role is set to 'user' and won't change
+    role: 'user', // Default role - user for buyer, builder for seller
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -137,9 +137,9 @@ export default function Register() {
                   required
                   minLength={6}
                 />
-                <button 
-                  type="button" 
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 cursor-pointer" 
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 cursor-pointer"
                   onClick={togglePasswordVisibility}
                 >
                   {showPassword ? (
@@ -155,7 +155,76 @@ export default function Register() {
                 </button>
               </div>
             </div>
-            
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                I am a
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <label className={`relative flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                  formData.role === 'user'
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-300 bg-white hover:border-purple-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="user"
+                    checked={formData.role === 'user'}
+                    onChange={handleChange}
+                    className="sr-only"
+                  />
+                  <svg className={`h-8 w-8 mb-2 ${formData.role === 'user' ? 'text-purple-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  <span className={`text-sm font-medium ${formData.role === 'user' ? 'text-purple-700' : 'text-gray-700'}`}>
+                    Buyer/Owner
+                  </span>
+                  <span className="text-xs text-gray-500 text-center mt-1">
+                    Looking to buy or rent
+                  </span>
+                  {formData.role === 'user' && (
+                    <div className="absolute top-2 right-2">
+                      <svg className="h-5 w-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </label>
+
+                <label className={`relative flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                  formData.role === 'builder'
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-300 bg-white hover:border-purple-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="builder"
+                    checked={formData.role === 'builder'}
+                    onChange={handleChange}
+                    className="sr-only"
+                  />
+                  <svg className={`h-8 w-8 mb-2 ${formData.role === 'builder' ? 'text-purple-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <span className={`text-sm font-medium ${formData.role === 'builder' ? 'text-purple-700' : 'text-gray-700'}`}>
+                    Seller/Builder
+                  </span>
+                  <span className="text-xs text-gray-500 text-center mt-1">
+                    Want to list properties
+                  </span>
+                  {formData.role === 'builder' && (
+                    <div className="absolute top-2 right-2">
+                      <svg className="h-5 w-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
             <div>
               <button
                 type="submit"

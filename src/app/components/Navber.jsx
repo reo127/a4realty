@@ -117,22 +117,30 @@ const Navber = () => {
                     <div className="hidden lg:flex items-center space-x-4">
                         {user ? (
                             <>
-                                {user.role === 'admin' && (
-                                    <div className="hidden md:flex items-center space-x-2">
+                                <div className="hidden md:flex items-center space-x-2">
+                                    <Link
+                                        href="/list-property"
+                                        className="px-4 py-2 text-xs font-medium bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/20"
+                                    >
+                                        List Properties
+                                    </Link>
+                                    {user.role === 'builder' && (
                                         <Link
-                                            href="/list-property"
+                                            href="/builder"
                                             className="px-4 py-2 text-xs font-medium bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/20"
                                         >
-                                            List Property
+                                            My Properties
                                         </Link>
+                                    )}
+                                    {user.role === 'admin' && (
                                         <Link
                                             href="/admin/properties"
                                             className="px-4 py-2 text-xs font-medium bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/20"
                                         >
                                             Manage Properties
                                         </Link>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                                 {user.role === 'agent' && (
                                     <Link
                                         href="/agent/my-leads"
@@ -298,18 +306,30 @@ const Navber = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    {user.role === 'admin' && (
-                                        <div className="space-y-2">
+                                    <div className="space-y-2">
+                                        <Link
+                                            href="/list-property"
+                                            className="flex items-center px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            List Properties
+                                        </Link>
+                                        {user.role === 'builder' && (
                                             <Link
-                                                href="/list-property"
+                                                href="/builder"
                                                 className="flex items-center px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                             >
                                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                 </svg>
-                                                List Property
+                                                My Properties
                                             </Link>
+                                        )}
+                                        {user.role === 'admin' && (
                                             <Link
                                                 href="/admin/properties"
                                                 className="flex items-center px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
@@ -321,8 +341,8 @@ const Navber = () => {
                                                 </svg>
                                                 Manage Properties
                                             </Link>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                     {user.role === 'agent' && (
                                         <Link
                                             href="/agent/my-leads"

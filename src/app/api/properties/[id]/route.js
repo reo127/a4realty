@@ -62,24 +62,16 @@ export async function PUT(request, { params }) {
     
     // Verify token (same as working upload API)
     const decoded = verifyToken(request);
-    
+
     if (!decoded) {
       return NextResponse.json(
         { success: false, message: 'Not authorized' },
         { status: 401 }
       );
     }
-    
-    // Check if user is admin (role is in the JWT token)
-    if (decoded.role !== 'admin') {
-      return NextResponse.json(
-        { success: false, message: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-    
+
     const { id } = await params;
-    
+
     // Check if ID is valid
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
@@ -87,9 +79,9 @@ export async function PUT(request, { params }) {
         { status: 400 }
       );
     }
-    
+
     const data = await request.json();
-    
+
     // Clean data - remove empty strings for enum fields and other optional fields
     const cleanData = {};
     Object.keys(data).forEach(key => {
@@ -104,18 +96,26 @@ export async function PUT(request, { params }) {
         }
       }
     });
-    
+
     // Find property
     const property = await Property.findById(id);
-    
+
     if (!property) {
       return NextResponse.json(
         { success: false, message: 'Property not found' },
         { status: 404 }
       );
     }
-    
-    // Update property (admin can update any property)
+
+    // Check authorization: admin can update any property, builders can only update their own
+    if (decoded.role !== 'admin' && property.user.toString() !== decoded.id) {
+      return NextResponse.json(
+        { success: false, message: 'You can only edit your own properties' },
+        { status: 403 }
+      );
+    }
+
+    // Update property
     const updatedProperty = await Property.findByIdAndUpdate(
       id,
       cleanData,
@@ -142,24 +142,16 @@ export async function DELETE(request, { params }) {
     
     // Verify token (same as working upload API)
     const decoded = verifyToken(request);
-    
+
     if (!decoded) {
       return NextResponse.json(
         { success: false, message: 'Not authorized' },
         { status: 401 }
       );
     }
-    
-    // Check if user is admin (role is in the JWT token)
-    if (decoded.role !== 'admin') {
-      return NextResponse.json(
-        { success: false, message: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-    
+
     const { id } = await params;
-    
+
     // Check if ID is valid
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
@@ -167,18 +159,26 @@ export async function DELETE(request, { params }) {
         { status: 400 }
       );
     }
-    
+
     // Find property
     const property = await Property.findById(id);
-    
+
     if (!property) {
       return NextResponse.json(
         { success: false, message: 'Property not found' },
         { status: 404 }
       );
     }
-    
-    // Delete property (admin can delete any property)
+
+    // Check authorization: admin can delete any property, builders can only delete their own
+    if (decoded.role !== 'admin' && property.user.toString() !== decoded.id) {
+      return NextResponse.json(
+        { success: false, message: 'You can only delete your own properties' },
+        { status: 403 }
+      );
+    }
+
+    // Delete property
     await Property.findByIdAndDelete(id);
     
     return NextResponse.json(

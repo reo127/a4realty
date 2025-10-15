@@ -201,6 +201,12 @@ const PropertySchema = new mongoose.Schema({
     required: true,
     userVisible: false
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'approved',
+    userVisible: false
+  },
   // PropertyDetails specific fields
   developer: {
     type: String,
