@@ -19,16 +19,12 @@ export default function BuilderDashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    // Check if user is logged in and is a builder
+    // Check if user is logged in
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      if (parsedUser.role !== 'builder' && parsedUser.role !== 'admin') {
-        router.push('/');
-      } else {
-        fetchMyProperties();
-      }
+      fetchMyProperties();
     } else {
       router.push('/login');
     }
@@ -39,7 +35,7 @@ export default function BuilderDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/properties', {
+      const response = await fetch('/api/properties?myProperties=true', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -48,10 +44,7 @@ export default function BuilderDashboard() {
       const data = await response.json();
 
       if (response.ok) {
-        // Filter to show only the builder's properties
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        const myProperties = data.data.filter(prop => prop.user === storedUser.id);
-        setProperties(myProperties);
+        setProperties(data.data);
       } else {
         setError(data.message || 'Failed to fetch properties');
       }

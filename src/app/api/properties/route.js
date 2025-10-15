@@ -33,20 +33,26 @@ export async function GET(request) {
     const type = searchParams.get('type');
     const bhk = searchParams.get('bhk');
     const price = searchParams.get('price');
+    const myProperties = searchParams.get('myProperties'); // New parameter for user's own properties
 
     // Build filter object
     const filter = {};
     const andConditions = [];
 
-    // Only show approved properties to non-admin users
-    // Admins and builders can see all properties (for admin panel)
-    if (!decoded || (decoded.role !== 'admin' && decoded.role !== 'builder')) {
-      andConditions.push({
-        $or: [
-          { status: 'approved' },
-          { status: { $exists: false } }  // Include old properties without status field
-        ]
-      });
+    // If myProperties=true, show only the logged-in user's properties (all statuses)
+    if (myProperties === 'true' && decoded) {
+      filter.user = decoded.id;
+    } else {
+      // Only show approved properties to non-admin users
+      // Admins and builders can see all properties (for admin panel)
+      if (!decoded || (decoded.role !== 'admin' && decoded.role !== 'builder')) {
+        andConditions.push({
+          $or: [
+            { status: 'approved' },
+            { status: { $exists: false } }  // Include old properties without status field
+          ]
+        });
+      }
     }
 
     if (location) {
@@ -117,19 +123,11 @@ export async function POST(request) {
     
     // Verify token (same as working upload API)
     const decoded = verifyToken(request);
-    
+
     if (!decoded) {
       return NextResponse.json(
-        { success: false, message: 'Not authorized' },
+        { success: false, message: 'Not authorized, please login to list properties' },
         { status: 401 }
-      );
-    }
-    
-    // Check if user is admin or builder
-    if (decoded.role !== 'admin' && decoded.role !== 'builder') {
-      return NextResponse.json(
-        { success: false, message: 'Only admins and builders can list properties' },
-        { status: 403 }
       );
     }
 
@@ -139,7 +137,7 @@ export async function POST(request) {
     data.user = decoded.id;
 
     // Set status based on user role
-    // Admin properties are auto-approved, builder properties need approval
+    // Admin properties are auto-approved, all other users need approval
     data.status = decoded.role === 'admin' ? 'approved' : 'pending';
 
     // Create property

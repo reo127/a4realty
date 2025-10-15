@@ -79,12 +79,6 @@ export default function ListProperty() {
     if (storedUser && token) {
       const userData = JSON.parse(storedUser);
       setUser(userData);
-
-      // Check if user is admin or builder
-      if (userData.role !== 'admin' && userData.role !== 'builder') {
-        router.push('/');
-        return;
-      }
     } else {
       router.push('/login');
     }

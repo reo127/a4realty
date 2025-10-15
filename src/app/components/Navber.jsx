@@ -124,7 +124,7 @@ const Navber = () => {
                                     >
                                         List Properties
                                     </Link>
-                                    {user.role === 'builder' && (
+                                    {user.role !== 'admin' && user.role !== 'agent' && (
                                         <Link
                                             href="/builder"
                                             className="px-4 py-2 text-xs font-medium bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-200 border border-white/20"
@@ -317,7 +317,7 @@ const Navber = () => {
                                             </svg>
                                             List Properties
                                         </Link>
-                                        {user.role === 'builder' && (
+                                        {user.role !== 'admin' && user.role !== 'agent' && (
                                             <Link
                                                 href="/builder"
                                                 className="flex items-center px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
