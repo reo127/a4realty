@@ -50,7 +50,14 @@ export async function GET(request) {
     }
 
     if (location) {
-      filter.location = { $regex: location, $options: 'i' }; // Case-insensitive search
+      // Search in multiple fields: title, location, developer
+      andConditions.push({
+        $or: [
+          { title: { $regex: location, $options: 'i' } },
+          { location: { $regex: location, $options: 'i' } },
+          { developer: { $regex: location, $options: 'i' } }
+        ]
+      });
     }
 
     if (mode) {
