@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from '../../../utils/formatPrice';
+import { generatePropertyUrl } from '@/utils/slugify';
 
 export default function PropertyList() {
     const router = useRouter();
@@ -361,7 +362,7 @@ export default function PropertyList() {
                         {properties.map((property) => (
                             <Link
                                 key={property._id}
-                                href={`/property/${property._id}`}
+                                href={generatePropertyUrl(property)}
                                 className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
                             >
                                 <div className="relative h-48">

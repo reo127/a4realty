@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { formatPrice } from '@/utils/formatPrice';
+import { generatePropertyUrl } from '@/utils/slugify';
 import { useState } from 'react';
 
 const PropertyCard = ({ property, viewMode = 'grid', isNearby = false }) => {
@@ -292,7 +293,7 @@ const PropertyCard = ({ property, viewMode = 'grid', isNearby = false }) => {
 
   // Wrap in Link for navigation
   return (
-    <Link href={`/property/${property._id}`}>
+    <Link href={generatePropertyUrl(property)}>
       {cardContent}
     </Link>
   );

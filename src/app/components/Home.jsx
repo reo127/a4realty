@@ -7,6 +7,7 @@ import Footer from "./Footer";
 import LeadCaptureModal from "./LeadCaptureModal";
 import Banner from "./Banner";
 import { formatPrice } from '../../utils/formatPrice';
+import { generatePropertyUrl } from '@/utils/slugify';
 
 export default function Home() {
     const [showLeadModal, setShowLeadModal] = useState(false);
@@ -361,7 +362,7 @@ export default function Home() {
                                 {properties.slice(0, visibleProperties).map((property) => (
                                     <Link
                                         key={property._id}
-                                        href={`/property/${property._id}`}
+                                        href={generatePropertyUrl(property)}
                                         className="group overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
                                     >
                                         <div className="relative h-48">

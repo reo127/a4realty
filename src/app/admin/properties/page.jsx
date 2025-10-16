@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import EditPropertyModal from '@/app/components/EditPropertyModal';
+import { generatePropertyUrl } from '@/utils/slugify';
 
 export default function AdminProperties() {
   const [loading, setLoading] = useState(true);
@@ -500,7 +501,7 @@ export default function AdminProperties() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <Link
-                          href={`/property/${property._id}`}
+                          href={generatePropertyUrl(property)}
                           target="_blank"
                           className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
                         >
