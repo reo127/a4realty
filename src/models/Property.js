@@ -41,9 +41,17 @@ const PropertySchema = new mongoose.Schema({
              this.type === 'builders-floors' || this.type === 'penthouse' ||
              this.type === 'cottage' || this.type === 'duplex-house';
     },
-    enum: ['>1bhk', '2bhk', '2.5bhk', '3bhk', '3.5bhk', '4bhk', '4.5bhk', '5bhk', 'na',
-           // Keep old values for backward compatibility
-           '1bhk'],
+    userVisible: true
+  },
+  bhkConfigurations: {
+    type: [{
+      bhk: {
+        type: String,
+        enum: ['1bhk', '2bhk', '2.5bhk', '3bhk', '3.5bhk', '4bhk', '4.5bhk', '5bhk']
+      },
+      price: String
+    }],
+    default: [],
     userVisible: true
   },
   mode: {
