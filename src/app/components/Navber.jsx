@@ -42,53 +42,53 @@ const Navber = () => {
                     {/* Logo */}
                     <Link href="/" className="flex-shrink-0">
                         <div className="flex items-center">
-                            <Image 
-                                src={Logo} 
-                                alt="A4Realty Logo" 
-                                className="h-[2.5rem] w-[7rem] rounded-sm" 
+                            <Image
+                                src={Logo}
+                                alt="A4Realty Logo"
+                                className="h-[2.5rem] w-[7rem] rounded-sm"
                             />
                         </div>
                     </Link>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden lg:flex items-center space-x-8">
-                        <Link 
-                            href="/search?tab=buy" 
+                        <Link
+                            href="/search?tab=buy"
                             className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
                         >
                             Buy
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
                         </Link>
-                        <Link 
-                            href="/search?tab=rent" 
+                        <Link
+                            href="/search?tab=rent"
                             className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
                         >
                             Rent
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
                         </Link>
-                        <Link 
-                            href="/search?tab=new" 
+                        <Link
+                            href="/search?tab=new"
                             className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
                         >
                             New Projects
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
                         </Link>
-                        <Link 
-                            href="/agents" 
+                        <Link
+                            href="/agents"
                             className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
                         >
                             Agents
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
                         </Link>
-                        <Link 
-                            href="/about" 
+                        <Link
+                            href="/about"
                             className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
                         >
                             About
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
                         </Link>
-                        <Link 
-                            href="/blog" 
+                        <Link
+                            href="/blog"
                             className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
                         >
                             Blog
@@ -97,7 +97,7 @@ const Navber = () => {
                     </nav>
 
                     {/* Mobile menu button */}
-                    <button 
+                    <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         className="lg:hidden flex items-center justify-center p-2 rounded-md text-white hover:text-white/80 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
                     >
@@ -169,36 +169,48 @@ const Navber = () => {
                                 </div>
                             </>
                         ) : (
-                            <Link
-                                href="/login"
-                                className="px-4 py-2 text-sm font-medium bg-white text-[#D7242A] rounded-lg hover:bg-white/90 transition-all duration-200 shadow-sm"
-                            >
-                                Sign In
-                            </Link>
+                            <div className='flex items-center space-x-2'>
+                                <Link
+                                    href="/login"
+                                    className="px-4 py-2 text-sm font-medium bg-white text-[#D7242A] rounded-lg hover:bg-white/90 transition-all duration-200 shadow-sm"
+                                >
+                                    Sign In
+                                </Link>
+
+                                <Link
+                                    href="/register"
+                                    className="flex items-center justify-center px-4 py-3 text-sm font-bold bg-white text-[#D7242A] rounded-lg hover:bg-white/90 transition-all duration-200 shadow-lg"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {/* <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg> */}
+                                    List Your free properties
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {/* Mobile menu overlay */}
                 {isMobileMenuOpen && (
-                    <div 
+                    <div
                         className="lg:hidden fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-all duration-300 ease-in-out"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
                 )}
-                
+
                 {/* Mobile menu */}
-                <div className={`lg:hidden fixed top-0 left-0 h-full w-80 bg-[#D7242A] transform transition-transform duration-300 ease-in-out z-50 ${
-                    isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-                } shadow-2xl`}>
+                <div className={`lg:hidden fixed top-0 left-0 h-full w-80 bg-[#D7242A] transform transition-transform duration-300 ease-in-out z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                    } shadow-2xl`}>
                     <div className="flex flex-col h-full">
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
                             <div className="flex items-center">
-                                <Image 
-                                    src={Logo} 
-                                    alt="A4Realty Logo" 
-                                    className="h-10 w-20 rounded-sm" 
+                                <Image
+                                    src={Logo}
+                                    alt="A4Realty Logo"
+                                    className="h-10 w-20 rounded-sm"
                                 />
                             </div>
                             <button
@@ -213,8 +225,8 @@ const Navber = () => {
 
                         {/* Navigation Links */}
                         <div className="flex-1 overflow-y-auto py-4 px-4 space-y-2">
-                            <Link 
-                                href="/search?tab=buy" 
+                            <Link
+                                href="/search?tab=buy"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -224,8 +236,8 @@ const Navber = () => {
                                 </svg>
                                 Buy
                             </Link>
-                            <Link 
-                                href="/search?tab=sell" 
+                            <Link
+                                href="/search?tab=sell"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -235,8 +247,8 @@ const Navber = () => {
                                 </svg>
                                 Sell
                             </Link>
-                            <Link 
-                                href="/search?tab=rent" 
+                            <Link
+                                href="/search?tab=rent"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -245,8 +257,8 @@ const Navber = () => {
                                 </svg>
                                 Rent
                             </Link>
-                            <Link 
-                                href="/search?tab=new" 
+                            <Link
+                                href="/search?tab=new"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -255,8 +267,8 @@ const Navber = () => {
                                 </svg>
                                 New Projects
                             </Link>
-                            <Link 
-                                href="/agents" 
+                            <Link
+                                href="/agents"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -265,8 +277,8 @@ const Navber = () => {
                                 </svg>
                                 Agents
                             </Link>
-                            <Link 
-                                href="/about" 
+                            <Link
+                                href="/about"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -275,8 +287,8 @@ const Navber = () => {
                                 </svg>
                                 About
                             </Link>
-                            <Link 
-                                href="/blog" 
+                            <Link
+                                href="/blog"
                                 className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -286,7 +298,7 @@ const Navber = () => {
                                 Blog
                             </Link>
                         </div>
-                        
+
                         {/* Mobile user actions */}
                         <div className="px-4 py-4 border-t border-white/10 bg-white/5">
                             {user ? (
@@ -369,16 +381,29 @@ const Navber = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <Link
-                                    href="/login"
-                                    className="flex items-center justify-center px-4 py-3 text-lg font-medium bg-white text-[#D7242A] rounded-lg hover:bg-white/90 transition-all duration-200 shadow-lg"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                    </svg>
-                                    Sign In
-                                </Link>
+                                <div>
+                                    <Link
+                                        href="/login"
+                                        className="flex items-center justify-center px-4 py-3 text-lg font-medium bg-white text-[#D7242A] rounded-lg hover:bg-white/90 transition-all duration-200 shadow-lg"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        Sign In
+                                    </Link>
+
+                                    <Link
+                                        href="/register"
+                                        className="flex items-center justify-center px-4 py-3 text-lg font-medium bg-white text-[#D7242A] rounded-lg hover:bg-white/90 transition-all duration-200 shadow-lg"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        List Your free properties
+                                    </Link>
+                                </div>
                             )}
                         </div>
                     </div>
