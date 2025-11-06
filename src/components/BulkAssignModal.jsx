@@ -61,6 +61,8 @@ export default function BulkAssignModal({ onClose, onAssign }) {
       const data = await response.json();
 
       if (data.success) {
+        // Show success message before closing
+        alert(data.message);
         onAssign(data);
         onClose();
       } else {
@@ -118,7 +120,7 @@ export default function BulkAssignModal({ onClose, onAssign }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="e.g., 100, 200"
               />
-              <p className="text-xs text-gray-500 mt-1">Select unassigned leads randomly (max 500)</p>
+              <p className="text-xs text-gray-500 mt-1">Assigns unassigned leads randomly. Prevents duplicates - won't reassign leads already assigned to this agent.</p>
             </div>
 
             <div>

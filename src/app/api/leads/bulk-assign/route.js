@@ -36,8 +36,14 @@ export async function POST(request) {
     }
 
     // Build filter query for unassigned leads
+    // IMPORTANT: Exclude leads already assigned to this agent to prevent duplicates
     const filter = {
-      isAssigned: false
+      $or: [
+        { isAssigned: false },
+        { isAssigned: { $exists: false } }
+      ],
+      // Exclude leads already assigned to this specific agent
+      assignedTo: { $ne: agentId }
     };
 
     // Apply optional filters
@@ -49,12 +55,18 @@ export async function POST(request) {
       filter.interestedLocation = { $regex: location, $options: 'i' };
     }
 
-    // Get random unassigned leads
-    const leads = await Lead.find(filter).limit(count);
+    // Get random unassigned leads using aggregation for true randomization
+    const leads = await Lead.aggregate([
+      { $match: filter },
+      { $sample: { size: count } }
+    ]);
 
     if (leads.length === 0) {
       return NextResponse.json(
-        { success: false, message: 'No unassigned leads found matching the criteria' },
+        {
+          success: false,
+          message: `No unassigned leads found matching the criteria. All available leads may already be assigned to ${agent.name}.`
+        },
         { status: 404 }
       );
     }
@@ -87,10 +99,15 @@ export async function POST(request) {
     return NextResponse.json(
       {
         success: true,
-        message: `Successfully assigned ${result.modifiedCount} random leads to ${agent.name}`,
+        message: `Successfully assigned ${result.modifiedCount} leads to ${agent.name}${
+          result.modifiedCount < count
+            ? ` (${count - result.modifiedCount} fewer than requested - only ${leads.length} unassigned leads were available)`
+            : ''
+        }`,
         data: {
           requestedCount: count,
           assignedCount: result.modifiedCount,
+          availableCount: leads.length,
           agentName: agent.name,
           agentId: agent._id
         }
