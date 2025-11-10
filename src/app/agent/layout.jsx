@@ -104,6 +104,20 @@ export default function AgentLayout({ children }) {
                   </svg>
                   My Leads
                 </Link>
+
+                <Link
+                  href="/agent/property-search"
+                  className={`${
+                    pathname.startsWith('/agent/property-search')
+                      ? 'border-indigo-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Property Search
+                </Link>
               </div>
             </div>
 
@@ -160,6 +174,16 @@ export default function AgentLayout({ children }) {
               } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
             >
               My Leads
+            </Link>
+            <Link
+              href="/agent/property-search"
+              className={`${
+                pathname.startsWith('/agent/property-search')
+                  ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                  : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+              } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+            >
+              Property Search
             </Link>
           </div>
 

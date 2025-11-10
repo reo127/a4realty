@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function AdminSettings() {
+export default function PropertySheetUpload() {
   const router = useRouter();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -172,14 +172,14 @@ export default function AdminSettings() {
     <div className="p-6 text-black">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-2">Configure system settings and upload property database</p>
+          <h1 className="text-3xl font-bold text-gray-900">Property Sheet Upload</h1>
+          <p className="text-gray-600 mt-2">Upload CSV file to update property database</p>
         </div>
 
         {/* Stats Card */}
         {stats && (
           <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Database Stats</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Current Database Stats</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-indigo-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">Total Properties</p>
@@ -199,7 +199,7 @@ export default function AdminSettings() {
 
         {/* Upload Card */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload Property CSV File</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload New CSV File</h2>
 
           {/* Messages */}
           {message.text && (
