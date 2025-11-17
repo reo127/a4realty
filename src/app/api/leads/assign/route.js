@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Lead from '@/models/Lead';
 import User from '@/models/User';
+import mongoose from 'mongoose';
 
 // POST - Assign leads to an agent
 export async function POST(request) {
@@ -35,15 +36,59 @@ export async function POST(request) {
       );
     }
 
-    // Update leads
+    // Convert agentId to ObjectId for consistent comparison
+    const agentObjectId = new mongoose.Types.ObjectId(agentId);
+
+    // Filter out leads already assigned to this agent or in their history
+    // Using $not with $elemMatch for correct array query
+    const leadsToAssign = await Lead.find({
+      _id: { $in: leadIds },
+      $or: [
+        // No history at all
+        { assignmentHistory: { $exists: false } },
+        { assignmentHistory: { $size: 0 } },
+        // Agent NOT in history (correct array check)
+        {
+          assignmentHistory: {
+            $not: {
+              $elemMatch: { agentId: agentObjectId }
+            }
+          }
+        }
+      ]
+    }).select('_id');
+
+    const validLeadIds = leadsToAssign.map(l => l._id);
+
+    if (validLeadIds.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'All selected leads have already been assigned to this agent before'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Update leads and add to assignment history
+    const assignmentDate = new Date();
     const result = await Lead.updateMany(
-      { _id: { $in: leadIds } },
+      { _id: { $in: validLeadIds } },
       {
         $set: {
           assignedTo: agentId,
           assignedBy: assignedBy || null,
-          assignedAt: new Date(),
+          assignedAt: assignmentDate,
           isAssigned: true
+        },
+        $push: {
+          assignmentHistory: {
+            agentId: agentId,
+            agentName: agent.name,
+            assignedAt: assignmentDate,
+            unassignedAt: null,
+            assignedBy: assignedBy || null
+          }
         }
       }
     );
@@ -58,12 +103,20 @@ export async function POST(request) {
       assignedLeadsCount: newAssignedCount
     });
 
+    const skippedCount = leadIds.length - validLeadIds.length;
+
     return NextResponse.json(
       {
         success: true,
-        message: `Successfully assigned ${result.modifiedCount} leads to ${agent.name}`,
+        message: `Successfully assigned ${result.modifiedCount} leads to ${agent.name}${
+          skippedCount > 0
+            ? ` (${skippedCount} leads were skipped as they were previously assigned to this agent)`
+            : ''
+        }`,
         data: {
+          requestedCount: leadIds.length,
           assignedCount: result.modifiedCount,
+          skippedCount: skippedCount,
           agentName: agent.name,
           agentId: agent._id
         }

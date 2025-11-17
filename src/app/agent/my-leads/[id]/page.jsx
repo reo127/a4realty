@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PropertyCard from '@/components/PropertyCard';
+import AssignmentHistory from '@/components/AssignmentHistory';
 import { getLocationDisplayName, getNearbyLocations, normalizeLocationName } from '@/utils/locations';
 import { formatPrice } from '@/utils/formatPrice';
 
@@ -1054,6 +1055,13 @@ export default function LeadDetailPage() {
                   ) : null}
                 </div>
               </div>
+
+              {/* Assignment History */}
+              {lead.assignmentHistory && lead.assignmentHistory.length > 0 && (
+                <div className="mt-6">
+                  <AssignmentHistory history={lead.assignmentHistory} />
+                </div>
+              )}
 
               {/* CRM Action Buttons */}
               <div className="mt-6 pt-6 border-t">

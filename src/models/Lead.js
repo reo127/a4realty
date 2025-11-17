@@ -108,6 +108,31 @@ const LeadSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Assignment history - tracks all agents who have ever worked on this lead
+  assignmentHistory: [{
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    agentName: {
+      type: String,
+      default: ''
+    },
+    assignedAt: {
+      type: Date,
+      required: true
+    },
+    unassignedAt: {
+      type: Date,
+      default: null
+    },
+    assignedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    }
+  }],
   // Lead locking fields
   lockedBy: {
     type: mongoose.Schema.Types.ObjectId,

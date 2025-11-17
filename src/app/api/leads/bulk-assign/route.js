@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Lead from '@/models/Lead';
 import User from '@/models/User';
+import mongoose from 'mongoose';
 
 // POST - Bulk assign random leads to an agent
 export async function POST(request) {
@@ -35,15 +36,45 @@ export async function POST(request) {
       );
     }
 
+    // Convert agentId to ObjectId for consistent comparison
+    const agentObjectId = new mongoose.Types.ObjectId(agentId);
+
     // Build filter query for unassigned leads
-    // IMPORTANT: Exclude leads already assigned to this agent to prevent duplicates
+    // IMPORTANT: Prevent duplicates by checking both current assignment AND history
     const filter = {
-      $or: [
-        { isAssigned: false },
-        { isAssigned: { $exists: false } }
-      ],
-      // Exclude leads already assigned to this specific agent
-      assignedTo: { $ne: agentId }
+      $and: [
+        // Must be unassigned
+        {
+          $or: [
+            { isAssigned: false },
+            { isAssigned: { $exists: false } }
+          ]
+        },
+        // Must not have assignedTo value (truly available)
+        {
+          $or: [
+            { assignedTo: null },
+            { assignedTo: { $exists: false } }
+          ]
+        },
+        // CRITICAL: Never assigned to this agent before (checks history)
+        // Using $not with $elemMatch to correctly check array - ensures NO element matches
+        {
+          $or: [
+            // Either no assignment history at all
+            { assignmentHistory: { $exists: false } },
+            { assignmentHistory: { $size: 0 } },
+            // Or agent NOT in history (correct array query)
+            {
+              assignmentHistory: {
+                $not: {
+                  $elemMatch: { agentId: agentObjectId }
+                }
+              }
+            }
+          ]
+        }
+      ]
     };
 
     // Apply optional filters
@@ -73,15 +104,25 @@ export async function POST(request) {
 
     const leadIds = leads.map(lead => lead._id);
 
-    // Assign leads to agent
+    // Assign leads to agent and add to assignment history
+    const assignmentDate = new Date();
     const result = await Lead.updateMany(
       { _id: { $in: leadIds } },
       {
         $set: {
           assignedTo: agentId,
           assignedBy: assignedBy || null,
-          assignedAt: new Date(),
+          assignedAt: assignmentDate,
           isAssigned: true
+        },
+        $push: {
+          assignmentHistory: {
+            agentId: agentId,
+            agentName: agent.name,
+            assignedAt: assignmentDate,
+            unassignedAt: null,
+            assignedBy: assignedBy || null
+          }
         }
       }
     );
