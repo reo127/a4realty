@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import LeadCaptureModal from './LeadCaptureModal';
+import EMICalculator from './EMICalculator';
 import { formatPrice } from '../../utils/formatPrice';
 import { getEmbedUrl } from '@/utils/videoUtils';
 import {
@@ -537,6 +538,7 @@ export default function PropertyDetails() {
         { label: "Overview", id: "overview" },
         { label: "Amenities", id: "amenities" },
         { label: "About Project", id: "about-project" },
+        { label: "EMI Calculator", id: "emi-calculator" },
         { label: "Ratings & Reviews", id: "ratings-reviews" },
         { label: "About Location", id: "about-location" },
         { label: "Price Trends", id: "price-trends" },
@@ -773,6 +775,60 @@ export default function PropertyDetails() {
                         ) : (
                             <p className='text-[#999999] italic text-sm'>No location advantages information available</p>
                         )}
+                    </section>
+
+                    {/* EMI Calculator Section */}
+                    <section id="emi-calculator" className='mt-16 sm:mt-24 lg:mt-32'>
+                        <h1 className='text-2xl sm:text-3xl lg:text-[32px] text-[#303030] font-bold mb-6'>
+                            EMI Calculator
+                        </h1>
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-8">
+                            <EMICalculator
+                                defaultPrice={(() => {
+                                    if (!property.price) return 5000000;
+
+                                    // If it's already a number
+                                    if (typeof property.price === 'number') return property.price;
+
+                                    // Try to parse string price
+                                    const priceStr = property.price.toString().toLowerCase();
+
+                                    // Check if it's a range (e.g., "1 - 2.1 Cr")
+                                    if (priceStr.includes('-')) {
+                                        // Extract the first number from range
+                                        const firstNum = priceStr.split('-')[0].trim();
+                                        const numMatch = firstNum.match(/[\d.]+/);
+                                        if (numMatch) {
+                                            const value = parseFloat(numMatch[0]);
+                                            if (priceStr.includes('cr')) {
+                                                return value * 10000000; // Convert Cr to number
+                                            } else if (priceStr.includes('l')) {
+                                                return value * 100000; // Convert L to number
+                                            }
+                                        }
+                                    }
+
+                                    // Try to extract single number
+                                    const numMatch = priceStr.match(/[\d.]+/);
+                                    if (numMatch) {
+                                        const value = parseFloat(numMatch[0]);
+                                        if (priceStr.includes('cr')) {
+                                            return value * 10000000;
+                                        } else if (priceStr.includes('l')) {
+                                            return value * 100000;
+                                        }
+                                        return value; // If no unit, assume it's the actual number
+                                    }
+
+                                    return 5000000; // Default fallback
+                                })()}
+                                minPrice={1000000}
+                                maxPrice={100000000}
+                                showPriceSlider={true}
+                                propertyTitle={property.title}
+                                embedded={true}
+                            />
+                        </div>
                     </section>
 
                     {/* Similar Properties Section */}
