@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import EMICalculator from '../components/EMICalculator';
+import EMICalculator from '../components/EMICalculatorV2';
 import Footer from '../components/Footer';
 import { Calculator, Home, TrendingUp, PiggyBank, ChevronRight } from 'lucide-react';
 

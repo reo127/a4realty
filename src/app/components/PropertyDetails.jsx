@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import LeadCaptureModal from './LeadCaptureModal';
-import EMICalculator from './EMICalculator';
+import EMICalculator from './EMICalculatorV2';
 import { formatPrice } from '../../utils/formatPrice';
 import { getEmbedUrl } from '@/utils/videoUtils';
 import {

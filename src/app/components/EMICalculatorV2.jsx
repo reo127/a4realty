@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Calculator, TrendingUp, PieChart, DollarSign } from 'lucide-react';
 
-export default function EMICalculator({
+export default function EMICalculatorV2({
     defaultPrice = 5000000,
     minPrice = 1000000,
     maxPrice = 50000000,
@@ -25,7 +25,6 @@ export default function EMICalculator({
     }, [defaultPrice]);
 
     const formatCurrency = (amount) => {
-        // Handle invalid values
         if (!amount || isNaN(amount) || amount === 0) {
             return '₹0';
         }
@@ -40,7 +39,6 @@ export default function EMICalculator({
     };
 
     const calculateEMI = () => {
-        // Validate inputs
         if (!propertyPrice || isNaN(propertyPrice) || propertyPrice <= 0) {
             return null;
         }
@@ -65,7 +63,6 @@ export default function EMICalculator({
         const totalAmount = emi * tenureMonths;
         const totalInterest = totalAmount - principal;
 
-        // Validate calculated values
         if (isNaN(emi) || isNaN(totalAmount) || isNaN(totalInterest)) {
             return null;
         }
@@ -95,7 +92,6 @@ export default function EMICalculator({
         return (
             <div className="relative w-48 h-48 mx-auto">
                 <svg className="transform -rotate-90" width="192" height="192" viewBox="0 0 192 192">
-                    {/* Background circle */}
                     <circle
                         cx="96"
                         cy="96"
@@ -104,8 +100,6 @@ export default function EMICalculator({
                         stroke="#f3f4f6"
                         strokeWidth="28"
                     />
-
-                    {/* Principal arc */}
                     <circle
                         cx="96"
                         cy="96"
@@ -117,8 +111,6 @@ export default function EMICalculator({
                         strokeLinecap="round"
                         className="transition-all duration-500"
                     />
-
-                    {/* Interest arc */}
                     <circle
                         cx="96"
                         cy="96"
@@ -132,140 +124,11 @@ export default function EMICalculator({
                         className="transition-all duration-500"
                     />
                 </svg>
-
-                {/* Center text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <p className="text-xs text-gray-500">Total Amount</p>
                     <p className="text-sm font-bold text-gray-900">
                         {emiResult ? formatCurrency(emiResult.totalAmount) : '-'}
                     </p>
-                </div>
-            </div>
-        );
-    };
-
-    const CustomSlider = ({ value, onChange, min, max, step = 1, formatValue }) => {
-        // Ensure valid values
-        const safeValue = !isNaN(value) && value !== null && value !== undefined ? value : min;
-        const safeMin = !isNaN(min) && min !== null ? min : 0;
-        const safeMax = !isNaN(max) && max !== null ? max : 100;
-        const safeStep = !isNaN(step) && step > 0 ? step : 1;
-
-        const percentage = safeMax > safeMin ? ((safeValue - safeMin) / (safeMax - safeMin)) * 100 : 0;
-        const safePercentage = !isNaN(percentage) && isFinite(percentage) ? Math.max(0, Math.min(100, percentage)) : 0;
-        const sliderRef = useRef(null);
-        const [isDragging, setIsDragging] = useState(false);
-
-        // Use refs to store values that shouldn't trigger re-renders
-        const minRef = useRef(safeMin);
-        const maxRef = useRef(safeMax);
-        const stepRef = useRef(safeStep);
-        const onChangeRef = useRef(onChange);
-
-        // Update refs when values change
-        useEffect(() => {
-            minRef.current = safeMin;
-            maxRef.current = safeMax;
-            stepRef.current = safeStep;
-            onChangeRef.current = onChange;
-        }, [safeMin, safeMax, safeStep, onChange]);
-
-        const handleSliderChange = useCallback((clientX, rect) => {
-            if (!rect || rect.width === 0) return;
-
-            const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-            const percentage = x / rect.width;
-            const rawValue = minRef.current + percentage * (maxRef.current - minRef.current);
-            const steppedValue = Math.round(rawValue / stepRef.current) * stepRef.current;
-            const clampedValue = Math.max(minRef.current, Math.min(maxRef.current, steppedValue));
-
-            // Round to appropriate decimal places based on step
-            const decimalPlaces = stepRef.current < 1 ? Math.abs(Math.floor(Math.log10(stepRef.current))) : 0;
-            const roundedValue = parseFloat(clampedValue.toFixed(decimalPlaces));
-
-            if (!isNaN(roundedValue) && isFinite(roundedValue)) {
-                onChangeRef.current(roundedValue);
-            }
-        }, []); // No dependencies - uses refs instead
-
-        const handleMouseMove = useCallback((e) => {
-            if (sliderRef.current) {
-                const rect = sliderRef.current.getBoundingClientRect();
-                handleSliderChange(e.clientX, rect);
-            }
-        }, [handleSliderChange]);
-
-        const handleMouseUp = useCallback(() => {
-            setIsDragging(false);
-        }, []);
-
-        const handleTouchMove = useCallback((e) => {
-            if (sliderRef.current) {
-                const rect = sliderRef.current.getBoundingClientRect();
-                handleSliderChange(e.touches[0].clientX, rect);
-            }
-        }, [handleSliderChange]);
-
-        const handleTouchEnd = useCallback(() => {
-            setIsDragging(false);
-        }, []);
-
-        const handleMouseDown = (e) => {
-            setIsDragging(true);
-            const rect = e.currentTarget.getBoundingClientRect();
-            handleSliderChange(e.clientX, rect);
-        };
-
-        const handleTouchStart = (e) => {
-            setIsDragging(true);
-            const rect = e.currentTarget.getBoundingClientRect();
-            handleSliderChange(e.touches[0].clientX, rect);
-        };
-
-        useEffect(() => {
-            if (isDragging) {
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-                document.addEventListener('touchmove', handleTouchMove);
-                document.addEventListener('touchend', handleTouchEnd);
-
-                return () => {
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    document.removeEventListener('mouseup', handleMouseUp);
-                    document.removeEventListener('touchmove', handleTouchMove);
-                    document.removeEventListener('touchend', handleTouchEnd);
-                };
-            }
-        }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
-
-        return (
-            <div className="relative pt-2">
-                {/* Slider track */}
-                <div
-                    ref={sliderRef}
-                    className={`relative h-2 bg-gray-200 rounded-full ${isDragging ? 'cursor-grabbing' : 'cursor-pointer'}`}
-                    onMouseDown={handleMouseDown}
-                    onTouchStart={handleTouchStart}
-                >
-                    {/* Progress bar */}
-                    <div
-                        className="absolute h-2 bg-gradient-to-r from-[#D7242A] to-[#ff4444] rounded-full transition-all duration-200"
-                        style={{ width: `${safePercentage}%` }}
-                    />
-
-                    {/* Draggable thumb */}
-                    <div
-                        className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-3 border-[#D7242A] rounded-full shadow-lg transition-all duration-200 pointer-events-none ${
-                            isDragging ? 'scale-110' : ''
-                        }`}
-                        style={{ left: `calc(${safePercentage}% - 10px)` }}
-                    />
-                </div>
-
-                {/* Value labels */}
-                <div className="flex justify-between mt-2 text-xs text-gray-500">
-                    <span>{formatValue ? formatValue(safeMin) : safeMin}</span>
-                    <span>{formatValue ? formatValue(safeMax) : safeMax}</span>
                 </div>
             </div>
         );
@@ -296,8 +159,8 @@ export default function EMICalculator({
                     {/* Input Section */}
                     <div className="space-y-6">
                         {/* Property Price */}
-                        <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 text-black">
-                            <label className="block text-sm font-semibold text-gray-700 mb-3 ">
+                        <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                            <label className="block text-sm font-semibold text-gray-700 mb-3">
                                 Property Price
                             </label>
                             <div className="mb-3">
@@ -317,20 +180,32 @@ export default function EMICalculator({
                                         min={minPrice}
                                         max={maxPrice}
                                         className="w-full pl-8 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:border-[#D7242A] focus:outline-none text-base font-semibold transition-colors"
-                                        placeholder={`₹${minPrice.toLocaleString('en-IN')} - ₹${maxPrice.toLocaleString('en-IN')}`}
+                                        placeholder={`${minPrice.toLocaleString('en-IN')} - ${maxPrice.toLocaleString('en-IN')}`}
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 mt-2">{formatCurrency(propertyPrice)}</p>
                             </div>
                             {showPriceSlider && (
-                                <CustomSlider
-                                    value={propertyPrice}
-                                    onChange={setPropertyPrice}
-                                    min={minPrice}
-                                    max={maxPrice}
-                                    step={100000}
-                                    formatValue={formatCurrency}
-                                />
+                                <div className="relative">
+                                    <div className="slider-container">
+                                        <input
+                                            type="range"
+                                            min={minPrice}
+                                            max={maxPrice}
+                                            step={100000}
+                                            value={propertyPrice}
+                                            onChange={(e) => setPropertyPrice(parseFloat(e.target.value))}
+                                            className="w-full slider-modern"
+                                            style={{
+                                                background: `linear-gradient(to right, #D7242A 0%, #D7242A ${((propertyPrice - minPrice) / (maxPrice - minPrice)) * 100}%, #e5e7eb ${((propertyPrice - minPrice) / (maxPrice - minPrice)) * 100}%, #e5e7eb 100%)`
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex justify-between mt-2 text-xs text-gray-500">
+                                        <span>{formatCurrency(minPrice)}</span>
+                                        <span>{formatCurrency(maxPrice)}</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -359,21 +234,33 @@ export default function EMICalculator({
                                         }}
                                         min={0}
                                         max={50}
-                                        step={1}
+                                        step={0.5}
                                         className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:border-[#D7242A] focus:outline-none text-base font-semibold transition-colors"
                                         placeholder="0-50%"
                                     />
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
                                 </div>
                             </div>
-                            <CustomSlider
-                                value={downPaymentPercent}
-                                onChange={setDownPaymentPercent}
-                                min={0}
-                                max={50}
-                                step={1}
-                                formatValue={(val) => `${val}%`}
-                            />
+                            <div className="relative">
+                                <div className="slider-container">
+                                    <input
+                                        type="range"
+                                        min={0}
+                                        max={50}
+                                        step={0.5}
+                                        value={downPaymentPercent}
+                                        onChange={(e) => setDownPaymentPercent(parseFloat(e.target.value))}
+                                        className="w-full slider-modern"
+                                        style={{
+                                            background: `linear-gradient(to right, #D7242A 0%, #D7242A ${(downPaymentPercent / 50) * 100}%, #e5e7eb ${(downPaymentPercent / 50) * 100}%, #e5e7eb 100%)`
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                                    <span>0%</span>
+                                    <span>50%</span>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Interest Rate */}
@@ -403,14 +290,26 @@ export default function EMICalculator({
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
                                 </div>
                             </div>
-                            <CustomSlider
-                                value={interestRate}
-                                onChange={setInterestRate}
-                                min={6.5}
-                                max={15}
-                                step={0.1}
-                                formatValue={(val) => `${val.toFixed(1)}%`}
-                            />
+                            <div className="relative">
+                                <div className="slider-container">
+                                    <input
+                                        type="range"
+                                        min={6.5}
+                                        max={15}
+                                        step={0.1}
+                                        value={interestRate}
+                                        onChange={(e) => setInterestRate(parseFloat(e.target.value))}
+                                        className="w-full slider-modern"
+                                        style={{
+                                            background: `linear-gradient(to right, #D7242A 0%, #D7242A ${((interestRate - 6.5) / (15 - 6.5)) * 100}%, #e5e7eb ${((interestRate - 6.5) / (15 - 6.5)) * 100}%, #e5e7eb 100%)`
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                                    <span>6.5%</span>
+                                    <span>15%</span>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Tenure */}
@@ -428,7 +327,7 @@ export default function EMICalculator({
                                             if (!isNaN(val) && val >= 1 && val <= 30) {
                                                 setTenureYears(val);
                                             } else if (e.target.value === '') {
-                                                setTenureYears(5);
+                                                setTenureYears(1);
                                             }
                                         }}
                                         min={1}
@@ -440,14 +339,26 @@ export default function EMICalculator({
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Years</span>
                                 </div>
                             </div>
-                            <CustomSlider
-                                value={tenureYears}
-                                onChange={setTenureYears}
-                                min={1}
-                                max={30}
-                                step={1}
-                                formatValue={(val) => `${val} Yrs`}
-                            />
+                            <div className="relative">
+                                <div className="slider-container">
+                                    <input
+                                        type="range"
+                                        min={1}
+                                        max={30}
+                                        step={1}
+                                        value={tenureYears}
+                                        onChange={(e) => setTenureYears(parseFloat(e.target.value))}
+                                        className="w-full slider-modern"
+                                        style={{
+                                            background: `linear-gradient(to right, #D7242A 0%, #D7242A ${((tenureYears - 1) / (30 - 1)) * 100}%, #e5e7eb ${((tenureYears - 1) / (30 - 1)) * 100}%, #e5e7eb 100%)`
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                                    <span>1 Yr</span>
+                                    <span>30 Yrs</span>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Loan Amount Info */}
@@ -557,6 +468,96 @@ export default function EMICalculator({
                     </div>
                 </div>
             </div>
+
+            <style jsx>{`
+                /* Slider container */
+                .slider-container {
+                    position: relative;
+                    width: 100%;
+                }
+
+                /* Modern slider styling */
+                .slider-modern {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 100%;
+                    height: 8px;
+                    border-radius: 4px;
+                    outline: none;
+                    cursor: pointer;
+                    transition: background 0.15s ease;
+                }
+
+                /* Webkit (Chrome, Safari, Edge) - Thumb */
+                .slider-modern::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: #D7242A;
+                    cursor: pointer;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 8px rgba(215, 36, 42, 0.3);
+                    transition: all 0.2s ease;
+                    margin-top: -6px;
+                    margin-bottom: -6px;
+                }
+
+                .slider-modern::-webkit-slider-thumb:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 12px rgba(215, 36, 42, 0.4);
+                }
+
+                .slider-modern::-webkit-slider-thumb:active {
+                    transform: scale(1.15);
+                }
+
+                /* Webkit - Track */
+                .slider-modern::-webkit-slider-runnable-track {
+                    width: 100%;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: transparent;
+                }
+
+                /* Firefox - Thumb */
+                .slider-modern::-moz-range-thumb {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: #D7242A;
+                    cursor: pointer;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 8px rgba(215, 36, 42, 0.3);
+                    transition: all 0.2s ease;
+                    position: relative;
+                }
+
+                .slider-modern::-moz-range-thumb:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 12px rgba(215, 36, 42, 0.4);
+                }
+
+                .slider-modern::-moz-range-thumb:active {
+                    transform: scale(1.15);
+                }
+
+                /* Firefox - Track */
+                .slider-modern::-moz-range-track {
+                    width: 100%;
+                    height: 8px;
+                    border-radius: 4px;
+                    background: transparent;
+                }
+
+                /* Firefox - Progress (filled portion) */
+                .slider-modern::-moz-range-progress {
+                    height: 8px;
+                    border-radius: 4px;
+                    background: #D7242A;
+                }
+            `}</style>
         </div>
     );
 }
