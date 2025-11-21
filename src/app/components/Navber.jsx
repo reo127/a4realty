@@ -94,6 +94,13 @@ const Navber = () => {
                             Blog
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
                         </Link>
+                        <Link
+                            href="/calculators"
+                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
+                        >
+                            Calculators
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
+                        </Link>
                     </nav>
 
                     {/* Mobile menu button */}
@@ -296,6 +303,16 @@ const Navber = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
                                 Blog
+                            </Link>
+                            <Link
+                                href="/calculators"
+                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                Calculators
                             </Link>
                         </div>
 
