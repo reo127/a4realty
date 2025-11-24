@@ -300,7 +300,7 @@ export default function Home() {
                             {[
                                 { name: "Mumbai", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/40/ce/c3/mumbai-marine-drive-along.jpg?w=2000&h=-1&s=1" },
                                 { name: "Delhi NCR", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=300&h=300&fit=crop&crop=center" },
-                                { name: "Bengaluru", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=300&h=300&fit=crop&crop=center" },
+                                { name: "Bangalore", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=300&h=300&fit=crop&crop=center" },
                                 { name: "Pune", image: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=300&h=300&fit=crop&crop=center" },
                                 { name: "Hyderabad", image: "https://lp-cms-production.imgix.net/2019-06/GettyImages-171676147_full.jpg?fit=crop&ar=1%3A1&w=1200&auto=format&q=75" },
                                 { name: "Chennai", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=300&h=300&fit=crop&crop=center" },

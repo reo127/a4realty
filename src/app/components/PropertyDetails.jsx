@@ -62,6 +62,7 @@ export default function PropertyDetails() {
         email: '',
         phone: ''
     });
+    const [visibleAmenities, setVisibleAmenities] = useState(12);
 
     useEffect(() => {
         const handleKeyPress = (e) => {
@@ -693,16 +694,28 @@ export default function PropertyDetails() {
                     <section id="amenities" className='mt-16 sm:mt-24 lg:mt-32'>
                         <div className='text-2xl sm:text-3xl lg:text-[32px] text-[#303030] font-bold mb-6'>Amenities</div>
                         {property.amenities && property.amenities.length > 0 ? (
-                            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'>
-                                {property.amenities.map((amenity, index) => (
-                                    <div key={index} className='text-black rounded-md font-thin flex flex-col border items-center justify-center h-[70px] sm:h-[80px] p-2'>
-                                        <div className="mb-1">
-                                            {getAmenityIcon(amenity)}
+                            <>
+                                <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4'>
+                                    {property.amenities.slice(0, visibleAmenities).map((amenity, index) => (
+                                        <div key={index} className='text-black rounded-md font-thin flex flex-col border items-center justify-center h-[70px] sm:h-[80px] p-2'>
+                                            <div className="mb-1">
+                                                {getAmenityIcon(amenity)}
+                                            </div>
+                                            <p className='text-xs sm:text-sm text-center leading-tight'>{amenity}</p>
                                         </div>
-                                        <p className='text-xs sm:text-sm text-center leading-tight'>{amenity}</p>
+                                    ))}
+                                </div>
+                                {property.amenities.length > visibleAmenities && (
+                                    <div className='flex justify-center mt-6'>
+                                        <button
+                                            onClick={() => setVisibleAmenities(prev => prev + 12)}
+                                            className='cursor-pointer px-6 py-2 bg-[#D7242A] text-white rounded-md hover:bg-[#b81f24] transition-colors font-medium'
+                                        >
+                                            Show More Amenities ({property.amenities.length - visibleAmenities})
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
+                                )}
+                            </>
                         ) : (
                             <p className='text-[#999999] italic'>No amenities information available</p>
                         )}
