@@ -7,6 +7,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
   const [formData, setFormData] = useState({
     title: '',
     location: '',
+    mapLocationLink: '',
     priceFrom: '',
     priceTo: '',
     price: '',
@@ -86,6 +87,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
       setFormData({
         title: property.title || '',
         location: property.location || '',
+        mapLocationLink: property.mapLocationLink || '',
         priceFrom: priceFrom,
         priceTo: priceTo,
         price: property.price || '',
@@ -452,6 +454,14 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         }
       }
 
+      console.log('=== DEBUG: Form Data Before Cleaning ===');
+      console.log('mapLocationLink value:', formData.mapLocationLink);
+      console.log('Full formData:', formData);
+
+      console.log('=== DEBUG: Clean Form Data Being Sent ===');
+      console.log('mapLocationLink in cleanData:', cleanFormData.mapLocationLink);
+      console.log('Full cleanFormData:', cleanFormData);
+
       const response = await fetch(`/api/properties/${property._id}`, {
         method: 'PUT',
         headers: {
@@ -461,7 +471,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         body: JSON.stringify(cleanFormData)
       });
 
-      console.log('Submitted form data:', cleanFormData);
+      console.log('=== DEBUG: Response from API ===');
+      console.log('Response status:', response.status);
 
       const data = await response.json();
 
@@ -542,6 +553,24 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   placeholder="e.g. Koramangala, Bangalore"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="mapLocationLink" className="block text-sm font-medium text-gray-700 mb-1">
+                  Map Location Link <span className="text-gray-400 text-xs">(Optional - for accurate map)</span>
+                </label>
+                <input
+                  type="url"
+                  id="mapLocationLink"
+                  name="mapLocationLink"
+                  value={formData.mapLocationLink}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  placeholder="Paste Google Maps link here (e.g. https://maps.google.com/?q=12.97,77.59)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 Search your property on Google Maps, click Share → Copy link, and paste here for precise location
+                </p>
               </div>
 
               <div>

@@ -16,6 +16,7 @@ export default function ListProperty() {
   const [formData, setFormData] = useState({
     title: '',
     location: '',
+    mapLocationLink: '',
     priceFrom: '',
     priceTo: '',
     type: '',
@@ -420,6 +421,7 @@ export default function ListProperty() {
       setFormData({
         title: '',
         location: '',
+        mapLocationLink: '',
         priceFrom: '',
         priceTo: '',
         type: '',
@@ -550,7 +552,25 @@ export default function ListProperty() {
                   placeholder="e.g. Koramangala, Bangalore"
                 />
               </div>
-              
+
+              <div>
+                <label htmlFor="mapLocationLink" className="block text-sm font-medium text-gray-700 mb-1">
+                  Map Location Link <span className="text-gray-400 text-xs">(Optional - for accurate map)</span>
+                </label>
+                <input
+                  type="url"
+                  id="mapLocationLink"
+                  name="mapLocationLink"
+                  value={formData.mapLocationLink}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                  placeholder="Paste Google Maps link here (e.g. https://maps.google.com/?q=12.97,77.59)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 Search your property on Google Maps, click Share → Copy link, and paste here for precise location
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Price Range*

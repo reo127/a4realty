@@ -82,6 +82,10 @@ export async function PUT(request, { params }) {
 
     const data = await request.json();
 
+    console.log('=== DEBUG BACKEND: Received data ===');
+    console.log('mapLocationLink received:', data.mapLocationLink);
+    console.log('Full data:', JSON.stringify(data, null, 2));
+
     // Clean data - remove empty strings for enum fields and other optional fields
     const cleanData = {};
     Object.keys(data).forEach(key => {
@@ -96,6 +100,10 @@ export async function PUT(request, { params }) {
         }
       }
     });
+
+    console.log('=== DEBUG BACKEND: Clean data to save ===');
+    console.log('mapLocationLink in cleanData:', cleanData.mapLocationLink);
+    console.log('Full cleanData:', JSON.stringify(cleanData, null, 2));
 
     // Find property
     const property = await Property.findById(id);
@@ -121,7 +129,10 @@ export async function PUT(request, { params }) {
       cleanData,
       { new: true, runValidators: true }
     );
-    
+
+    console.log('=== DEBUG BACKEND: After save ===');
+    console.log('Updated property mapLocationLink:', updatedProperty.mapLocationLink);
+
     return NextResponse.json(
       { success: true, data: updatedProperty },
       { status: 200 }

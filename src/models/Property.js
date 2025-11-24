@@ -14,6 +14,12 @@ const PropertySchema = new mongoose.Schema({
     trim: true,
     userVisible: true
   },
+  mapLocationLink: {
+    type: String,
+    required: false,
+    trim: true,
+    userVisible: true
+  },
   price: {
     type: String,
     required: [true, 'Please provide a price'],
