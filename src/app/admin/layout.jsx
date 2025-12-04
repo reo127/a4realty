@@ -69,6 +69,7 @@ export default function AdminLayout({ children }) {
     {
       name: 'AI Assistant',
       href: '/ai-assistant',
+      badge: 'Soon',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -284,13 +285,20 @@ function SidebarContent({ navigation, pathname, user, onLogout, collapsed, onTog
                   {item.icon}
                 </span>
                 {!collapsed && (
-                  <span className="transition-opacity duration-150">{item.name}</span>
+                  <span className="flex items-center justify-between flex-1 transition-opacity duration-150">
+                    <span>{item.name}</span>
+                    {item.badge && (
+                      <span className="ml-2 px-2 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-600 rounded-full">
+                        {item.badge}
+                      </span>
+                    )}
+                  </span>
                 )}
-                
+
                 {/* Tooltip for collapsed state */}
                 {collapsed && (
                   <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                    {item.name}
+                    {item.name} {item.badge && `(${item.badge})`}
                   </div>
                 )}
               </Link>
