@@ -60,7 +60,7 @@ const Footer = () => {
                                     <span className="font-medium">Address:</span> No.184, A4 Realty, Hennur Cross, 3rd Cross, Narayanappa Road, Kalyan Nagar Post, Kalyan Nagar Post, Bengaluru, 560043,
                                 </div>
                                 <div>
-                                    <span className="font-medium">Phone :</span> +91 8250230198
+                                    <span className="font-medium">Phone :</span> +91 6289038527
                                 </div>
                             </div>
                         </div>

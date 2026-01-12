@@ -206,7 +206,7 @@ export default function About() {
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">
-                            <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                            {/* <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
                                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
                                     <img
                                         src="https://media.licdn.com/dms/image/v2/C4E03AQHnhcBL4LPclQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1623775892741?e=1760572800&v=beta&t=u2OGO8kh6tsZTttYHUwGJRELDeWdQOX8Yfv0Xy_u6c4"
@@ -214,12 +214,12 @@ export default function About() {
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">ASIF EKBAL</h3>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">  </h3>
                                 <p className="text-[#D7242A] font-medium mb-3">Chief Executive Officer</p>
                                 <p className="text-gray-700 text-sm">
                                     20+ years of experience in real estate development and strategic planning.
                                 </p>
-                            </div>
+                            </div> */}
 
                             <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
                                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
