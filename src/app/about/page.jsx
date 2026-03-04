@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 
 export default function About() {
     return (
-        <>            
+        <>
             <main className="min-h-screen bg-white">
                 {/* Hero Section */}
                 <section className="relative bg-gradient-to-r from-[#D7242A] to-[#D7242A]/90 text-white py-20">
@@ -73,7 +73,7 @@ export default function About() {
                                 Driving innovation and excellence in real estate services
                             </p>
                         </div>
-                        
+
                         <div className="grid md:grid-cols-2 gap-8">
                             {/* Mission */}
                             <div className="bg-white p-8 rounded-2xl shadow-lg">
@@ -205,51 +205,43 @@ export default function About() {
                             </p>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-8">
-                            {/* <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
-                                    <img
-                                        src="https://media.licdn.com/dms/image/v2/C4E03AQHnhcBL4LPclQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1623775892741?e=1760572800&v=beta&t=u2OGO8kh6tsZTttYHUwGJRELDeWdQOX8Yfv0Xy_u6c4"
-                                        alt="CEO"
-                                        className="w-full h-full object-cover"
-                                    />
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-gray-500 overflow-hidden">
+                                    A
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">  </h3>
-                                <p className="text-[#D7242A] font-medium mb-3">Chief Executive Officer</p>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Asif Ekbal</h3>
+                                <p className="text-[#D7242A] font-medium mb-3">CEO</p>
                                 <p className="text-gray-700 text-sm">
-                                    20+ years of experience in real estate development and strategic planning.
+                                    Leading the vision and strategy for A4Realty's continued growth.
                                 </p>
-                            </div> */}
+                            </div>
+
+                            <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-gray-500 overflow-hidden">
+                                    M
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Moti Lal Mahato</h3>
+                                <p className="text-[#D7242A] font-medium mb-3">Co-founder</p>
+                                <p className="text-gray-700 text-sm">
+                                    Driving operational excellence and strategic partnerships.
+                                </p>
+                            </div>
 
                             <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
                                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
                                     <img
                                         src="https://media.licdn.com/dms/image/v2/D5603AQEcbMem_ywH_w/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1665629411655?e=1760572800&v=beta&t=BuNdxq6GOUXiyDuQQExKlWEqOSjTWsj7fDU56DTZz-k"
-                                        alt="CTO"
+                                        alt="Co-founder"
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Rohan Malo</h3>
-                                <p className="text-[#D7242A] font-medium mb-3">Chief Technology Officer</p>
+                                <p className="text-[#D7242A] font-medium mb-3">Co-founder</p>
                                 <p className="text-gray-700 text-sm">
                                     Expert in proptech innovation and digital transformation in real estate.
                                 </p>
                             </div>
-
-                            {/* <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face"
-                                        alt="Head of Sales"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">Amit Patel</h3>
-                                <p className="text-[#D7242A] font-medium mb-3">Head of Sales</p>
-                                <p className="text-gray-700 text-sm">
-                                    15+ years leading high-performance sales teams in luxury real estate.
-                                </p>
-                            </div> */}
                         </div>
                     </div>
                 </section>

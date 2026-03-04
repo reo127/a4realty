@@ -57,15 +57,15 @@ const Footer = () => {
                                 <h3 className="font-semibold text-gray-900 mb-3 block">Reach Out To Us</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <a href="tel:+919002981353" className="group flex flex-col p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-indigo-100 hover:shadow-sm transition-all duration-200 text-left">
-                                        <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">Asif Ekbal</span>
+                                        <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">Asif Ekbal <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full ml-1 font-semibold">CEO</span></span>
                                         <span className="mt-1 text-gray-500">+91 9002981353</span>
                                     </a>
                                     <a href="tel:+971547865691" className="group flex flex-col p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-indigo-100 hover:shadow-sm transition-all duration-200 text-left">
-                                        <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">Moti Lal Mahato</span>
+                                        <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">Moti Lal Mahato <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full ml-1 font-semibold">Co-founder</span></span>
                                         <span className="mt-1 text-gray-500">+971 547865691</span>
                                     </a>
                                     <a href="tel:+916289038527" className="group flex flex-col p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:border-indigo-100 hover:shadow-sm transition-all duration-200 text-left">
-                                        <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">Rohan Malo</span>
+                                        <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">Rohan Malo <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full ml-1 font-semibold">Co-founder</span></span>
                                         <span className="mt-1 text-gray-500">+91 6289038527</span>
                                     </a>
                                 </div>
