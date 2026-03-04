@@ -92,7 +92,6 @@ export default async function sitemap() {
     // Combine all routes
     return [...staticRoutes, ...propertyRoutes, ...blogRoutes];
   } catch (error) {
-    console.error('Error generating sitemap:', error);
     // Return static routes if database connection fails
     return staticRoutes;
   }
