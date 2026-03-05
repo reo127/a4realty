@@ -211,7 +211,10 @@ export default function About() {
                                     A
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Asif Ekbal</h3>
-                                <p className="text-[#D7242A] font-medium mb-3">CEO</p>
+                                <p className="text-[#D7242A] font-medium mb-1">CEO</p>
+                                <p className="text-gray-500 text-sm mb-4 flex items-center justify-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Bangalore
+                                </p>
                                 <p className="text-gray-700 text-sm">
                                     Leading the vision and strategy for A4Realty's continued growth.
                                 </p>
@@ -222,7 +225,10 @@ export default function About() {
                                     M
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Moti Lal Mahato</h3>
-                                <p className="text-[#D7242A] font-medium mb-3">Co-founder</p>
+                                <p className="text-[#D7242A] font-medium mb-1">Co-founder</p>
+                                <p className="text-gray-500 text-sm mb-4 flex items-center justify-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Dubai
+                                </p>
                                 <p className="text-gray-700 text-sm">
                                     Driving operational excellence and strategic partnerships.
                                 </p>
@@ -237,7 +243,10 @@ export default function About() {
                                     />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Rohan Malo</h3>
-                                <p className="text-[#D7242A] font-medium mb-3">Co-founder</p>
+                                <p className="text-[#D7242A] font-medium mb-1">Co-founder</p>
+                                <p className="text-gray-500 text-sm mb-4 flex items-center justify-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Bangalore
+                                </p>
                                 <p className="text-gray-700 text-sm">
                                     Expert in proptech innovation and digital transformation in real estate.
                                 </p>
