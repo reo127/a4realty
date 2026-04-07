@@ -350,10 +350,10 @@ export default function About() {
                                     Explore Properties
                                 </a>
                                 <a
-                                    href="tel:+91-9876543210"
+                                    href="tel:8250230198"
                                     className="px-8 py-4 bg-transparent text-white font-semibold rounded-xl border-2 border-white hover:bg-white hover:text-[#D7242A] transition-colors"
                                 >
-                                    Call Now: +91-9876543210
+                                    Call Now: 8250230198
                                 </a>
                             </div>
                         </div>
