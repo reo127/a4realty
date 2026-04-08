@@ -37,7 +37,7 @@ export default function Banner({ banners = [] }) {
     return (
         <div className="relative overflow-hidden">
             {/* Banner Slides */}
-            <div className="relative h-32 sm:h-40 md:h-48">
+            <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
                 {banners.map((banner, index) => (
                     <div
                         key={banner.id}
