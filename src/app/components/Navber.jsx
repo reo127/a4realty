@@ -13,6 +13,14 @@ const Navber = () => {
     const [user, setUser] = useState(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    const isSearchActive = pathname === '/search';
+    const navLinkClass = (active) =>
+        `text-white font-medium text-sm transition-colors duration-200 relative group ${active ? 'opacity-100' : 'hover:text-white/80'}`;
+    const navUnderlineClass = (active) =>
+        `absolute -bottom-1 left-0 h-0.5 bg-white transition-all duration-200 ${active ? 'w-full' : 'w-0 group-hover:w-full'}`;
+    const mobileLinkClass = (active) =>
+        `flex items-center px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 group ${active ? 'bg-white/20 text-white' : 'text-white hover:bg-white/10'}`;
+
     useEffect(() => {
         // Check if user is logged in
         const storedUser = localStorage.getItem('user');
@@ -52,55 +60,23 @@ const Navber = () => {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden lg:flex items-center space-x-8">
-                        <Link
-                            href="/search?tab=buy"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            Buy
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
-                        <Link
-                            href="/search?tab=rent"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            Rent
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
-                        <Link
-                            href="/search?tab=new"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            New Projects
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
-                        <Link
-                            href="/agents"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            Agents
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
-                        <Link
-                            href="/about"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            About
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
-                        <Link
-                            href="/blog"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            Blog
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
-                        <Link
-                            href="/calculators"
-                            className="text-white hover:text-white/80 font-medium text-sm transition-colors duration-200 relative group"
-                        >
-                            Calculators
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-200 group-hover:w-full"></span>
-                        </Link>
+                        {[
+                            { href: '/search?tab=buy', label: 'Buy' },
+                            { href: '/search?tab=rent', label: 'Rent' },
+                            { href: '/search?tab=new', label: 'New Projects' },
+                            { href: '/agents', label: 'Agents' },
+                            { href: '/about', label: 'About' },
+                            { href: '/blog', label: 'Blog' },
+                            { href: '/calculators', label: 'Calculators' },
+                        ].map(({ href, label }) => {
+                            const active = href.startsWith('/search') ? isSearchActive : pathname === href;
+                            return (
+                                <Link key={href} href={href} className={navLinkClass(active)}>
+                                    {label}
+                                    <span className={navUnderlineClass(active)}></span>
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* Mobile menu button */}
@@ -231,32 +207,46 @@ const Navber = () => {
                         </div>
 
                         {/* Navigation Links */}
-                        <div className="flex-1 overflow-y-auto py-4 px-4 space-y-2">
+                        <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
+                            {/* Search All — prominent entry */}
                             <Link
-                                href="/search?tab=buy"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                href="/search"
+                                className={mobileLinkClass(isSearchActive)}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 21l4-4 4 4" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Search All Properties
+                            </Link>
+
+                            <div className="pt-2 pb-1">
+                                <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-white/40">Browse by type</p>
+                            </div>
+
+                            <Link
+                                href="/search?tab=buy"
+                                className={mobileLinkClass(false)}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                 </svg>
                                 Buy
                             </Link>
                             <Link
                                 href="/search?tab=sell"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(false)}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 21l4-4 4 4" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Sell
                             </Link>
                             <Link
                                 href="/search?tab=rent"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(false)}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,7 +256,7 @@ const Navber = () => {
                             </Link>
                             <Link
                                 href="/search?tab=new"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(false)}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,9 +264,14 @@ const Navber = () => {
                                 </svg>
                                 New Projects
                             </Link>
+
+                            <div className="pt-2 pb-1">
+                                <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-white/40">More</p>
+                            </div>
+
                             <Link
                                 href="/agents"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(pathname === '/agents')}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +281,7 @@ const Navber = () => {
                             </Link>
                             <Link
                                 href="/about"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(pathname === '/about')}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,7 +291,7 @@ const Navber = () => {
                             </Link>
                             <Link
                                 href="/blog"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(pathname === '/blog')}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +301,7 @@ const Navber = () => {
                             </Link>
                             <Link
                                 href="/calculators"
-                                className="flex items-center px-4 py-3 text-lg font-medium text-white hover:bg-white/10 rounded-lg transition-all duration-200 group"
+                                className={mobileLinkClass(pathname === '/calculators')}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <svg className="w-5 h-5 mr-3 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
