@@ -126,6 +126,8 @@ export default function LeadDetailPage() {
     } catch (error) {
       console.error('Error fetching lead:', error);
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,8 +155,6 @@ export default function LeadDetailPage() {
     } catch (error) {
       console.error('Error fetching leads for navigation:', error);
       // Non-critical error, don't block the page
-    } finally {
-      setLoading(false);
     }
   };
 
