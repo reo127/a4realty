@@ -6,9 +6,10 @@ import User from '@/models/User';
 export async function GET(request, { params }) {
   try {
     await connectToDatabase();
+    const { id } = await params;
 
     const agent = await User.findOne({
-      _id: params.id,
+      _id: id,
       role: 'agent'
     }).select('-password');
 
@@ -59,12 +60,13 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
+    const { id } = await params;
 
     const data = await request.json();
     const { name, email, phone, isActive, password } = data;
 
     const agent = await User.findOne({
-      _id: params.id,
+      _id: id,
       role: 'agent'
     });
 
@@ -79,7 +81,7 @@ export async function PUT(request, { params }) {
     if (name !== undefined) agent.name = name;
     if (email !== undefined) {
       // Check if email is already in use by another user
-      const existingUser = await User.findOne({ email, _id: { $ne: params.id } });
+      const existingUser = await User.findOne({ email, _id: { $ne: id } });
       if (existingUser) {
         return NextResponse.json(
           { success: false, message: 'Email is already in use' },
@@ -119,9 +121,10 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectToDatabase();
+    const { id } = await params;
 
     const agent = await User.findOne({
-      _id: params.id,
+      _id: id,
       role: 'agent'
     });
 
@@ -149,7 +152,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    await User.findByIdAndDelete(params.id);
+    await User.findByIdAndDelete(id);
 
     return NextResponse.json(
       { success: true, message: 'Agent deleted successfully' },

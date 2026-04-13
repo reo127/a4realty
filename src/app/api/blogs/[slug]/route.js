@@ -27,8 +27,8 @@ async function verifyAdminToken(request) {
 export async function GET(request, { params }) {
   try {
     await connectToDatabase();
-    
-    const { slug } = params;
+
+    const { slug } = await params;
     const { searchParams } = new URL(request.url);
     const isAdmin = searchParams.get('admin') === 'true';
     const isPreview = searchParams.get('preview') === 'true';
@@ -93,7 +93,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
-    
+
     // Verify admin token
     const tokenVerification = await verifyAdminToken(request);
     if (!tokenVerification.isValid) {
@@ -102,8 +102,8 @@ export async function PUT(request, { params }) {
         { status: 401 }
       );
     }
-    
-    const { slug } = params;
+
+    const { slug } = await params;
     const data = await request.json();
     
     const blog = await Blog.findOne({ slug });
@@ -143,7 +143,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectToDatabase();
-    
+
     // Verify admin token
     const tokenVerification = await verifyAdminToken(request);
     if (!tokenVerification.isValid) {
@@ -152,8 +152,8 @@ export async function DELETE(request, { params }) {
         { status: 401 }
       );
     }
-    
-    const { slug } = params;
+
+    const { slug } = await params;
     
     const blog = await Blog.findOneAndDelete({ slug });
     if (!blog) {

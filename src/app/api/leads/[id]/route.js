@@ -6,8 +6,9 @@ import Lead from '@/models/Lead';
 export async function GET(request, { params }) {
   try {
     await connectToDatabase();
+    const { id } = await params;
 
-    const lead = await Lead.findById(params.id).populate('assignedTo', 'name email');
+    const lead = await Lead.findById(id).populate('assignedTo', 'name email');
 
     if (!lead) {
       return NextResponse.json(
@@ -33,11 +34,12 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
+    const { id } = await params;
 
     const data = await request.json();
     const { name, email, phone, interestedLocation } = data;
 
-    const lead = await Lead.findById(params.id);
+    const lead = await Lead.findById(id);
 
     if (!lead) {
       return NextResponse.json(
@@ -71,8 +73,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectToDatabase();
+    const { id } = await params;
 
-    const lead = await Lead.findByIdAndDelete(params.id);
+    const lead = await Lead.findByIdAndDelete(id);
 
     if (!lead) {
       return NextResponse.json(

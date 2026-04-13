@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
   try {
     await connectToDatabase();
     
-    const { id } = params;
+    const { id } = await params;
     
     // Check if ID is valid
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
