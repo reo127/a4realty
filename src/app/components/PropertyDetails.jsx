@@ -59,9 +59,9 @@ export default function PropertyDetails() {
     const [isSubmittingLead, setIsSubmittingLead] = useState(false);
     const [sidebarForm, setSidebarForm] = useState({
         name: '',
-        email: '',
         phone: ''
     });
+    const [showStickyForm, setShowStickyForm] = useState(false);
     const [visibleAmenities, setVisibleAmenities] = useState(12);
 
     useEffect(() => {
@@ -84,6 +84,15 @@ export default function PropertyDetails() {
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
     }, [showMediaModal, mediaType, currentMediaIndex, isZoomed]);
+
+    // Show sticky CTA bar after scrolling past hero section
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowStickyForm(window.scrollY > 600);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         // Check if user has already submitted lead information
@@ -320,7 +329,7 @@ export default function PropertyDetails() {
             }
 
             // Lead submitted successfully - show success message
-            setSidebarForm({ name: '', email: '', phone: '' });
+            setSidebarForm({ name: '', phone: '' });
             setShowSidebarSuccessModal(true);
             
         } catch (error) {
@@ -642,7 +651,7 @@ export default function PropertyDetails() {
             </div>
 
             <div className='flex flex-col lg:flex-row px-4 sm:px-6 lg:px-0 xl:px-[7rem] mt-8 sm:mt-12 gap-8 lg:gap-0 '>
-                <div className='text-black w-full lg:w-9/12 lg:pr-8'>
+                <div className='text-black w-full lg:w-8/12 lg:pr-8'>
                     <section id="overview">
                         <h1 className='text-2xl sm:text-3xl lg:text-[32px] text-[#303030] font-bold leading-tight'>{property.title}</h1>
                         <div className='mt-3 sm:mt-4'>
@@ -691,6 +700,51 @@ export default function PropertyDetails() {
                         </div>
                     </section>
 
+                    {/* Mobile-only early CTA — form is far below on mobile, this catches users early */}
+                    <div className="lg:hidden mt-10 bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-3">
+                        <div className="text-center">
+                            <p className="text-base font-bold text-gray-900">Like what you see?</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Book a free site visit — negotiate directly with the builder</p>
+                        </div>
+                        <form onSubmit={handleSidebarFormSubmit} className="flex flex-col gap-2.5">
+                            <input
+                                type="text"
+                                placeholder="Your Name"
+                                value={sidebarForm.name}
+                                onChange={(e) => setSidebarForm({...sidebarForm, name: e.target.value})}
+                                required
+                                className="text-black w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none placeholder-gray-400 text-sm"
+                            />
+                            <div className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">+91</span>
+                                <input
+                                    type="tel"
+                                    placeholder="Phone Number"
+                                    value={sidebarForm.phone}
+                                    onChange={(e) => {
+                                        const numericValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                        setSidebarForm({...sidebarForm, phone: numericValue});
+                                    }}
+                                    maxLength={10}
+                                    required
+                                    className="text-black w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none placeholder-gray-400 text-sm"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isSubmittingLead}
+                                className="w-full py-3 bg-[#D7242A] text-white font-bold rounded-xl hover:bg-[#b91c21] disabled:opacity-50 transition-all shadow-lg shadow-red-600/20 text-sm"
+                            >
+                                {isSubmittingLead ? 'Booking...' : 'Book Free Site Visit →'}
+                            </button>
+                        </form>
+                        <div className="flex justify-center gap-4 text-[10px] text-gray-400">
+                            <span>No Spam</span>
+                            <span>Zero Brokerage</span>
+                            <span>Free Pickup</span>
+                        </div>
+                    </div>
+
                     <section id="amenities" className='mt-16 sm:mt-24 lg:mt-32'>
                         <div className='text-2xl sm:text-3xl lg:text-[32px] text-[#303030] font-bold mb-6'>Amenities</div>
                         {property.amenities && property.amenities.length > 0 ? (
@@ -721,6 +775,26 @@ export default function PropertyDetails() {
                         )}
                     </section>
 
+                    {/* Mid-content CTA */}
+                    <div className="mt-12 sm:mt-16 bg-gradient-to-r from-[#D7242A] to-[#a51b1f] rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div className="relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                            <div className="flex-1 text-center sm:text-left">
+                                <h3 className="text-lg sm:text-xl font-extrabold">Interested? Visit the Site & Get the Best Deal</h3>
+                                <p className="text-white/80 text-sm mt-1">On-site visits get exclusive discounts. Limited slots available.</p>
+                            </div>
+                            <a
+                                href="#sidebar-form"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.getElementById('sidebar-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }}
+                                className="flex-shrink-0 bg-white text-[#D7242A] font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-all shadow-lg text-sm sm:text-base"
+                            >
+                                Book Free Site Visit
+                            </a>
+                        </div>
+                    </div>
 
                     <section id="about-project" className='mt-16 sm:mt-24 lg:mt-32'>
                         <h1 className='text-2xl sm:text-3xl lg:text-[32px] text-[#303030] font-bold mb-6'>About {property.title}</h1>
@@ -967,59 +1041,141 @@ export default function PropertyDetails() {
                     <section id="ratings-reviews"></section>
                     <section id="about-location" className='mb-12 sm:mb-24 lg:mb-32'></section>
                 </div>
-                <div className="w-full xl:w-[40rem] lg:w-3/12 lg:pl-8 mb-12">
+                <div className="w-full lg:w-4/12 lg:pl-8 mb-12">
                     <div className="sticky top-[5rem]">
-                        <form onSubmit={handleSidebarFormSubmit} className="bg-gradient-to-br from-[#D7242A]/5 via-white to-[#D7242A]/10 rounded-2xl shadow-xl p-6 sm:p-8 space-y-4 sm:space-y-5">
-                            <h2 className="text-lg sm:text-xl font-semibold text-[#D7242A] text-center leading-tight">
-                                Looking for a property in <br />
-                                <span className="text-[#D7242A] text-base sm:text-lg">{property.title}</span>
-                            </h2>
+                        <form id="sidebar-form" onSubmit={handleSidebarFormSubmit} className="bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+                            {/* Urgency Banner with pulsing dot */}
+                            <div className="bg-[#D7242A] text-white text-center py-3 px-4">
+                                <p className="text-sm font-bold tracking-wide flex items-center justify-center gap-2">
+                                    <span className="relative flex h-2.5 w-2.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                                    </span>
+                                    Limited Slots for Site Visits This Week
+                                </p>
+                            </div>
 
-                        <input
-                            type="text"
-                            placeholder="Your Name *"
-                            value={sidebarForm.name}
-                            onChange={(e) => setSidebarForm({...sidebarForm, name: e.target.value})}
-                            required
-                            className="text-black w-full px-4 py-3 rounded-lg border border-[#D7242A]/20 focus:outline-none focus:ring-2 focus:ring-[#D7242A]/20 transition"
-                        />
+                            <div className="p-7 space-y-5">
+                                {/* Headline */}
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-extrabold text-gray-900 leading-tight">
+                                        Book a <span className="text-[#D7242A]">Free Site Visit</span>
+                                    </h2>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        Visit the property & negotiate the best price directly
+                                    </p>
+                                </div>
 
-                        <input
-                            type="email"
-                            placeholder="Your Email"
-                            value={sidebarForm.email}
-                            onChange={(e) => setSidebarForm({...sidebarForm, email: e.target.value})}
-                            className="text-black w-full px-4 py-3 rounded-lg border border-[#D7242A]/20 focus:outline-none focus:ring-2 focus:ring-[#D7242A]/20 transition"
-                        />
+                                {/* Social proof with avatars */}
+                                <div className="flex items-center justify-center gap-3 bg-amber-50 border border-amber-200 rounded-xl py-2.5 px-4">
+                                    <div className="flex -space-x-2 flex-shrink-0">
+                                        {[11, 12, 13].map(i => (
+                                            <div key={i} className="w-6 h-6 rounded-full border-2 border-amber-50 bg-gray-300 overflow-hidden">
+                                                <img src={`https://i.pravatar.cc/48?img=${i}`} alt="" className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <span className="text-xs font-semibold text-amber-800">
+                                        {Math.floor(Math.random() * 20) + 25}+ people enquired this week
+                                    </span>
+                                </div>
 
-                        <input
-                            type="tel"
-                            placeholder="Phone Number *"
-                            value={sidebarForm.phone}
-                            onChange={(e) => {
-                                // Only allow numbers and limit to 10 digits
-                                const numericValue = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                setSidebarForm({...sidebarForm, phone: numericValue});
-                            }}
-                            onKeyPress={(e) => {
-                                // Prevent non-numeric characters from being typed
-                                if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') {
-                                    e.preventDefault();
-                                }
-                            }}
-                            maxLength={10}
-                            required
-                            className="text-black w-full px-4 py-3 rounded-lg border border-[#D7242A]/20 focus:outline-none focus:ring-2 focus:ring-[#D7242A]/20 transition"
-                        />
+                                {/* What you get - reciprocity psychology */}
+                                <div className="space-y-2">
+                                    {[
+                                        'Free cab pickup for site visit',
+                                        'Negotiate directly with the builder',
+                                        'Get exclusive on-site discounts',
+                                        'Zero brokerage — save lakhs'
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center gap-2.5 text-sm text-gray-700">
+                                            <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                                            {item}
+                                        </div>
+                                    ))}
+                                </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmittingLead}
-                            className="w-full bg-[#D7242A] hover:bg-[#D7242A]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg shadow-md hover:shadow-lg transition"
-                        >
-                            {isSubmittingLead ? 'Submitting...' : 'Submit'}
-                        </button>
-                    </form>
+                                {/* Divider */}
+                                <div className="border-t border-gray-100"></div>
+
+                                {/* Form Fields */}
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 pl-1">Your Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter your full name"
+                                            value={sidebarForm.name}
+                                            onChange={(e) => setSidebarForm({...sidebarForm, name: e.target.value})}
+                                            required
+                                            className="text-black w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none placeholder-gray-400"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5 pl-1">Phone Number</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">+91</span>
+                                            <input
+                                                type="tel"
+                                                placeholder="98765 43210"
+                                                value={sidebarForm.phone}
+                                                onChange={(e) => {
+                                                    const numericValue = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                    setSidebarForm({...sidebarForm, phone: numericValue});
+                                                }}
+                                                maxLength={10}
+                                                required
+                                                className="text-black w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* CTA Button */}
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingLead}
+                                    className="w-full py-4 bg-[#D7242A] text-white font-extrabold text-lg rounded-xl hover:bg-[#b91c21] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-600/25 flex items-center justify-center gap-2 group"
+                                >
+                                    {isSubmittingLead ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Booking...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Book Free Site Visit
+                                            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* Micro-commitment text - reduces anxiety */}
+                                <p className="text-center text-[11px] text-gray-400">
+                                    Takes 10 seconds. We call you within 2 hours.
+                                </p>
+
+                                {/* Trust Signals */}
+                                <div className="flex items-center justify-center gap-5 pt-1 border-t border-gray-100 pt-4">
+                                    <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                        No Spam
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                        100% Free
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                        Free Pickup
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -1230,8 +1386,9 @@ export default function PropertyDetails() {
                     onClose={handleClosePriceModal}
                     onSubmit={handlePriceLeadSubmit}
                     title="Get Property Price"
-                    description="Thank you for your interest! We'll call you soon with the price details."
+                    description="We'll call you within 2 hours with exclusive pricing & offers."
                     propertyTitle={property.title}
+                    propertyLocation={property.location}
                 />
             )}
 
@@ -1242,8 +1399,9 @@ export default function PropertyDetails() {
                     onClose={handleCloseBrochureModal}
                     onSubmit={handleBrochureLeadSubmit}
                     title="Download Brochure"
-                    description="Thank you for your interest! We'll contact you soon with the property brochure."
+                    description="Get floor plans, pricing & brochure sent to your phone instantly."
                     propertyTitle={property.title}
+                    propertyLocation={property.location}
                 />
             )}
 
@@ -1253,9 +1411,10 @@ export default function PropertyDetails() {
                     isOpen={showLeadModal}
                     onClose={handleCloseLeadModal}
                     onSubmit={handleLeadSubmit}
-                    title="Contact Property"
-                    description="Please provide your contact details and we'll get back to you shortly."
+                    title="Book Free Site Visit"
+                    description="Visit the property & negotiate the best deal directly with the builder."
                     propertyTitle={property.title}
+                    propertyLocation={property.location}
                 />
             )}
 
@@ -1317,9 +1476,9 @@ export default function PropertyDetails() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Thank You!</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Site Visit Booked!</h3>
                         <p className="text-gray-600 mb-6">
-                            We have received your inquiry successfully. Our team will contact you soon with property details and assistance.
+                            Our team will call you within 2 hours to schedule your free site visit. Get ready to see your dream home!
                         </p>
                         <button
                             onClick={handleCloseSidebarSuccessModal}
@@ -1327,6 +1486,29 @@ export default function PropertyDetails() {
                         >
                             Close
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Sticky Mobile CTA Bar */}
+            {showStickyForm && (
+                <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white border-t-2 border-[#D7242A]/20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-4 py-3">
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-gray-900 truncate">{property.title}</p>
+                            <p className="text-[10px] text-gray-500">Visit site & negotiate best price</p>
+                        </div>
+                        <a
+                            href="#sidebar-form"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                document.getElementById('sidebar-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }}
+                            className="flex-shrink-0 bg-[#D7242A] text-white font-bold text-sm px-5 py-3 rounded-xl shadow-lg shadow-red-600/25 flex items-center gap-1.5 hover:bg-[#b91c21] transition-all"
+                        >
+                            Book Site Visit
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+                        </a>
                     </div>
                 </div>
             )}

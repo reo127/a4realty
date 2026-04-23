@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { getAllLocations } from '@/utils/locations';
 
-export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "Get Exclusive Property Access", description = "Join 5,000+ happy families who found their dream home with us." }) {
+export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "Get Exclusive Property Access", description = "Join 5,000+ happy families who found their dream home with us.", propertyLocation = '' }) {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
-    interestedLocation: ''
+    interestedLocation: propertyLocation
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -31,8 +31,8 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
     setError('');
 
     try {
-      if (!formData.name.trim() || !formData.phone.trim() || !formData.interestedLocation.trim()) {
-        throw new Error('Name, phone, and interested location are required');
+      if (!formData.name.trim() || !formData.phone.trim() || (!propertyLocation && !formData.interestedLocation.trim())) {
+        throw new Error(propertyLocation ? 'Name and phone are required' : 'Name, phone, and interested location are required');
       }
 
       if (formData.phone.replace(/\s/g, '').length !== 10) {
@@ -171,41 +171,47 @@ export default function LeadCaptureModal({ isOpen, onClose, onSubmit, title = "G
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="interestedLocation" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 px-1">
-                  Preferred Location
-                </label>
-                <select
-                  id="interestedLocation"
-                  name="interestedLocation"
-                  value={formData.interestedLocation}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none text-gray-900 bg-white"
-                >
-                  <option value="">Select where you want to buy</option>
-                  {getAllLocations().map(location => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Hide location when already known from property page */}
+              {!propertyLocation && (
+                <div>
+                  <label htmlFor="interestedLocation" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 px-1">
+                    Preferred Location
+                  </label>
+                  <select
+                    id="interestedLocation"
+                    name="interestedLocation"
+                    value={formData.interestedLocation}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none text-gray-900 bg-white"
+                  >
+                    <option value="">Select where you want to buy</option>
+                    {getAllLocations().map(location => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-              <div>
-                <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 px-1">
-                  Email Address <span className="text-gray-400 font-normal italic">(For floor plans)</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none text-gray-900 placeholder-gray-400"
-                  placeholder="john@example.com"
-                />
-              </div>
+              {/* Hide email on property pages to reduce friction */}
+              {!propertyLocation && (
+                <div>
+                  <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 px-1">
+                    Email Address <span className="text-gray-400 font-normal italic">(For floor plans)</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#D7242A] focus:ring-4 focus:ring-[#D7242A]/10 transition-all outline-none text-gray-900 placeholder-gray-400"
+                    placeholder="john@example.com"
+                  />
+                </div>
+              )}
 
               <div className="pt-4">
                 <button

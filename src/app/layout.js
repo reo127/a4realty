@@ -2,7 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Navber from "./components/Navber";
-import ChatBot from "./components/ChatBot";
+// import ChatBot from "./components/ChatBot";
+import FloatingContact from "./components/FloatingContact";
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -129,7 +130,8 @@ export default function RootLayout({ children }) {
         <Navber/>
         {children}
         <Analytics />
-        <ChatBot/>
+        {/* <ChatBot/> */}
+        <FloatingContact/>
       </body>
     </html>
   );
