@@ -21,7 +21,7 @@ export default function AgentLeadsPage() {
   // Read all filter values from URL (source of truth)
   const currentPage = parseInt(searchParams.get('page')) || 1;
   const searchTerm = searchParams.get('search') || '';
-  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const sortBy = searchParams.get('sortBy') || 'assignedAt';
   const sortOrder = searchParams.get('sortOrder') || 'desc';
   const statusFilter = searchParams.get('status') || 'all';
   const dateFrom = searchParams.get('dateFrom') || '';
@@ -44,7 +44,7 @@ export default function AgentLeadsPage() {
     const merged = { ...current, ...updates };
 
     if (merged.page && merged.page !== '1') params.set('page', merged.page);
-    if (merged.sortBy && merged.sortBy !== 'createdAt') params.set('sortBy', merged.sortBy);
+    if (merged.sortBy && merged.sortBy !== 'assignedAt') params.set('sortBy', merged.sortBy);
     if (merged.sortOrder && merged.sortOrder !== 'desc') params.set('sortOrder', merged.sortOrder);
     if (merged.search) params.set('search', merged.search);
     if (merged.status && merged.status !== 'all') params.set('status', merged.status);
@@ -367,6 +367,7 @@ export default function AgentLeadsPage() {
                     onChange={(e) => updateURLParams({ sortBy: e.target.value })}
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-black"
                   >
+                    <option value="assignedAt">Recently Assigned</option>
                     <option value="createdAt">Date Added</option>
                     <option value="name">Name</option>
                     <option value="interestedLocation">Location</option>

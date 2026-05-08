@@ -51,7 +51,7 @@ export default function LeadDetailPage() {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       const parsedParams = {
-        sortBy: searchParams.get('sortBy') || 'createdAt',
+        sortBy: searchParams.get('sortBy') || 'assignedAt',
         sortOrder: searchParams.get('sortOrder') || 'desc',
         page: searchParams.get('page') || '1',
         search: searchParams.get('search') || '',
@@ -143,7 +143,7 @@ export default function LeadDetailPage() {
       const queryParams = new URLSearchParams({
         limit: '30', // Match the leads list page limit for consistency
         page: urlParams.page || '1', // Respect the current page
-        sortBy: urlParams.sortBy || 'createdAt',
+        sortBy: urlParams.sortBy || 'assignedAt',
         sortOrder: urlParams.sortOrder || 'desc',
         assignedTo: userData._id, // CRITICAL: Only fetch leads assigned to this agent
         ...(urlParams.search && { search: urlParams.search }),
@@ -544,7 +544,7 @@ export default function LeadDetailPage() {
   const navigateToLead = (leadId) => {
     // Preserve URL params when navigating to next/previous lead
     const queryParams = new URLSearchParams({
-      sortBy: urlParams.sortBy || 'createdAt',
+      sortBy: urlParams.sortBy || 'assignedAt',
       sortOrder: urlParams.sortOrder || 'desc',
       page: urlParams.page || '1',
       ...(urlParams.search && { search: urlParams.search }),
@@ -722,7 +722,7 @@ export default function LeadDetailPage() {
               </button>
               <Link
                 href={`/agent/my-leads?${new URLSearchParams({
-                  sortBy: urlParams.sortBy || 'createdAt',
+                  sortBy: urlParams.sortBy || 'assignedAt',
                   sortOrder: urlParams.sortOrder || 'desc',
                   page: urlParams.page || '1',
                   ...(urlParams.search && { search: urlParams.search }),

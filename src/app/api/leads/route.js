@@ -54,7 +54,7 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 30;
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortBy = searchParams.get('sortBy') || (assignedTo ? 'assignedAt' : 'createdAt');
     const sortOrder = searchParams.get('sortOrder') || 'desc';
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
@@ -107,7 +107,17 @@ export async function GET(request) {
 
     // Build sort object
     const sort = {};
-    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    const primarySortOrder = sortOrder === 'asc' ? 1 : -1;
+    sort[sortBy] = primarySortOrder;
+
+    // Keep batch ordering stable for agents: newest assigned leads first,
+    // then newer records first inside the same assignment batch.
+    if (sortBy !== 'assignedAt') {
+      sort.assignedAt = -1;
+    }
+    if (sortBy !== 'createdAt') {
+      sort.createdAt = -1;
+    }
 
     // Calculate pagination
     const skip = (page - 1) * limit;
