@@ -39,9 +39,11 @@ function parseCSVData(csvText, leadSource) {
       source: rowSource || leadSource || 'bulk_upload'
     };
 
-    // Add email if provided
-    if (row.email && row.email.trim()) {
-      leadData.email = row.email.trim();
+    // Add email if provided and not a placeholder value
+    const emailValue = (row.email || '').trim();
+    const emailPlaceholders = ['na', 'n/a', 'none', 'null', 'nil', '-', '--', 'not available', 'no email'];
+    if (emailValue && !emailPlaceholders.includes(emailValue.toLowerCase())) {
+      leadData.email = emailValue;
     }
 
     data.push(leadData);
