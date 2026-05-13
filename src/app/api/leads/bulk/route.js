@@ -4,7 +4,7 @@ import Lead from '@/models/Lead';
 import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to parse CSV data
-function parseCSVData(csvText) {
+function parseCSVData(csvText, leadSource) {
   const lines = csvText.trim().split('\n');
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
 
@@ -30,11 +30,13 @@ function parseCSVData(csvText) {
     });
 
     // Transform to match our lead schema
+    // Source priority: CSV column > dropdown selection > fallback
+    const rowSource = (row.source || '').trim();
     const leadData = {
       name: row.name,
       phone: row.phonenumber,
       interestedLocation: row.location || '',
-      source: 'bulk_upload'
+      source: rowSource || leadSource || 'bulk_upload'
     };
 
     // Add email if provided
@@ -80,6 +82,7 @@ export async function POST(request) {
 
     const formData = await request.formData();
     const file = formData.get('csvFile');
+    const leadSource = (formData.get('leadSource') || '').trim();
 
     if (!file) {
       return NextResponse.json(
@@ -101,7 +104,7 @@ export async function POST(request) {
     // Parse CSV data
     let leadDataArray;
     try {
-      leadDataArray = parseCSVData(csvText);
+      leadDataArray = parseCSVData(csvText, leadSource);
     } catch (parseError) {
       return NextResponse.json(
         { success: false, message: parseError.message },

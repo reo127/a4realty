@@ -4,10 +4,10 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     // CSV template headers and sample data
-    const csvTemplate = `name,phonenumber,location,email
-John Doe,9876543210,Koramangala,john.doe@example.com
-Jane Smith,9876543211,BTM Layout,jane.smith@example.com
-Sample Lead,9876543212,Electronic City,sample@example.com`;
+    const csvTemplate = `name,phonenumber,location,email,source
+Rahul Sharma,9876543210,Whitefield,rahul@example.com,DS-Max
+Priya Mehta,9845123456,Electronic City,,NoBroker
+Amit Verma,9900012345,Sarjapur Road,amit@example.com,99acres`;
 
     // Create response with CSV content
     const response = new NextResponse(csvTemplate);

@@ -2,12 +2,29 @@
 
 import { useState } from 'react';
 
+const LEAD_SOURCES = [
+  'DS-Max',
+  'NoBroker',
+  '99acres',
+  'MagicBricks',
+  'Housing.com',
+  'CommonFloor',
+  'JustDial',
+  'Walk-in',
+  'Referral',
+  'Facebook Ads',
+  'Google Ads',
+  'Other',
+];
+
 export default function BulkLeadUpload({ onUploadComplete, onClose }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [leadSource, setLeadSource] = useState('');
+  const [customSource, setCustomSource] = useState('');
 
   const handleFileSelect = (selectedFile) => {
     setError('');
@@ -62,12 +79,15 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
       return;
     }
 
+    const resolvedSource = leadSource === 'Other' ? customSource.trim() : leadSource;
+
     setUploading(true);
     setError('');
 
     try {
       const formData = new FormData();
       formData.append('csvFile', file);
+      formData.append('leadSource', resolvedSource);
 
       const response = await fetch('/api/leads/bulk', {
         method: 'POST',
@@ -114,7 +134,7 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
     } catch (error) {
       console.error('Error downloading template:', error);
       // Fallback to client-side generation
-      const csvContent = 'name,phonenumber,location,email\nJohn Doe,9876543210,Koramangala,john@example.com\nJane Smith,9876543211,BTM Layout,jane@example.com\nSample Lead,9876543212,Electronic City,sample@example.com';
+      const csvContent = 'name,phonenumber,location,email,source\nRahul Sharma,9876543210,Whitefield,rahul@example.com,DS-Max\nPriya Mehta,9845123456,Electronic City,,NoBroker\nAmit Verma,9900012345,Sarjapur Road,amit@example.com,99acres';
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -164,16 +184,36 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h3 className="text-lg font-semibold text-blue-900 mb-3">CSV Format Requirements</h3>
                   <div className="text-sm text-blue-800 space-y-2">
-                    <p><strong>Required columns:</strong> name, phonenumber, location</p>
-                    <p><strong>Optional columns:</strong> email</p>
-                    <p><strong>Phone format:</strong> 10-digit numbers only (e.g., 9876543210)</p>
-                    <p className="text-blue-900 font-medium">💡 All new leads will be created with status "New"</p>
-                    <p><strong>Sample format:</strong></p>
-                    <div className="bg-white p-2 rounded border mt-2 font-mono text-xs">
-                      name,phonenumber,location,email<br/>
-                      John Doe,9876543210,Koramangala,john@example.com<br/>
-                      Jane Smith,9876543211,BTM Layout,jane@example.com<br/>
-                      Sample Lead,9876543212,Electronic City,sample@example.com
+                    <div className="flex flex-wrap gap-x-6 gap-y-1">
+                      <div>
+                        <span className="font-semibold">Required columns:</span>
+                        <span className="ml-1">name, phonenumber, location</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Optional columns:</span>
+                        <span className="ml-1">email, source</span>
+                      </div>
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      <p><span className="font-semibold">name</span> — Full name of the lead (e.g., Rahul Sharma)</p>
+                      <p><span className="font-semibold">phonenumber</span> — 10-digit mobile number, no spaces or +91 (e.g., 9876543210)</p>
+                      <p><span className="font-semibold">location</span> — Area or locality the lead is interested in (e.g., Whitefield)</p>
+                      <p><span className="font-semibold">email</span> — Email address of the lead (optional)</p>
+                      <p><span className="font-semibold">source</span> — Where the lead came from e.g. DS-Max, NoBroker, 99acres (optional)</p>
+                    </div>
+                    <div className="mt-2 bg-blue-100 rounded px-3 py-2 text-blue-900 text-xs space-y-1">
+                      <p className="font-semibold">Notes:</p>
+                      <p>• If <strong>source</strong> column is filled in CSV, it will be used for that row</p>
+                      <p>• If <strong>source</strong> is empty in a row, the default source selected below will be used</p>
+                      <p>• All uploaded leads are created with status <strong>New</strong></p>
+                      <p>• Duplicate phone numbers (within file or already in database) are automatically skipped</p>
+                    </div>
+                    <p className="font-semibold mt-2">Sample CSV:</p>
+                    <div className="bg-white p-2 rounded border mt-1 font-mono text-xs overflow-x-auto">
+                      name,phonenumber,location,email,source<br/>
+                      Rahul Sharma,9876543210,Whitefield,rahul@example.com,DS-Max<br/>
+                      Priya Mehta,9845123456,Electronic City,,NoBroker<br/>
+                      Amit Verma,9900012345,Sarjapur Road,amit@example.com,99acres
                     </div>
                   </div>
                   <button
@@ -185,6 +225,33 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
                     </svg>
                     <span>Download Template</span>
                   </button>
+                </div>
+
+                {/* Lead Source Selector */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Default Source <span className="text-gray-400 font-normal">(used for rows where source column is empty)</span>
+                  </label>
+                  <select
+                    value={leadSource}
+                    onChange={(e) => { setLeadSource(e.target.value); setCustomSource(''); }}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">-- Select Default Source --</option>
+                    {LEAD_SOURCES.map((src) => (
+                      <option key={src} value={src}>{src}</option>
+                    ))}
+                  </select>
+                  {leadSource === 'Other' && (
+                    <input
+                      type="text"
+                      placeholder="Enter source name (e.g., My Custom Source)"
+                      value={customSource}
+                      onChange={(e) => setCustomSource(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  )}
+                  <p className="text-xs text-gray-500">If every row in your CSV already has a source column filled, you can skip this.</p>
                 </div>
 
                 {/* File Upload Area */}
@@ -262,7 +329,7 @@ export default function BulkLeadUpload({ onUploadComplete, onClose }) {
                   </button>
                   <button
                     onClick={handleUpload}
-                    disabled={!file || uploading}
+                    disabled={!file || uploading || (leadSource === 'Other' && !customSource.trim())}
                     className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {uploading ? (
