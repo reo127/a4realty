@@ -62,8 +62,6 @@ function validateLeadData(leadData) {
 
   if (!leadData.phone || leadData.phone.trim() === '') {
     errors.push('Phone number is required');
-  } else if (leadData.phone.length !== 10 || !/^\d+$/.test(leadData.phone)) {
-    errors.push('Phone number must be exactly 10 digits');
   }
 
   if (!leadData.interestedLocation || leadData.interestedLocation.trim() === '') {
