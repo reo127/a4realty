@@ -102,6 +102,11 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-3MYC2LLS31');
           `}
         </Script>
+        {/* ContentSquare / Hotjar Analytics */}
+        <Script
+          src="https://t.contentsquare.net/uxa/78bbf96b8c928.js"
+          strategy="afterInteractive"
+        />
         <link rel="icon" href="/finalLogo.jpeg" type="image/jpeg" />
         <link rel="apple-touch-icon" href="/finalLogo.jpeg" />
         <meta name="theme-color" content="#D7242A" />
