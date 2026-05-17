@@ -6,28 +6,35 @@ import Link from 'next/link';
 import { formatDate, getTimeAgo } from '../../../utils/dateUtils';
 import Head from 'next/head';
 
-export default function BlogPostClient() {
+export default function BlogPostClient({ initialData = null }) {
   const params = useParams();
   const router = useRouter();
-  const [blog, setBlog] = useState(null);
-  const [relatedBlogs, setRelatedBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [blog, setBlog] = useState(initialData?.blog || null);
+  const [relatedBlogs, setRelatedBlogs] = useState(initialData?.relatedBlogs || []);
+  const [loading, setLoading] = useState(initialData === null);
   const [error, setError] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
+    // Skip client fetch if server already provided data (not preview mode)
+    const urlParams = new URLSearchParams(window.location.search);
+    const isPreview = urlParams.get('preview') === 'true';
+    setIsPreviewMode(isPreview);
+
+    if (initialData && !isPreview) return;
+
     fetchBlog();
   }, [params.slug]);
 
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      
+
       // Check if this is a preview mode
       const urlParams = new URLSearchParams(window.location.search);
       const isPreview = urlParams.get('preview') === 'true';
       setIsPreviewMode(isPreview);
-      
+
       // Prepare headers
       const headers = {};
       if (isPreview) {
@@ -36,17 +43,17 @@ export default function BlogPostClient() {
           headers['Authorization'] = `Bearer ${token}`;
         }
       }
-      
+
       // Build URL with preview parameter if needed
       const url = isPreview ? `/api/blogs/${params.slug}?preview=true` : `/api/blogs/${params.slug}`;
-      
+
       const response = await fetch(url, { headers });
       const data = await response.json();
-      
+
       if (data.success) {
         setBlog(data.data.blog);
         setRelatedBlogs(data.data.relatedBlogs || []);
-        
+
         // Update page title and meta tags
         document.title = data.data.blog.seo.metaTitle;
         updateMetaTags(data.data.blog);

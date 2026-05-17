@@ -30,7 +30,7 @@ export async function generateMetadata({ params }) {
     ? property.description.replace(/<[^>]*>/g, '').substring(0, 160)
     : `${bhkStr}${typeStr} in ${property.location} at ${property.price}. Explore premium real estate listings at A4Realty.`;
 
-  const image = property.images?.[0] || null;
+  const image = property.gallery?.[0] || null;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.a4realty.in';
   const url = `${baseUrl}/property/${params.slug}/${params.id}`;
 
