@@ -58,10 +58,10 @@ import {
     X
 } from 'lucide-react';
 
-export default function PropertyDetails() {
+export default function PropertyDetails({ initialData = null }) {
     const { id } = useParams();
-    const [property, setProperty] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [property, setProperty] = useState(initialData);
+    const [loading, setLoading] = useState(initialData === null);
     const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -132,6 +132,9 @@ export default function PropertyDetails() {
         if (leadSubmitted) {
             setHasSubmittedLead(true);
         }
+
+        // Skip client-side fetch if server already provided the data
+        if (initialData) return;
 
         const fetchProperty = async () => {
             try {
