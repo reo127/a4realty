@@ -1,4 +1,3 @@
-"use client"
 import { Suspense } from "react";
 import { Cinzel, Josefin_Sans } from "next/font/google";
 import Footer from "../components/Footer";
@@ -18,6 +17,20 @@ const josefinSans = Josefin_Sans({
   variable: "--font-josefin",
   display: "swap",
 });
+
+export const metadata = {
+  title: "Search Properties in Bangalore — Buy, Rent & New Projects | A4Realty",
+  description: "Search verified properties in Bangalore. Filter by location, price, BHK, type — apartments, villas, plots, new projects. Find your dream home with A4Realty.",
+  alternates: {
+    canonical: "https://www.a4realty.in/search",
+  },
+  openGraph: {
+    title: "Search Properties in Bangalore — A4Realty",
+    description: "Browse 5,000+ verified properties. Filter by apartments, villas, plots, new projects across Bangalore.",
+    url: "https://www.a4realty.in/search",
+    type: "website",
+  },
+};
 
 function SearchFallback() {
   return (

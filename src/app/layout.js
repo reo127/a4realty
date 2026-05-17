@@ -132,6 +132,78 @@ export default function RootLayout({ children }) {
             style={{ display: 'none', visibility: 'hidden' }}
           ></iframe>
         </noscript>
+        {/* Organization + WebSite Structured Data — helps Google & AI assistants understand A4Realty */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "RealEstateAgent",
+                  "@id": "https://www.a4realty.in/#organization",
+                  "name": "A4 Realty",
+                  "alternateName": "A4Realty",
+                  "url": "https://www.a4realty.in",
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://www.a4realty.in/finalLogo.jpeg",
+                    "width": 200,
+                    "height": 60
+                  },
+                  "image": "https://www.a4realty.in/serachLogo.png",
+                  "description": "A4 Realty is a premium real estate agency in Bangalore offering verified property listings, new residential projects, and expert guidance for buying, selling, and renting properties across India.",
+                  "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "No.184, A4 Realty, Hennur Cross, 3rd Cross, Narayanappa Road, Kalyan Nagar Post",
+                    "addressLocality": "Bengaluru",
+                    "addressRegion": "Karnataka",
+                    "postalCode": "560043",
+                    "addressCountry": "IN"
+                  },
+                  "telephone": "+91-9002981353",
+                  "contactPoint": [
+                    {
+                      "@type": "ContactPoint",
+                      "telephone": "+91-9002981353",
+                      "contactType": "sales",
+                      "areaServed": "IN",
+                      "availableLanguage": ["English", "Hindi"]
+                    }
+                  ],
+                  "areaServed": {
+                    "@type": "City",
+                    "name": "Bengaluru"
+                  },
+                  "knowsAbout": ["Real Estate", "Property Investment", "Residential Properties", "New Projects", "Apartments", "Villas", "Plots"],
+                  "slogan": "Built on Trust",
+                  "foundingDate": "2020",
+                  "numberOfEmployees": { "@type": "QuantitativeValue", "value": 50 },
+                  "sameAs": [
+                    "https://www.a4realty.in"
+                  ]
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.a4realty.in/#website",
+                  "url": "https://www.a4realty.in",
+                  "name": "A4Realty",
+                  "description": "Premium Property Solutions — Buy, Sell & Rent Verified Properties in India",
+                  "publisher": { "@id": "https://www.a4realty.in/#organization" },
+                  "inLanguage": "en-IN",
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                      "@type": "EntryPoint",
+                      "urlTemplate": "https://www.a4realty.in/search?q={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
+                  }
+                }
+              ]
+            })
+          }}
+        />
         <Navber/>
         {children}
         <Analytics />
