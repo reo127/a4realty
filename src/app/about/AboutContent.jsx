@@ -220,21 +220,7 @@ export default function AboutContent() {
                                 </p>
                             </div>
 
-                            <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-                                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-gray-500 overflow-hidden">
-                                    M
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">Moti Lal Mahato</h3>
-                                <p className="text-[#D7242A] font-medium mb-1">Co-founder</p>
-                                <p className="text-gray-500 text-sm mb-4 flex items-center justify-center gap-1">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Dubai
-                                </p>
-                                <p className="text-gray-700 text-sm">
-                                    Driving operational excellence and strategic partnerships.
-                                </p>
-                            </div>
-
-                            <div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+<div className="text-center bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
                                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden">
                                     <img
                                         src="https://media.licdn.com/dms/image/v2/D5603AQEcbMem_ywH_w/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1665629411655?e=1760572800&v=beta&t=BuNdxq6GOUXiyDuQQExKlWEqOSjTWsj7fDU56DTZz-k"
