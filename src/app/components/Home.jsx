@@ -10,12 +10,12 @@ import MobileStickyCTA from "./MobileStickyCTA";
 import { formatPrice } from '../../utils/formatPrice';
 import { generatePropertyUrl } from '@/utils/slugify';
 
-export default function Home() {
+export default function Home({ initialProperties = null }) {
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [hasSubmittedLead, setHasSubmittedLead] = useState(false);
-    const [properties, setProperties] = useState([]);
+    const [properties, setProperties] = useState(initialProperties || []);
     const [visibleProperties, setVisibleProperties] = useState(30);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!initialProperties || initialProperties.length === 0);
     const [banners, setBanners] = useState([]);
     const [showLeadSuccessModal, setShowLeadSuccessModal] = useState(false);
     const [activeTab, setActiveTab] = useState('buy');
@@ -41,6 +41,8 @@ export default function Home() {
     }, []);
 
     const fetchProperties = async () => {
+        // Skip fetch if server already provided properties
+        if (initialProperties && initialProperties.length > 0) return;
         try {
             setLoading(true);
             const response = await fetch('/api/properties');

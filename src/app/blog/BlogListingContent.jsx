@@ -4,16 +4,20 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatDate } from '../../utils/dateUtils';
 
-export default function BlogListingContent() {
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function BlogListingContent({ initialBlogs = null, initialTotalPages = 1 }) {
+  const [blogs, setBlogs] = useState(initialBlogs || []);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(
+    initialBlogs ? [...new Set(initialBlogs.flatMap(b => b.categories || []))] : []
+  );
 
   useEffect(() => {
+    // Skip the initial fetch if server already provided data for page 1 with no filter
+    if (initialBlogs && currentPage === 1 && !selectedCategory) return;
     fetchBlogs();
   }, [currentPage, selectedCategory]);
 
@@ -64,6 +68,7 @@ export default function BlogListingContent() {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -4,7 +4,7 @@ import Blog from '@/models/Blog';
 import { generateSlug } from '@/utils/slugify';
 
 export default async function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.a4realty.in';
 
   // Static routes
   const staticRoutes = [

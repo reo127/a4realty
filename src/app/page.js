@@ -1,4 +1,20 @@
+import { connectDB } from '@/lib/db';
+import Property from '@/models/Property';
 import HomeComponent from "./components/Home";
+
+async function getInitialProperties() {
+  try {
+    await connectDB();
+    const properties = await Property.find({ status: 'approved' })
+      .select('_id title location price type bhk gallery mode createdAt')
+      .sort({ createdAt: -1 })
+      .limit(30)
+      .lean();
+    return JSON.parse(JSON.stringify(properties));
+  } catch {
+    return [];
+  }
+}
 
 export const metadata = {
   title: "A4Realty — Buy, Sell & Rent Verified Properties in Bangalore | Built on Trust",
@@ -14,6 +30,7 @@ export const metadata = {
   },
 };
 
-export default function Home() {
-  return <HomeComponent />;
+export default async function Home() {
+  const initialProperties = await getInitialProperties();
+  return <HomeComponent initialProperties={initialProperties} />;
 }

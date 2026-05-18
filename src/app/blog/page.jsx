@@ -1,4 +1,28 @@
+import { connectDB } from '@/lib/db';
+import Blog from '@/models/Blog';
 import BlogListingContent from './BlogListingContent';
+
+const BLOGS_PER_PAGE = 9;
+
+async function getInitialBlogs() {
+  try {
+    await connectDB();
+    const total = await Blog.countDocuments({ status: 'published' });
+    const blogs = await Blog.find({ status: 'published' })
+      .select('title slug excerpt featuredImage publishedAt categories readingTime author')
+      .populate('author', 'name')
+      .sort({ publishedAt: -1 })
+      .limit(BLOGS_PER_PAGE)
+      .lean();
+
+    return {
+      blogs: JSON.parse(JSON.stringify(blogs)),
+      totalPages: Math.ceil(total / BLOGS_PER_PAGE),
+    };
+  } catch {
+    return { blogs: [], totalPages: 1 };
+  }
+}
 
 export const metadata = {
   title: "Real Estate Blog — Property Tips, Market Trends & Investment Guide | A4Realty",
@@ -14,6 +38,7 @@ export const metadata = {
   },
 };
 
-export default function BlogPage() {
-  return <BlogListingContent />;
+export default async function BlogPage() {
+  const { blogs, totalPages } = await getInitialBlogs();
+  return <BlogListingContent initialBlogs={blogs} initialTotalPages={totalPages} />;
 }
