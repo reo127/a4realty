@@ -19,7 +19,8 @@ async function getInitialBlogs() {
       blogs: JSON.parse(JSON.stringify(blogs)),
       totalPages: Math.ceil(total / BLOGS_PER_PAGE),
     };
-  } catch {
+  } catch (err) {
+    console.error('Blog fetch error:', err.message);
     return { blogs: [], totalPages: 1 };
   }
 }

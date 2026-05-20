@@ -290,7 +290,7 @@ export default function BlogPostClient({ initialData = null }) {
                 <img
                   src={blog.featuredImage}
                   alt={blog.title}
-                  className="w-full h-64 sm:h-96 object-cover rounded-xl"
+                  className="w-full h-auto rounded-xl"
                 />
               </div>
             )}
