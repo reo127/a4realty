@@ -621,6 +621,7 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   <option value="plots">Plots</option>
                   <option value="villa-plot">Villa Plot</option>
                   <option value="farm-house">Farm House</option>
+                  <option value="farm-land">Farm Land</option>
                   <option value="builders-floors">Builders Floors</option>
                   <option value="penthouse">Penthouse</option>
                   <option value="cottage">Cottage</option>
@@ -630,10 +631,10 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </select>
               </div>
 
-              {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house' || formData.type === 'villa-plot' || formData.type === 'farm-house') && (
+              {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house' || formData.type === 'villa-plot' || formData.type === 'farm-house' || formData.type === 'farm-land') && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    BHK Configurations{(formData.type === 'villa-plot' || formData.type === 'farm-house') ? <span className="text-gray-500 font-normal"> (Optional)</span> : '*'} <span className="text-gray-400">(Add multiple BHK types with prices)</span>
+                    BHK Configurations{(formData.type === 'villa-plot' || formData.type === 'farm-house' || formData.type === 'farm-land') ? <span className="text-gray-500 font-normal"> (Optional)</span> : '*'} <span className="text-gray-400">(Add multiple BHK types with prices)</span>
                   </label>
 
                   {/* Add BHK Form */}
