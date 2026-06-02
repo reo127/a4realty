@@ -86,18 +86,19 @@ export async function PUT(request, { params }) {
     console.log('mapLocationLink received:', data.mapLocationLink);
     console.log('Full data:', JSON.stringify(data, null, 2));
 
-    // Clean data - remove empty strings for enum fields and other optional fields
+    // Separate fields to set vs unset
     const cleanData = {};
+    const unsetData = {};
     Object.keys(data).forEach(key => {
       const value = data[key];
-      // Skip empty strings, null, and undefined values
-      if (value !== '' && value !== null && value !== undefined) {
-        // For arrays, keep them even if empty
-        if (Array.isArray(value)) {
-          cleanData[key] = value;
-        } else {
-          cleanData[key] = value;
-        }
+      if (Array.isArray(value)) {
+        // Always write arrays (even empty) to allow clearing them
+        cleanData[key] = value;
+      } else if (value === null) {
+        // Null means explicitly clear this field
+        unsetData[key] = 1;
+      } else if (value !== '' && value !== undefined) {
+        cleanData[key] = value;
       }
     });
 
@@ -123,10 +124,14 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Update property
+    // Update property — use $set for values, $unset for explicit nulls (e.g. clearing bhk)
+    const updateOp = { $set: cleanData };
+    if (Object.keys(unsetData).length > 0) {
+      updateOp.$unset = unsetData;
+    }
     const updatedProperty = await Property.findByIdAndUpdate(
       id,
-      cleanData,
+      updateOp,
       { new: true, runValidators: true }
     );
 

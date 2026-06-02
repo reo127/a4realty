@@ -31,7 +31,7 @@ const PropertySchema = new mongoose.Schema({
     required: [true, 'Please provide property type'],
     enum: [
       'apartments', 'independent-house', 'villas', 'gated-communities',
-      'plots', 'builders-floors', 'penthouse', 'cottage',
+      'plots', 'villa-plot', 'farm-house', 'builders-floors', 'penthouse', 'cottage',
       'duplex-house', 'commercial-space', 'industrial-land',
       // Keep old values for backward compatibility
       'flat', 'house', 'land', 'office'

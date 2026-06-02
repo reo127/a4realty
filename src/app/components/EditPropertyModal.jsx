@@ -436,11 +436,12 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
         }
       });
 
-      // Add BHK configurations if available
+      // Always sync BHK data from bhkConfigs state (overrides any stale formData.bhk)
+      cleanFormData.bhkConfigurations = bhkConfigs;
       if (bhkConfigs.length > 0) {
-        cleanFormData.bhkConfigurations = bhkConfigs;
-        // Set bhk field to comma-separated list for search/filter compatibility
         cleanFormData.bhk = bhkConfigs.map(c => c.bhk).join(', ');
+      } else {
+        cleanFormData.bhk = null; // explicit null tells backend to unset this field
       }
 
       // Combine price range into single price field for backend compatibility
@@ -618,6 +619,8 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                   <option value="villas">Villas</option>
                   <option value="gated-communities">Gated Communities</option>
                   <option value="plots">Plots</option>
+                  <option value="villa-plot">Villa Plot</option>
+                  <option value="farm-house">Farm House</option>
                   <option value="builders-floors">Builders Floors</option>
                   <option value="penthouse">Penthouse</option>
                   <option value="cottage">Cottage</option>
@@ -627,12 +630,10 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </select>
               </div>
 
-
-
-              {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house') && (
+              {(formData.type === 'apartments' || formData.type === 'independent-house' || formData.type === 'villas' || formData.type === 'gated-communities' || formData.type === 'builders-floors' || formData.type === 'penthouse' || formData.type === 'cottage' || formData.type === 'duplex-house' || formData.type === 'villa-plot' || formData.type === 'farm-house') && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    BHK Configurations* <span className="text-gray-400">(Add multiple BHK types with prices)</span>
+                    BHK Configurations{(formData.type === 'villa-plot' || formData.type === 'farm-house') ? <span className="text-gray-500 font-normal"> (Optional)</span> : '*'} <span className="text-gray-400">(Add multiple BHK types with prices)</span>
                   </label>
 
                   {/* Add BHK Form */}
@@ -711,35 +712,6 @@ export default function EditPropertyModal({ property, onClose, onUpdate }) {
                 </div>
               )}
 
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                  Property Type*
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  required
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                >
-                  <option value="">Select Type</option>
-                  <option value="apartments">Apartments</option>
-                  <option value="independent-house">Independent House</option>
-                  <option value="villas">Villas</option>
-                  <option value="gated-communities">Gated Communities</option>
-                  <option value="plots">Plots</option>
-                  <option value="villa-plot">Villa Plot</option>
-                  <option value="builders-floors">Builders Floors</option>
-                  <option value="penthouse">Penthouse</option>
-                  <option value="cottage">Cottage</option>
-                  <option value="duplex-house">Duplex House</option>
-                  <option value="commercial-space">Commercial Space</option>
-                  <option value="industrial-land">Industrial Land</option>
-                </select>
-              </div>
-
-              {/* Add the dimension fields right after the property type dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Dimensions
