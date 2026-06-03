@@ -158,6 +158,8 @@ export default function BulkAssignModal({ onClose, onAssign }) {
                 <option value="new">New</option>
                 <option value="not_connected">Not Connected</option>
                 <option value="interested">Interested</option>
+                <option value="do_not_disturb">Do Not Disturb</option>
+                <option value="not_interested">Not Interested</option>
               </select>
             </div>
 
