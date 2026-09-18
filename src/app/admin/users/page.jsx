@@ -2,11 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  Users,
+  UserPlus,
+  Search,
+  Phone,
+  Mail,
+  ShieldCheck,
+  Edit3,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  RotateCcw,
+  Check,
+  Copy,
+  ExternalLink,
+  Target,
+  Activity,
+  Layers,
+  Sparkles
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminUsers() {
   const router = useRouter();
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAgent, setEditingAgent] = useState(null);
@@ -21,7 +44,6 @@ export default function AdminUsers() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    // Check if user is admin
     if (typeof window !== 'undefined') {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.role !== 'admin') {
@@ -39,13 +61,13 @@ export default function AdminUsers() {
       const data = await response.json();
 
       if (data.success) {
-        setAgents(data.data);
+        setAgents(data.data || []);
       } else {
-        setError('Failed to fetch agents');
+        setError('Failed to fetch advisor directory');
       }
-    } catch (error) {
-      console.error('Error fetching agents:', error);
-      setError('Failed to fetch agents');
+    } catch (err) {
+      console.error('Error fetching agents:', err);
+      setError('Failed to fetch advisor directory');
     } finally {
       setLoading(false);
     }
@@ -69,16 +91,16 @@ export default function AdminUsers() {
       const data = await response.json();
 
       if (data.success) {
-        setSuccess('Agent added successfully');
+        setSuccess('Advisor profile created successfully');
         setShowAddModal(false);
         setFormData({ name: '', email: '', phone: '', password: '' });
         fetchAgents();
       } else {
-        setError(data.message || 'Failed to add agent');
+        setError(data.message || 'Failed to add advisor');
       }
-    } catch (error) {
-      console.error('Error adding agent:', error);
-      setError('Failed to add agent');
+    } catch (err) {
+      console.error('Error adding agent:', err);
+      setError('Failed to add advisor');
     } finally {
       setSubmitting(false);
     }
@@ -102,24 +124,24 @@ export default function AdminUsers() {
       const data = await response.json();
 
       if (data.success) {
-        setSuccess('Agent updated successfully');
+        setSuccess('Advisor credentials and profile updated');
         setShowEditModal(false);
         setEditingAgent(null);
         setFormData({ name: '', email: '', phone: '', password: '' });
         fetchAgents();
       } else {
-        setError(data.message || 'Failed to update agent');
+        setError(data.message || 'Failed to update advisor');
       }
-    } catch (error) {
-      console.error('Error updating agent:', error);
-      setError('Failed to update agent');
+    } catch (err) {
+      console.error('Error updating agent:', err);
+      setError('Failed to update advisor');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteAgent = async (agentId, agentName) => {
-    if (!confirm(`Are you sure you want to delete agent "${agentName}"? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to permanently delete advisor "${agentName}"? Any active assigned leads should be re-assigned.`)) {
       return;
     }
 
@@ -131,14 +153,14 @@ export default function AdminUsers() {
       const data = await response.json();
 
       if (data.success) {
-        setSuccess('Agent deleted successfully');
+        setSuccess('Advisor deleted successfully');
         fetchAgents();
       } else {
-        setError(data.message || 'Failed to delete agent');
+        setError(data.message || 'Failed to delete advisor');
       }
-    } catch (error) {
-      console.error('Error deleting agent:', error);
-      setError('Failed to delete agent');
+    } catch (err) {
+      console.error('Error deleting agent:', err);
+      setError('Failed to delete advisor');
     }
   };
 
@@ -166,364 +188,490 @@ export default function AdminUsers() {
       const data = await response.json();
 
       if (data.success) {
+        setSuccess(`Advisor status updated to ${!currentStatus ? 'Active' : 'Inactive'}`);
         fetchAgents();
       } else {
-        setError(data.message || 'Failed to update agent status');
+        setError(data.message || 'Failed to update advisor status');
       }
-    } catch (error) {
-      console.error('Error updating agent status:', error);
-      setError('Failed to update agent status');
+    } catch (err) {
+      console.error('Error updating agent status:', err);
+      setError('Failed to update advisor status');
     }
   };
 
+  const filteredAgents = agents.filter(agent => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      agent.name?.toLowerCase().includes(term) ||
+      agent.email?.toLowerCase().includes(term) ||
+      agent.phone?.toLowerCase().includes(term)
+    );
+  });
+
+  const totalAssignedAcrossTeam = agents.reduce((sum, a) => sum + (a.currentAssignedCount || 0), 0);
+  const totalCompletedAcrossTeam = agents.reduce((sum, a) => sum + (a.currentCompletedCount || 0), 0);
+  const activeCount = agents.filter(a => a.isActive).length;
+
+  if (loading && agents.length === 0) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl border-2 border-t-[#D7242A] border-r-transparent border-b-[#D7242A] border-l-transparent animate-spin mx-auto mb-3"></div>
+          <p className="text-xs font-bold text-slate-700">Loading User Directory...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 text-black">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-2">Manage agents and CRM users</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-serif">
+              Advisor Directory
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#D7242A]/10 text-[#D7242A] border border-[#D7242A]/20">
+              {agents.length} Advisors
+            </span>
+          </div>
+          <p className="text-xs text-slate-600 mt-1">
+            Manage sales representatives, account credentials, lead allocations, and active status.
+          </p>
+        </div>
+
+        {/* Action Toolbar */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => router.push('/admin/duplicate-checker')}
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors"
+            title="Scan and resolve duplicate lead assignments"
+          >
+            <Layers className="w-3.5 h-3.5 text-slate-500" />
+            <span>Check Duplicates</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setFormData({ name: '', email: '', phone: '', password: '' });
+              setShowAddModal(true);
+            }}
+            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#D7242A] hover:bg-[#b81d22] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Add New Advisor</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      {success && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="font-semibold">{success}</span>
+          </div>
+          <button onClick={() => setSuccess('')} className="p-1 text-emerald-600 hover:text-emerald-800">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-600" />
+            <span className="font-semibold">{error}</span>
+          </div>
+          <button onClick={() => setError('')} className="p-1 text-rose-600 hover:text-rose-800">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Telemetry Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Total Advisors</span>
+            <Users className="w-4 h-4 text-slate-500" />
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{agents.length}</div>
+          <p className="text-[11px] text-slate-500 mt-1">Authorized CRM agents</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Active Status</span>
+            <Activity className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="text-3xl font-black text-emerald-600 tracking-tight">{activeCount}</div>
+          <p className="text-[11px] text-slate-500 mt-1">Receiving automatic allocations</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Assigned Queue</span>
+            <Target className="w-4 h-4 text-[#D7242A]" />
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{totalAssignedAcrossTeam}</div>
+          <p className="text-[11px] text-slate-500 mt-1">Active prospect assignments</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Calls Resolved</span>
+            <CheckCircle2 className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{totalCompletedAcrossTeam}</div>
+          <p className="text-[11px] text-slate-500 mt-1">Total completed calls logged</p>
+        </div>
+      </div>
+
+      {/* Roster Container */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-slate-900">Advisor Roster</h2>
+
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search advisor by name, email, phone..."
+              className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Success/Error Messages */}
-        {success && (
-          <div className="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-            {success}
+        {filteredAgents.length === 0 ? (
+          <div className="p-16 text-center space-y-3">
+            <Users className="w-12 h-12 text-slate-300 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900">No advisors found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              {searchTerm ? 'No advisor matches your search.' : 'Add your first sales advisor to begin assigning leads.'}
+            </p>
           </div>
-        )}
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-            {error}
-          </div>
-        )}
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black uppercase tracking-wider text-slate-700">
+                  <th className="py-3.5 px-5">Advisor Profile</th>
+                  <th className="py-3.5 px-4">Contact Info</th>
+                  <th className="py-3.5 px-4">Rotation Status</th>
+                  <th className="py-3.5 px-4">Pipeline Load</th>
+                  <th className="py-3.5 px-4">Completion Metric</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {filteredAgents.map((agent) => {
+                  const assigned = agent.currentAssignedCount || 0;
+                  const completed = agent.currentCompletedCount || 0;
+                  const completionRate = assigned > 0 ? Math.round((completed / assigned) * 100) : 0;
 
-        {/* Agent Management Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Agent Management</h2>
-                <p className="text-gray-600 text-sm mt-1">Add and manage CRM agents</p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => router.push('/admin/duplicate-checker')}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-                  title="Detect and remove duplicate lead assignments"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span>Check Duplicates</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setFormData({ name: '', email: '', phone: '', password: '' });
-                    setShowAddModal(true);
-                  }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  <span>Add Agent</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Agents Table */}
-          {loading ? (
-            <div className="p-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading agents...</p>
-            </div>
-          ) : agents.length === 0 ? (
-            <div className="p-12 text-center">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No agents yet</h3>
-              <p className="text-gray-500 mb-4">Add your first agent to start managing leads</p>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                Add First Agent
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned Leads</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {agents.map((agent) => (
-                    <tr key={agent._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <span className="text-indigo-600 font-semibold">
-                              {agent.name.charAt(0).toUpperCase()}
-                            </span>
+                  return (
+                    <tr key={agent._id} className="hover:bg-slate-50/80 transition-colors group">
+                      {/* Monogram Avatar & Name */}
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center border border-slate-700/60 shadow-2xs">
+                            {agent.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'AD'}
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{agent.name}</div>
-                            <div className="text-sm text-gray-500">ID: {agent._id.slice(-8)}</div>
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-slate-900 group-hover:text-[#D7242A] transition-colors">
+                              {agent.name}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              Ref: #{agent._id.slice(-6).toUpperCase()}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{agent.email}</div>
-                        <div className="text-sm text-gray-500">{agent.phone || 'N/A'}</div>
+
+                      {/* Contact Info */}
+                      <td className="py-4 px-4 whitespace-nowrap space-y-1">
+                        <div className="flex items-center space-x-1.5 text-slate-700 font-medium">
+                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{agent.email}</span>
+                        </div>
+                        {agent.phone && (
+                          <div className="flex items-center space-x-1.5 text-slate-500 text-[11px]">
+                            <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span>{agent.phone}</span>
+                          </div>
+                        )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+
+                      {/* Active Status Pill */}
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <button
                           onClick={() => handleToggleActive(agent._id, agent.isActive)}
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors ${
                             agent.isActive
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100'
+                              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
                           }`}
+                          title="Click to toggle active status"
                         >
-                          {agent.isActive ? 'Active' : 'Inactive'}
+                          <span className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                          <span>{agent.isActive ? 'Active in Queue' : 'Paused / Inactive'}</span>
                         </button>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {agent.currentAssignedCount || 0}
+
+                      {/* Pipeline Load */}
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <div className="font-bold text-slate-900">{assigned} Leads</div>
+                        <div className="text-[11px] text-slate-400">Assigned volume</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {agent.currentCompletedCount || 0}
+
+                      {/* Completion Metric */}
+                      <td className="py-4 px-4 whitespace-nowrap space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                          <span>{completed} Completed</span>
+                          <span className="text-[#D7242A]">{completionRate}%</span>
+                        </div>
+                        <div className="w-32 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="bg-[#D7242A] h-1.5 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, completionRate)}%` }}
+                          />
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => openEditModal(agent)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-4"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAgent(agent._id, agent.name)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
+
+                      {/* Actions */}
+                      <td className="py-4 px-5 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end space-x-1.5">
+                          <button
+                            onClick={() => openEditModal(agent)}
+                            title="Edit Advisor Credentials"
+                            className="p-1.5 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAgent(agent._id, agent.name)}
+                            title="Delete Advisor"
+                            className="p-1.5 text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Add Agent Modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative min-h-screen flex items-center justify-center p-4">
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div className="bg-indigo-600 text-white py-4 px-6 rounded-t-lg">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Add New Agent</h2>
-                    <button
-                      onClick={() => setShowAddModal(false)}
-                      className="text-white hover:text-gray-200"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <form onSubmit={handleAddAgent} className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name*
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="John Doe"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email*
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="john@example.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="9876543210"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Password*
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="Minimum 6 characters"
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddModal(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                      {submitting ? 'Adding...' : 'Add Agent'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Edit Agent Modal */}
-        {showEditModal && editingAgent && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative min-h-screen flex items-center justify-center p-4">
-              <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div className="bg-indigo-600 text-white py-4 px-6 rounded-t-lg">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Edit Agent</h2>
-                    <button
-                      onClick={() => {
-                        setShowEditModal(false);
-                        setEditingAgent(null);
-                      }}
-                      className="text-white hover:text-gray-200"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <form onSubmit={handleEditAgent} className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name*
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email*
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      New Password (leave blank to keep current)
-                    </label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="Minimum 6 characters"
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowEditModal(false);
-                        setEditingAgent(null);
-                      }}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                      {submitting ? 'Updating...' : 'Update Agent'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      {/* Add Advisor Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-[#0B0F19]/75 backdrop-blur-xs z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+            <div className="bg-[#0B0F19] text-white p-5 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-[#D7242A] flex items-center justify-center text-white">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Add Sales Advisor</h3>
+                  <p className="text-[11px] text-slate-400">Create new login credentials</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAgent} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                  placeholder="e.g. Rahul Sharma"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                  placeholder="advisor@a4realty.in"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                  placeholder="9876543210"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Initial Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                  placeholder="Minimum 6 characters"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2 bg-[#D7242A] hover:bg-[#b81d22] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  {submitting ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Advisor Modal */}
+      {showEditModal && editingAgent && (
+        <div className="fixed inset-0 bg-[#0B0F19]/75 backdrop-blur-xs z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+            <div className="bg-[#0B0F19] text-white p-5 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-[#D7242A] flex items-center justify-center text-white">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Edit Advisor</h3>
+                  <p className="text-[11px] text-slate-400">{editingAgent.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditAgent} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Reset Password (Leave blank to keep current)
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+                  placeholder="New password (optional)"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-5 py-2 bg-[#D7242A] hover:bg-[#b81d22] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

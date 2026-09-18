@@ -23,9 +23,9 @@ const makeIcon = (color) =>
   });
 
 const modeIcons = {
-  buy: makeIcon('blue'),
-  rent: makeIcon('green'),
-  sell: makeIcon('orange'),
+  buy: makeIcon('red'),
+  rent: makeIcon('blue'),
+  sell: makeIcon('gold'),
 };
 
 function formatPriceMini(price) {
@@ -95,28 +95,46 @@ export default function MapComponent({ properties, onPropertySelect, fitTrigger 
             position={[p.coordinates.lat, p.coordinates.lng]}
             icon={modeIcons[p.mode] || modeIcons.buy}
           >
-            <Popup minWidth={230} maxWidth={260}>
-              <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2px' }}>
-                {p.gallery?.[0] && (
-                  <img
-                    src={p.gallery[0]}
-                    alt={p.title}
-                    style={{
-                      width: '100%',
-                      height: '110px',
-                      objectFit: 'cover',
-                      borderRadius: '6px',
-                      marginBottom: '8px',
-                      display: 'block',
-                    }}
-                  />
-                )}
+            <Popup minWidth={240} maxWidth={270} className="custom-luxury-popup">
+              <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', padding: '4px' }}>
+                {p.gallery?.[0] ? (
+                  <div style={{ position: 'relative', height: '120px', borderRadius: '10px', overflow: 'hidden', marginBottom: '8px' }}>
+                    <img
+                      src={p.gallery[0]}
+                      alt={p.title}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '6px',
+                        left: '6px',
+                        background: 'rgba(11, 15, 25, 0.75)',
+                        backdropFilter: 'blur(4px)',
+                        color: 'white',
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em'
+                      }}
+                    >
+                      {p.mode === 'rent' ? 'For Rent' : p.mode === 'sell' ? 'For Sale' : 'Verified'}
+                    </div>
+                  </div>
+                ) : null}
                 <div
                   style={{
                     fontWeight: '700',
                     fontSize: '13px',
-                    color: '#111827',
-                    marginBottom: '4px',
+                    color: '#0F172A',
+                    marginBottom: '3px',
                     lineHeight: '1.3',
                   }}
                 >
@@ -124,27 +142,27 @@ export default function MapComponent({ properties, onPropertySelect, fitTrigger 
                 </div>
                 <div
                   style={{
-                    color: '#1d4ed8',
+                    color: '#D7242A',
                     fontWeight: '800',
                     fontSize: '15px',
-                    marginBottom: '7px',
+                    marginBottom: '6px',
                   }}
                 >
                   {formatPriceMini(p.price)}
                   {p.mode === 'rent' && (
-                    <span style={{ fontSize: '11px', color: '#6b7280', fontWeight: '500' }}> /mo</span>
+                    <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '500' }}> /mo</span>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '7px' }}>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '8px' }}>
                   <span
                     style={{
-                      background: '#e0e7ff',
-                      color: '#3730a3',
-                      padding: '2px 8px',
-                      borderRadius: '9999px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      textTransform: 'capitalize',
+                      background: '#F1F5F9',
+                      color: '#334155',
+                      padding: '2px 7px',
+                      borderRadius: '6px',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
                     }}
                   >
                     {p.type}
@@ -152,50 +170,42 @@ export default function MapComponent({ properties, onPropertySelect, fitTrigger 
                   {p.bhk && p.bhk !== 'na' && (
                     <span
                       style={{
-                        background: '#dcfce7',
-                        color: '#166534',
-                        padding: '2px 8px',
-                        borderRadius: '9999px',
-                        fontSize: '11px',
-                        fontWeight: '600',
+                        background: '#EFF6FF',
+                        color: '#1D4ED8',
+                        padding: '2px 7px',
+                        borderRadius: '6px',
+                        fontSize: '10px',
+                        fontWeight: '700',
                       }}
                     >
                       {p.bhk.toUpperCase()}
                     </span>
                   )}
-                  <span
-                    style={{
-                      background: p.mode === 'rent' ? '#d1fae5' : p.mode === 'sell' ? '#fef3c7' : '#dbeafe',
-                      color: p.mode === 'rent' ? '#065f46' : p.mode === 'sell' ? '#92400e' : '#1e40af',
-                      padding: '2px 8px',
-                      borderRadius: '9999px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      textTransform: 'capitalize',
-                    }}
-                  >
-                    For {p.mode}
-                  </span>
                 </div>
-                <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '10px' }}>
-                  📍 {p.location}
+                <div style={{ fontSize: '11px', color: '#64748B', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>📍</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.location}</span>
                 </div>
                 <button
                   onClick={() => onPropertySelect(p)}
                   style={{
                     width: '100%',
-                    background: '#1d4ed8',
+                    background: '#0B0F19',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '6px',
-                    padding: '7px 0',
-                    fontSize: '12px',
-                    fontWeight: '600',
+                    borderRadius: '8px',
+                    padding: '8px 0',
+                    fontSize: '11px',
+                    fontWeight: '700',
                     cursor: 'pointer',
-                    letterSpacing: '0.02em',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    transition: 'all 0.2s ease',
                   }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = '#D7242A')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = '#0B0F19')}
                 >
-                  View Full Details →
+                  Inspect Listing
                 </button>
               </div>
             </Popup>

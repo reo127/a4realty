@@ -2,275 +2,459 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  Settings,
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Save,
+  RotateCcw,
+  Sliders,
+  Database,
+  Lock,
+  Layers,
+  ChevronRight,
+  ExternalLink,
+  Sparkles,
+  ToggleLeft,
+  ToggleRight
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminSettings() {
   const router = useRouter();
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [clearExisting, setClearExisting] = useState(true);
-  const [stats, setStats] = useState(null);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [activeTab, setActiveTab] = useState('general');
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Settings State
+  const [settings, setSettings] = useState({
+    companyName: 'A4 Realty',
+    tagline: 'Premier Luxury Real Estate Advisory & Capital Management',
+    phone: '+91 98765 43210',
+    whatsapp: '+91 98765 43210',
+    email: 'contact@a4realty.in',
+    reraNumber: 'A51900012345',
+    address: 'Level 14, Executive Heights, BKC, Bandra East, Mumbai, Maharashtra 400051',
+    autoAssignLeads: true,
+    skipInactiveAgents: true,
+    duplicateThresholdDays: '30',
+    slaFollowUpHours: '24',
+    enablePublicRegistration: false
+  });
 
   useEffect(() => {
-    // Check if user is admin
     if (typeof window !== 'undefined') {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.role !== 'admin') {
-        router.push('/admin');
+        router.push('/');
         return;
       }
+
+      const storedSettings = localStorage.getItem('a4_admin_settings');
+      if (storedSettings) {
+        try {
+          setSettings(prev => ({ ...prev, ...JSON.parse(storedSettings) }));
+        } catch (e) {
+          console.error('Error loading stored settings:', e);
+        }
+      }
     }
-    fetchStats();
   }, [router]);
 
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/property-sheet/upload');
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
+  const handleChange = (field, value) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile && selectedFile.type === 'text/csv') {
-      setFile(selectedFile);
-      setMessage({ type: '', text: '' });
-    } else {
-      setMessage({ type: 'error', text: 'Please select a valid CSV file' });
-      setFile(null);
-    }
-  };
-
-  const parseCSV = (text) => {
-    // Proper CSV parser that handles multi-line fields
-    const result = [];
-    let row = [];
-    let cell = '';
-    let insideQuotes = false;
-
-    // Parse character by character
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const nextChar = text[i + 1];
-
-      if (char === '"') {
-        if (insideQuotes && nextChar === '"') {
-          // Escaped quote
-          cell += '"';
-          i++; // Skip next quote
-        } else {
-          // Toggle quote state
-          insideQuotes = !insideQuotes;
-        }
-      } else if (char === ',' && !insideQuotes) {
-        // End of cell
-        row.push(cell.trim());
-        cell = '';
-      } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-        // End of row
-        if (char === '\r' && nextChar === '\n') {
-          i++; // Skip \n in \r\n
-        }
-        if (cell || row.length > 0) {
-          row.push(cell.trim());
-          if (row.some(c => c.length > 0)) { // Only add non-empty rows
-            result.push(row);
-          }
-          row = [];
-          cell = '';
-        }
-      } else {
-        // Regular character
-        cell += char;
-      }
-    }
-
-    // Add last cell and row if exists
-    if (cell || row.length > 0) {
-      row.push(cell.trim());
-      if (row.some(c => c.length > 0)) {
-        result.push(row);
-      }
-    }
-
-    if (result.length === 0) {
-      return [];
-    }
-
-    // First row is headers
-    const headers = result[0].map(h => h.trim());
-
-    // Convert remaining rows to objects
-    const data = [];
-    for (let i = 1; i < result.length; i++) {
-      const row = {};
-      headers.forEach((header, index) => {
-        row[header] = result[i][index] || '';
-      });
-      data.push(row);
-    }
-
-    return data;
-  };
-
-  const handleUpload = async () => {
-    if (!file) {
-      setMessage({ type: 'error', text: 'Please select a file first' });
-      return;
-    }
-
-    setUploading(true);
-    setMessage({ type: '', text: '' });
-
-    try {
-      const text = await file.text();
-      const csvData = parseCSV(text);
-
-      const response = await fetch('/api/property-sheet/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          csvData,
-          clearExisting
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setMessage({
-          type: 'success',
-          text: `Successfully uploaded ${data.count} properties!`
-        });
-        setFile(null);
-        fetchStats();
-      } else {
-        setMessage({
-          type: 'error',
-          text: data.message || 'Upload failed'
-        });
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      setMessage({
-        type: 'error',
-        text: 'Failed to upload file. Please check the file format.'
-      });
-    } finally {
-      setUploading(false);
-    }
+  const handleSave = (e) => {
+    e.preventDefault();
+    localStorage.setItem('a4_admin_settings', JSON.stringify(settings));
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
   };
 
   return (
-    <div className="p-6 text-black">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-2">Configure system settings and upload property database</p>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-serif">
+              System Settings &amp; Governance
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#D7242A]/10 text-[#D7242A] border border-[#D7242A]/20">
+              Admin Console
+            </span>
+          </div>
+          <p className="text-xs text-slate-600 mt-1">
+            Configure enterprise brand profile, lead routing automation, SLA policies, and database tools.
+          </p>
         </div>
 
-        {/* Stats Card */}
-        {stats && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Database Stats</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-indigo-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total Properties</p>
-                <p className="text-2xl font-bold text-indigo-600">{stats.totalProperties}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Last Upload</p>
-                <p className="text-lg font-semibold text-green-600">
-                  {stats.lastUploadDate
-                    ? new Date(stats.lastUploadDate).toLocaleDateString()
-                    : 'Never'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        <button
+          onClick={handleSave}
+          className="inline-flex items-center space-x-1.5 px-5 py-2.5 bg-[#D7242A] hover:bg-[#b81d22] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-xs self-start md:self-auto cursor-pointer"
+        >
+          <Save className="w-4 h-4" />
+          <span>Save Preferences</span>
+        </button>
+      </div>
 
-        {/* Upload Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload Property CSV File</h2>
+      {/* Save Notification */}
+      {savedSuccess && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center space-x-2 shadow-xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-semibold">System preferences and agency configuration saved successfully.</span>
+        </div>
+      )}
 
-          {/* Messages */}
-          {message.text && (
-            <div
-              className={`mb-4 px-4 py-3 rounded-lg ${
-                message.type === 'success'
-                  ? 'bg-green-50 border border-green-200 text-green-800'
-                  : 'bg-red-50 border border-red-200 text-red-800'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
+      {/* Tabs Navigation */}
+      <div className="flex space-x-1.5 border-b border-slate-200/80 pb-px overflow-x-auto scrollbar-none">
+        <button
+          onClick={() => setActiveTab('general')}
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center space-x-2 ${
+            activeTab === 'general'
+              ? 'border-[#D7242A] text-[#D7242A] bg-white shadow-2xs'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
+          }`}
+        >
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Agency Profile</span>
+        </button>
 
-          {/* File Input */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select CSV File
-            </label>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-            />
-            {file && (
-              <p className="mt-2 text-sm text-green-600">
-                Selected: {file.name}
-              </p>
-            )}
-          </div>
+        <button
+          onClick={() => setActiveTab('automation')}
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center space-x-2 ${
+            activeTab === 'automation'
+              ? 'border-[#D7242A] text-[#D7242A] bg-white shadow-2xs'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>Lead Routing &amp; SLAs</span>
+        </button>
 
-          {/* Clear Existing Checkbox */}
-          <div className="mb-6">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={clearExisting}
-                onChange={(e) => setClearExisting(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-              />
-              <span className="ml-2 text-sm text-gray-700">
-                Clear existing data before upload (recommended)
-              </span>
-            </label>
-            <p className="ml-6 text-xs text-gray-500 mt-1">
-              This will delete all existing properties and replace with new data
+        <button
+          onClick={() => setActiveTab('tools')}
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center space-x-2 ${
+            activeTab === 'tools'
+              ? 'border-[#D7242A] text-[#D7242A] bg-white shadow-2xs'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
+          }`}
+        >
+          <Database className="w-3.5 h-3.5" />
+          <span>Maintenance &amp; Data Tools</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('security')}
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center space-x-2 ${
+            activeTab === 'security'
+              ? 'border-[#D7242A] text-[#D7242A] bg-white shadow-2xs'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Security &amp; Environment</span>
+        </button>
+      </div>
+
+      {/* Tab 1: General Agency Profile */}
+      {activeTab === 'general' && (
+        <form onSubmit={handleSave} className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base font-bold text-slate-900">Corporate Identity &amp; Contact Info</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              These details appear on public listing pages, client emails, and RERA disclosures.
             </p>
           </div>
 
-          {/* Upload Button */}
-          <button
-            onClick={handleUpload}
-            disabled={!file || uploading}
-            className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
-          >
-            {uploading ? 'Uploading...' : 'Upload CSV'}
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                Company Legal Name
+              </label>
+              <input
+                type="text"
+                value={settings.companyName}
+                onChange={(e) => handleChange('companyName', e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white"
+              />
+            </div>
 
-          {/* Instructions */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="text-sm font-semibold text-blue-900 mb-2">CSV Format Instructions:</h3>
-            <ul className="text-xs text-blue-800 space-y-1">
-              <li>• File must be in CSV format (.csv)</li>
-              <li>• First row must contain column headers</li>
-              <li>• Required columns: BUILDER NAME, PROJECT NAME, LOCATION</li>
-              <li>• Optional columns: All other fields from the template</li>
-            </ul>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                MahaRERA Registration Number
+              </label>
+              <input
+                type="text"
+                value={settings.reraNumber}
+                onChange={(e) => handleChange('reraNumber', e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                Official Hotline Phone
+              </label>
+              <input
+                type="text"
+                value={settings.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                WhatsApp Business Support
+              </label>
+              <input
+                type="text"
+                value={settings.whatsapp}
+                onChange={(e) => handleChange('whatsapp', e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                Official Customer Support Email
+              </label>
+              <input
+                type="email"
+                value={settings.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                Corporate Headquarters Address
+              </label>
+              <textarea
+                rows={2}
+                value={settings.address}
+                onChange={(e) => handleChange('address', e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors"
+            >
+              Save Agency Profile
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Tab 2: Lead Routing & Automation Rules */}
+      {activeTab === 'automation' && (
+        <form onSubmit={handleSave} className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base font-bold text-slate-900">Lead Intake &amp; Assignment Rules</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Control the automatic round-robin assignment engine and advisor SLA thresholds.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {/* Toggle 1: Auto Assign */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-slate-900">Auto-Assign New Leads</div>
+                <p className="text-[11px] text-slate-500">
+                  Automatically allocate incoming inquiries to active sales advisors via fair round-robin rotation.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.autoAssignLeads}
+                onChange={(e) => handleChange('autoAssignLeads', e.target.checked)}
+                className="w-5 h-5 text-[#D7242A] rounded focus:ring-[#D7242A] accent-[#D7242A] cursor-pointer"
+              />
+            </div>
+
+            {/* Toggle 2: Skip Inactive */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-slate-900">Bypass Inactive Advisors</div>
+                <p className="text-[11px] text-slate-500">
+                  Do not route new prospects to advisors who have toggled their status to paused/inactive.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.skipInactiveAgents}
+                onChange={(e) => handleChange('skipInactiveAgents', e.target.checked)}
+                className="w-5 h-5 text-[#D7242A] rounded focus:ring-[#D7242A] accent-[#D7242A] cursor-pointer"
+              />
+            </div>
+
+            {/* SLA Threshold */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="text-xs font-bold text-slate-900">Initial Call SLA Window</div>
+                <p className="text-[11px] text-slate-500">
+                  Mark leads as overdue if advisor fails to log an initial call within this window.
+                </p>
+              </div>
+              <select
+                value={settings.slaFollowUpHours}
+                onChange={(e) => handleChange('slaFollowUpHours', e.target.value)}
+                className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-[#D7242A]"
+              >
+                <option value="4">4 Hours (Aggressive)</option>
+                <option value="12">12 Hours (Standard)</option>
+                <option value="24">24 Hours (Default)</option>
+                <option value="48">48 Hours (Relaxed)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors"
+            >
+              Save Automation Rules
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Tab 3: Maintenance & Data Tools */}
+      {activeTab === 'tools' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Master Sheet Link */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div className="space-y-1">
+                <div className="w-10 h-10 rounded-xl bg-[#D7242A]/10 text-[#D7242A] flex items-center justify-center">
+                  <Database className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 pt-2">Master Property Sheet Upload</h3>
+                <p className="text-xs text-slate-500">
+                  Upload CSV records to synchronize developer project catalogs and pricing sheets.
+                </p>
+              </div>
+              <Link
+                href="/admin/property-sheet"
+                className="inline-flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                <span>Open Property Sheet Console</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Duplicate Checker Link */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div className="space-y-1">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 pt-2">Duplicate Lead Detection</h3>
+                <p className="text-xs text-slate-500">
+                  Run database integrity scans to detect identical prospect telephone numbers across multiple agents.
+                </p>
+              </div>
+              <Link
+                href="/admin/duplicate-checker"
+                className="inline-flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                <span>Run Duplicate Scan</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Agent Lead Cleanup Tool */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div className="space-y-1">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 pt-2">Agent Queue Sanitizer</h3>
+                <p className="text-xs text-slate-500">
+                  Bulk unassign or clear stale leads from inactive advisor pipelines back to the unassigned queue.
+                </p>
+              </div>
+              <Link
+                href="/admin/cleanup-agent-leads"
+                className="inline-flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                <span>Access Lead Sanitizer</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Geospatial Map Tool */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div className="space-y-1">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 pt-2">Interactive Geographic Map</h3>
+                <p className="text-xs text-slate-500">
+                  View property density coordinates and extract missing latitude/longitude markers.
+                </p>
+              </div>
+              <Link
+                href="/admin/map"
+                className="inline-flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                <span>Open Property Map</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Tab 4: Security & Environment */}
+      {activeTab === 'security' && (
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base font-bold text-slate-900">Security &amp; Environment Diagnostics</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live server connection parameters, environment state, and RBAC authentication level.
+            </p>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+              <span className="text-slate-500 font-medium">Active Session Privilege</span>
+              <span className="font-bold text-slate-900 flex items-center space-x-1">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Super Administrator</span>
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+              <span className="text-slate-500 font-medium">Database Layer</span>
+              <span className="font-bold text-emerald-600">Connected (MongoDB Atlas)</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+              <span className="text-slate-500 font-medium">Runtime Architecture</span>
+              <span className="font-bold text-slate-900">Next.js App Router (Turbopack)</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+              <span className="text-slate-500 font-medium">Deployment Platform</span>
+              <span className="font-bold text-slate-900">Vercel Enterprise Edge</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

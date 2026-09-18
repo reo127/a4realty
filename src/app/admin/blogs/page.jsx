@@ -2,14 +2,35 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+  Newspaper,
+  Plus,
+  Search,
+  Eye,
+  Edit3,
+  Trash2,
+  ExternalLink,
+  Clock,
+  User,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  Sparkles
+} from 'lucide-react';
 
 export default function AdminBlogsPage() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchBlogs();
@@ -18,20 +39,20 @@ export default function AdminBlogsPage() {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
       if (!token) {
         setError('Authentication required. Please login again.');
-        window.location.href = '/admin/login';
+        window.location.href = '/login';
         return;
       }
-      
+
       const params = new URLSearchParams({
         admin: 'true',
         page: currentPage.toString(),
         limit: '10'
       });
-      
+
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
@@ -42,48 +63,46 @@ export default function AdminBlogsPage() {
         }
       });
 
-      // Check if response is ok first
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('token');
           setError('Session expired. Please login again.');
-          window.location.href = '/admin/login';
+          window.location.href = '/login';
           return;
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       if (data.success) {
-        setBlogs(data.data.blogs);
-        setTotalPages(data.data.pagination.totalPages);
-        setError(''); // Clear any previous errors
+        setBlogs(data.data?.blogs || []);
+        setTotalPages(data.data?.pagination?.totalPages || 1);
+        setError('');
       } else {
-        setError(data.message);
+        setError(data.message || 'Failed to fetch blogs');
       }
-    } catch (error) {
-      setError('Failed to fetch blogs');
-      console.error('Error fetching blogs:', error);
+    } catch (err) {
+      setError('Failed to fetch blogs repository');
+      console.error('Error fetching blogs:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (slug) => {
-    if (!confirm('Are you sure you want to delete this blog?')) {
+  const handleDelete = async (slug, title) => {
+    if (!confirm(`Are you sure you want to delete the blog "${title || slug}"? This action cannot be undone.`)) {
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
-      
       if (!token) {
         alert('Authentication required. Please login again.');
-        window.location.href = '/admin/login';
+        window.location.href = '/login';
         return;
       }
-      
+
       const response = await fetch(`/api/blogs/${slug}`, {
         method: 'DELETE',
         headers: {
@@ -91,265 +110,321 @@ export default function AdminBlogsPage() {
         }
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem('token');
-          alert('Session expired. Please login again.');
-          window.location.href = '/admin/login';
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        fetchBlogs(); // Refresh the list
+      if (response.ok) {
+        setSuccess('Article removed from publication archive');
+        fetchBlogs();
       } else {
-        alert('Failed to delete blog: ' + data.message);
+        setError('Failed to delete blog article');
       }
-    } catch (error) {
-      alert('Failed to delete blog');
-      console.error('Error deleting blog:', error);
+    } catch (err) {
+      console.error('Error deleting blog:', err);
+      setError('Failed to delete article');
     }
   };
 
-  const getStatusColor = (status) => {
+  const filteredBlogs = blogs.filter(blog => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      blog.title?.toLowerCase().includes(term) ||
+      blog.excerpt?.toLowerCase().includes(term) ||
+      blog.categories?.some(c => c.toLowerCase().includes(term))
+    );
+  });
+
+  const getStatusBadge = (status) => {
     switch (status) {
       case 'published':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200/80';
       case 'draft':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-50 text-amber-700 border-amber-200/80';
       case 'archived':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-100 text-slate-700 border-slate-200';
     }
   };
 
   if (loading && blogs.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D7242A]"></div>
+      <div className="min-h-[80vh] flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl border-2 border-t-[#D7242A] border-r-transparent border-b-[#D7242A] border-l-transparent animate-spin mx-auto mb-3"></div>
+          <p className="text-xs font-bold text-slate-700">Loading Editorial Suite...</p>
+        </div>
       </div>
     );
   }
 
-  console.log("blogs : ",blogs)
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Blog Management</h1>
-              <p className="text-gray-600 mt-1">Create and manage your blog posts for SEO</p>
-            </div>
-            <div className="flex space-x-3">
-              <Link
-                href="/blog"
-                className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
-              >
-                View Blog Page
-              </Link>
-              <Link
-                href="/admin/blogs/create"
-                className="bg-[#D7242A] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#D7242A]/90 transition-colors"
-              >
-                Create New Blog
-              </Link>
-            </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-serif">
+              Editorial &amp; Insights
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#D7242A]/10 text-[#D7242A] border border-[#D7242A]/20">
+              SEO Engine
+            </span>
           </div>
+          <p className="text-xs text-slate-600 mt-1">
+            Author and publish real estate market reports, buyer guides, and luxury investment advisories.
+          </p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">Filter by status:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
+        <div className="flex items-center space-x-2.5">
+          <Link
+            href="/blog"
+            target="_blank"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+            <span>View Public Blog</span>
+          </Link>
+          <Link
+            href="/admin/blogs/create"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#D7242A] hover:bg-[#b81d22] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Article</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      {success && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="font-semibold">{success}</span>
+          </div>
+          <button onClick={() => setSuccess('')} className="p-1">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-600" />
+            <span className="font-semibold">{error}</span>
+          </div>
+          <button onClick={() => setError('')} className="p-1">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Filter and Search Bar */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Status Filter Pills */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {['all', 'published', 'draft', 'archived'].map((status) => (
+            <button
+              key={status}
+              onClick={() => {
+                setStatusFilter(status);
                 setCurrentPage(1);
               }}
-              className="px-3 text-black py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7242A] focus:border-[#D7242A] text-sm"
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
+                statusFilter === status
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+              }`}
             >
-              <option value="all">All Status</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-              <option value="archived">Archived</option>
-            </select>
-          </div>
+              {status} Articles
+            </button>
+          ))}
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
+        {/* Search Field */}
+        <div className="relative w-full md:w-72">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search articles by title or keyword..."
+            className="w-full pl-9 pr-8 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-[#D7242A] focus:bg-white transition-colors"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
 
-        {/* Blog List */}
-        <div className="bg-white rounded-lg shadow-sm">
-          {blogs.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Blog Post
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Views
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {blogs.map((blog) => (
-                    <tr key={blog._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-start space-x-3">
-                          {blog.featuredImage && (
-                            <img
-                              src={blog.featuredImage}
-                              alt={blog.title}
-                              className="w-12 h-12 object-cover rounded-lg"
-                            />
-                          )}
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900 line-clamp-1">
-                              {blog.title}
-                            </h3>
-                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                              {blog.excerpt}
-                            </p>
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {blog.categories.slice(0, 2).map((category) => (
-                                <span
-                                  key={category}
-                                  className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
-                                >
-                                  {category}
-                                </span>
-                              ))}
-                              {blog.categories.length > 2 && (
-                                <span className="text-xs text-gray-500">
-                                  +{blog.categories.length - 2} more
-                                </span>
-                              )}
-                            </div>
+      {/* Blog Articles Grid / Table */}
+      {filteredBlogs.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-16 text-center space-y-3">
+          <BookOpen className="w-12 h-12 text-slate-300 mx-auto" />
+          <h3 className="text-base font-bold text-slate-900">No blog posts found</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            {searchTerm ? 'No articles matched your search query.' : 'Draft your first real estate market report to improve SEO authority.'}
+          </p>
+          <Link
+            href="/admin/blogs/create"
+            className="inline-flex items-center space-x-1.5 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Write New Article</span>
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black uppercase tracking-wider text-slate-700">
+                  <th className="py-3.5 px-5">Article &amp; Excerpt</th>
+                  <th className="py-3.5 px-4">Publication Status</th>
+                  <th className="py-3.5 px-4">Readership</th>
+                  <th className="py-3.5 px-4">Author &amp; Date</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {filteredBlogs.map((blog) => (
+                  <tr key={blog._id} className="hover:bg-slate-50/80 transition-colors group">
+                    {/* Article Thumbnail & Summary */}
+                    <td className="py-4 px-5">
+                      <div className="flex items-start space-x-3.5 max-w-lg">
+                        {blog.featuredImage ? (
+                          <img
+                            src={blog.featuredImage}
+                            alt={blog.title}
+                            className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                            <Newspaper className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="space-y-1 min-w-0">
+                          <h3 className="font-bold text-slate-900 group-hover:text-[#D7242A] transition-colors truncate">
+                            {blog.title}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 line-clamp-1 leading-relaxed">
+                            {blog.excerpt}
+                          </p>
+                          <div className="flex flex-wrap gap-1 pt-1">
+                            {blog.categories?.slice(0, 2).map((category) => (
+                              <span
+                                key={category}
+                                className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 rounded-md"
+                              >
+                                {category}
+                              </span>
+                            ))}
+                            {blog.categories?.length > 2 && (
+                              <span className="text-[10px] text-slate-400 self-center">
+                                +{blog.categories.length - 2} more
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(blog.status)}`}>
-                          {blog.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{blog.views || 0}</div>
-                        <div className="text-xs text-gray-500">{blog.readingTime} min read</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {new Date(blog.createdAt).toLocaleDateString()}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          by {blog.author?.name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center space-x-2">
-                          <Link
-                            href={blog.status === 'published' ? `/blog/${blog.slug}` : `/blog/${blog.slug}?preview=true`}
-                            target="_blank"
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                            title={blog.status === 'published' ? 'View Blog' : 'Preview Blog'}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                          </Link>
-                          <Link
-                            href={`/admin/blogs/edit/${blog.slug}`}
-                            className="text-[#D7242A] hover:text-[#D7242A]/80"
-                            title="Edit Blog"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(blog.slug)}
-                            className="text-red-600 hover:text-red-800"
-                            title="Delete Blog"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-500 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border capitalize ${getStatusBadge(blog.status)}`}>
+                        {blog.status}
+                      </span>
+                    </td>
+
+                    {/* Readership Telemetry */}
+                    <td className="py-4 px-4 whitespace-nowrap space-y-0.5">
+                      <div className="font-bold text-slate-900 flex items-center space-x-1">
+                        <Eye className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{blog.views || 0} views</span>
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {blog.readingTime || 4} min read
+                      </div>
+                    </td>
+
+                    {/* Author & Date */}
+                    <td className="py-4 px-4 whitespace-nowrap space-y-0.5">
+                      <div className="font-bold text-slate-900">
+                        {new Date(blog.createdAt).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        by {blog.author?.name || 'A4 Editorial'}
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4 px-5 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <Link
+                          href={blog.status === 'published' ? `/blog/${blog.slug}` : `/blog/${blog.slug}?preview=true`}
+                          target="_blank"
+                          className="p-1.5 text-slate-400 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                          title={blog.status === 'published' ? 'View Article' : 'Preview Draft'}
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Link>
+                        <Link
+                          href={`/admin/blogs/edit/${blog.slug}`}
+                          className="p-1.5 text-slate-600 hover:text-white bg-slate-100 hover:bg-slate-900 rounded-lg transition-colors"
+                          title="Edit Article"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(blog.slug, blog.title)}
+                          className="p-1.5 text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 rounded-lg transition-colors"
+                          title="Delete Article"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Toolbar */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200/80 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No blogs found</h3>
-              <p className="text-gray-600 mb-4">Get started by creating your first blog post.</p>
-              <Link
-                href="/admin/blogs/create"
-                className="inline-flex items-center px-6 py-3 bg-[#D7242A] text-white font-medium rounded-lg hover:bg-[#D7242A]/90 transition-colors"
-              >
-                Create New Blog
-              </Link>
             </div>
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
-            <div className="text-sm text-gray-700">
-              Page {currentPage} of {totalPages}
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#D7242A] border border-transparent rounded-lg hover:bg-[#D7242A]/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
