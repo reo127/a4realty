@@ -1,8 +1,42 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Users,
+  UserPlus,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  Phone,
+  MessageCircle,
+  Mail,
+  Calendar,
+  CalendarCheck,
+  MapPin,
+  Clock,
+  ArrowUpDown,
+  MoreVertical,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  ExternalLink,
+  ChevronRight,
+  ChevronLeft,
+  X,
+  FileText,
+  Trash2,
+  Edit3,
+  Layers,
+  FileSpreadsheet,
+  FileDown,
+  UserCheck,
+  RotateCcw,
+  Check,
+  Eye
+} from 'lucide-react';
 import { getLocationDisplayName } from '@/utils/locations';
 import BulkLeadUpload from '@/components/BulkLeadUpload';
 import EditLeadModal from '@/components/EditLeadModal';
@@ -15,7 +49,7 @@ export default function CRMLeadsPage() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchInput, setSearchInput] = useState(''); // What user types
+  const [searchInput, setSearchInput] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addingLead, setAddingLead] = useState(false);
   const [addError, setAddError] = useState('');
@@ -36,6 +70,33 @@ export default function CRMLeadsPage() {
   const [showBulkAssign, setShowBulkAssign] = useState(false);
   const [agents, setAgents] = useState([]);
 
+  // UI menu states for grouped actions
+  const [showBulkMenu, setShowBulkMenu] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const [activeNotesPopover, setActiveNotesPopover] = useState(null);
+
+  const bulkMenuRef = useRef(null);
+  const exportMenuRef = useRef(null);
+  const toolsMenuRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (bulkMenuRef.current && !bulkMenuRef.current.contains(event.target)) {
+        setShowBulkMenu(false);
+      }
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(event.target)) {
+        setShowToolsMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Read all filter values from URL (source of truth)
   const currentPage = parseInt(searchParams.get('page')) || 1;
   const searchTerm = searchParams.get('search') || '';
@@ -51,7 +112,6 @@ export default function CRMLeadsPage() {
   const updateURLParams = (updates, addToHistory = false) => {
     const params = new URLSearchParams();
 
-    // Get current values
     const current = {
       page: currentPage.toString(),
       sortBy: sortBy,
@@ -64,10 +124,8 @@ export default function CRMLeadsPage() {
       agent: agentFilter,
     };
 
-    // Merge with updates
     const merged = { ...current, ...updates };
 
-    // Only add non-empty values to URL
     if (merged.page && merged.page !== '1') params.set('page', merged.page);
     if (merged.sortBy && merged.sortBy !== 'createdAt') params.set('sortBy', merged.sortBy);
     if (merged.sortOrder && merged.sortOrder !== 'desc') params.set('sortOrder', merged.sortOrder);
@@ -78,7 +136,6 @@ export default function CRMLeadsPage() {
     if (merged.assignment && merged.assignment !== 'all') params.set('assignment', merged.assignment);
     if (merged.agent && merged.agent !== 'all') params.set('agent', merged.agent);
 
-    // Use push for pagination (adds to history), replace for filters (doesn't pollute history)
     if (addToHistory) {
       router.push(`/admin/crm/leads?${params.toString()}`, { scroll: false });
     } else {
@@ -86,7 +143,7 @@ export default function CRMLeadsPage() {
     }
   };
 
-  // Check if user is admin
+  // Check admin status
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -115,12 +172,12 @@ export default function CRMLeadsPage() {
     fetchAgents();
   }, []);
 
-  // Initialize searchInput from URL on mount and when searchTerm changes
+  // Sync search input
   useEffect(() => {
     setSearchInput(searchTerm);
   }, [searchTerm]);
 
-  // Load visited leads from session storage on mount
+  // Load visited leads from session storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedVisited = sessionStorage.getItem('visitedLeads');
@@ -134,26 +191,23 @@ export default function CRMLeadsPage() {
     }
   }, []);
 
-  // Handle search action (button click or Enter key)
+  // Search handler
   const handleSearch = () => {
-    // Update URL with search term and reset to page 1
-    updateURLParams({ search: searchInput, page: '1' });
+    updateURLParams({ search: searchInput.trim(), page: '1' });
   };
 
-  // Handle Enter key in search input
   const handleSearchKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
 
-  // Fetch leads whenever dependencies change
+  // Fetch leads on filter/query changes
   useEffect(() => {
     const fetchLeadsData = async () => {
       try {
         setLoading(true);
 
-        // Build query parameters
         const params = new URLSearchParams({
           page: currentPage.toString(),
           limit: '30',
@@ -176,7 +230,6 @@ export default function CRMLeadsPage() {
           setTotalCount(data.totalCount);
           setError(null);
 
-          // If current page exceeds total pages, reset to last valid page
           if (data.totalPages > 0 && currentPage > data.totalPages) {
             updateURLParams({ page: data.totalPages.toString() }, false);
           }
@@ -202,9 +255,7 @@ export default function CRMLeadsPage() {
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newLead)
       });
 
@@ -214,10 +265,8 @@ export default function CRMLeadsPage() {
         throw new Error(data.message || 'Failed to add lead');
       }
 
-      // Reset to page 1 by updating URL
       updateURLParams({ page: '1' });
 
-      // Reset form and close modal
       setNewLead({
         name: '',
         phone: '',
@@ -235,8 +284,6 @@ export default function CRMLeadsPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // For phone number, only allow digits and limit to 10
     if (name === 'phone') {
       const numericValue = value.replace(/\D/g, '').slice(0, 10);
       setNewLead(prev => ({ ...prev, [name]: numericValue }));
@@ -245,8 +292,8 @@ export default function CRMLeadsPage() {
     }
   };
 
-
   const formatDate = (dateString) => {
+    if (!dateString) return '—';
     return new Date(dateString).toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'short',
@@ -256,95 +303,77 @@ export default function CRMLeadsPage() {
     });
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      'new': 'bg-blue-100 text-blue-800',
-      'not_connected': 'bg-yellow-100 text-yellow-800',
-      'interested': 'bg-green-100 text-green-800',
-      'follow_up': 'bg-cyan-100 text-cyan-800',
-      'not_interested': 'bg-red-100 text-red-800',
-      'call_disconnected': 'bg-orange-100 text-orange-800',
-      'location_mismatch': 'bg-purple-100 text-purple-800',
-      'budget_mismatch': 'bg-pink-100 text-pink-800',
-      'possession_mismatch': 'bg-indigo-100 text-indigo-800',
-      'do_not_disturb': 'bg-gray-100 text-gray-800',
-      'site_visit_done': 'bg-emerald-100 text-emerald-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+  const formatRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${Math.max(1, diffMins)}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
   };
 
-  const formatStatusText = (status) => {
-    const statusDisplayNames = {
-      'new': 'New',
-      'not_connected': 'Not Connected',
-      'interested': 'Interested',
-      'follow_up': 'Follow Up',
-      'not_interested': 'Not Interested',
-      'call_disconnected': 'Call Disconnected',
-      'location_mismatch': 'Location Mismatch',
-      'budget_mismatch': 'Budget Mismatch',
-      'possession_mismatch': 'Possession Mismatch',
-      'do_not_disturb': 'Do Not Disturb',
-      'site_visit_done': 'Site Visit Done'
+  const getStatusBadgeConfig = (status) => {
+    const config = {
+      new: { label: 'New Lead', bg: 'bg-sky-50 text-sky-700 border-sky-200/80', dot: 'bg-sky-500' },
+      not_connected: { label: 'Not Connected', bg: 'bg-slate-100 text-slate-700 border-slate-200', dot: 'bg-slate-400' },
+      interested: { label: 'Interested', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', dot: 'bg-emerald-500' },
+      follow_up: { label: 'Follow Up', bg: 'bg-cyan-50 text-cyan-700 border-cyan-200/80', dot: 'bg-cyan-500' },
+      follow_up_scheduled: { label: 'Follow-up Scheduled', bg: 'bg-cyan-50 text-cyan-700 border-cyan-200/80', dot: 'bg-cyan-500' },
+      site_visit_scheduled: { label: 'Site Visit Scheduled', bg: 'bg-violet-50 text-violet-700 border-violet-200/80', dot: 'bg-violet-500' },
+      visit_rescheduled: { label: 'Visit Rescheduled', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', dot: 'bg-amber-500' },
+      site_visit_done: { label: 'Site Visit Done', bg: 'bg-teal-50 text-teal-700 border-teal-200/80', dot: 'bg-teal-500' },
+      not_interested: { label: 'Not Interested', bg: 'bg-rose-50 text-rose-700 border-rose-200/80', dot: 'bg-rose-400' },
+      call_disconnected: { label: 'Call Disconnected', bg: 'bg-orange-50 text-orange-700 border-orange-200/80', dot: 'bg-orange-400' },
+      location_mismatch: { label: 'Location Mismatch', bg: 'bg-purple-50 text-purple-700 border-purple-200/80', dot: 'bg-purple-400' },
+      budget_mismatch: { label: 'Budget Mismatch', bg: 'bg-pink-50 text-pink-700 border-pink-200/80', dot: 'bg-pink-400' },
+      possession_mismatch: { label: 'Possession Mismatch', bg: 'bg-indigo-50 text-indigo-700 border-indigo-200/80', dot: 'bg-indigo-400' },
+      do_not_disturb: { label: 'Do Not Disturb', bg: 'bg-gray-100 text-gray-600 border-gray-200', dot: 'bg-gray-400' }
     };
-    return statusDisplayNames[status] || 'New';
+    return config[status] || { label: status?.replace(/_/g, ' ') || 'New', bg: 'bg-gray-100 text-gray-700 border-gray-200', dot: 'bg-gray-400' };
   };
 
   const formatSubstatusText = (substatus) => {
     if (!substatus) return null;
-
     const substatusDisplayNames = {
-      // Not Connected
-      'ringing': 'Ringing',
-      'switched_off': 'Switched Off',
-      'call_busy': 'Call Busy',
-      'call_disconnected': 'Call Disconnected',
-      'invalid_number': 'Invalid Number',
-
-      // Interested
-      'site_visit_scheduled_with_date': 'Site Visit Scheduled (With Date)',
-      'site_visit_scheduled_no_date': 'Site Visit Scheduled (No Date)',
-      'follow_up': 'Follow Up',
-
-      // Not Interested
-      'not_actively_searching': 'Not Actively Searching',
-      'require_more_than_6_months': 'Require More Than 6 Months',
-      'not_the_right_party': 'Not The Right Party',
-
-      // Call Disconnected
-      'hang_up_while_talking': 'Hang Up While Talking',
-      'call_drop': 'Call Drop',
-
-      // Location Mismatch
-      'looking_for_other_location': 'Looking For Other Location',
-      'looking_for_other_city': 'Looking For Other City',
-
-      // Budget Mismatch
-      'budget_is_low': 'Budget Is Low',
-      'budget_is_high': 'Budget Is High',
-
-      // Possession Mismatch
-      'looking_for_ready_to_move': 'Looking For Ready To Move',
-      'looking_for_under_construction': 'Looking For Under Construction',
-
-      // Do Not Disturb
-      'already_in_touch_with_builder': 'Already In Touch With Builder',
-      'deal_closed': 'Deal Closed',
-      'plan_drop': 'Plan Drop',
-      'plan_postponed': 'Plan Postponed',
-      'already_purchased': 'Already Purchased',
-      'dnc': 'DNC',
-
-      // Site Visit Done
-      'interested_in_revisit': 'Interested In Re-visit',
-      'plan_cancelled': 'Plan Cancelled'
+      ringing: 'Ringing',
+      switched_off: 'Switched Off',
+      call_busy: 'Call Busy',
+      call_disconnected: 'Call Disconnected',
+      invalid_number: 'Invalid Number',
+      site_visit_scheduled_with_date: 'Visit with Date',
+      site_visit_scheduled_no_date: 'Visit (No Date)',
+      follow_up: 'Follow Up',
+      not_actively_searching: 'Not Active',
+      require_more_than_6_months: '> 6 Months',
+      not_the_right_party: 'Wrong Party',
+      hang_up_while_talking: 'Hang Up',
+      call_drop: 'Call Drop',
+      looking_for_other_location: 'Other Location',
+      looking_for_other_city: 'Other City',
+      budget_is_low: 'Budget Low',
+      budget_is_high: 'Budget High',
+      looking_for_ready_to_move: 'Ready To Move',
+      looking_for_under_construction: 'Under Construction',
+      already_in_touch_with_builder: 'Direct with Builder',
+      deal_closed: 'Deal Closed',
+      plan_drop: 'Plan Drop',
+      plan_postponed: 'Plan Postponed',
+      already_purchased: 'Already Purchased',
+      dnc: 'DNC',
+      interested_in_revisit: 'Re-visit',
+      plan_cancelled: 'Cancelled'
     };
-
-    return substatusDisplayNames[substatus] || substatus;
+    return substatusDisplayNames[substatus] || substatus.replace(/_/g, ' ');
   };
 
   const handleBulkUploadComplete = (results) => {
-    // Reset to page 1 by updating URL
     if (results.createdCount > 0) {
       updateURLParams({ page: '1' });
     }
@@ -368,8 +397,7 @@ export default function CRMLeadsPage() {
       }
     } catch (error) {
       console.error('Error downloading template:', error);
-      // Fallback to client-side generation
-      const csvContent = 'name,phonenumber,location,email\nJohn Doe,9876543210,Koramangala,john@example.com\nJane Smith,9876543211,BTM Layout,jane@example.com\nSample Lead,9876543212,Electronic City,sample@example.com';
+      const csvContent = 'name,phonenumber,location,email\nJohn Doe,9876543210,Koramangala,john@example.com\nJane Smith,9876543211,BTM Layout,jane@example.com';
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -452,19 +480,12 @@ export default function CRMLeadsPage() {
 
   const handleDeleteClick = async (e, leadId) => {
     e.stopPropagation();
+    if (!confirm('Are you sure you want to permanently delete this lead?')) return;
 
     try {
-      const response = await fetch(`/api/leads/${leadId}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`/api/leads/${leadId}`, { method: 'DELETE' });
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete lead');
-      }
-
-      // Remove the deleted lead from the state
+      if (!response.ok) throw new Error(data.message || 'Failed to delete lead');
       setLeads(prevLeads => prevLeads.filter(lead => lead._id !== leadId));
       setTotalCount(prevCount => prevCount - 1);
     } catch (error) {
@@ -474,546 +495,827 @@ export default function CRMLeadsPage() {
   };
 
   const handleUpdateLead = (updatedLead) => {
-    // Update the lead in the local state
     setLeads(prevLeads =>
-      prevLeads.map(lead =>
-        lead._id === updatedLead._id ? updatedLead : lead
-      )
+      prevLeads.map(lead => (lead._id === updatedLead._id ? updatedLead : lead))
     );
   };
 
   const handleBulkAssignComplete = () => {
-    // Refresh leads data after bulk assignment
     updateURLParams({ page: '1' });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const onRowNavigate = (leadId) => {
+    const newVisited = new Set(visitedLeads);
+    newVisited.add(leadId);
+    setVisitedLeads(newVisited);
+    sessionStorage.setItem('visitedLeads', JSON.stringify([...newVisited]));
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Leads</h2>
-            <p className="text-red-600">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    const params = new URLSearchParams({
+      sortBy,
+      sortOrder,
+      page: currentPage.toString(),
+      ...(searchTerm && { search: searchTerm }),
+      ...(statusFilter !== 'all' && { status: statusFilter }),
+      ...(dateFrom && { dateFrom }),
+      ...(dateTo && { dateTo }),
+      ...(assignmentFilter !== 'all' && { assignment: assignmentFilter }),
+      ...(agentFilter !== 'all' && { agent: agentFilter })
+    });
+    router.push(`/admin/crm/leads/${leadId}?${params.toString()}`);
+  };
+
+  // Has any active filters?
+  const hasActiveFilters =
+    statusFilter !== 'all' ||
+    assignmentFilter !== 'all' ||
+    agentFilter !== 'all' ||
+    Boolean(dateFrom) ||
+    Boolean(dateTo) ||
+    Boolean(searchTerm);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#F8FAFC] pb-16">
+      {/* Executive Command Header */}
+      <div className="bg-white border-b border-slate-200/80 sticky top-0 md:top-16 z-20 shadow-xs backdrop-blur-md bg-white/95">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Title & Stats Pill */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">CRM - Sales Leads</h1>
-              <p className="text-gray-600 mt-1">Manage and track your sales leads</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D7242A] to-[#99151A] flex items-center justify-center text-white shadow-md shadow-[#D7242A]/20">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+                      Sales CRM &amp; Lead Intelligence
+                    </h1>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#D7242A]/10 text-[#D7242A] border border-[#D7242A]/20 tabular-nums">
+                      {totalCount} Leads
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Prospect pipeline, advisor dispatch, and conversion timeline
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                {totalCount} Total Leads
-              </span>
+
+            {/* Action Bar (Clean Hierarchy) */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+              {/* Primary Action: Add Lead */}
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D7242A] to-[#B01A20] hover:from-[#e0292f] hover:to-[#99151A] text-white text-xs font-bold shadow-md shadow-[#D7242A]/25 transition-all hover:scale-[1.02] cursor-pointer"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+                <UserPlus className="w-4 h-4" />
                 <span>Add Lead</span>
               </button>
-              <button
-                onClick={() => setShowBulkAssign(true)}
-                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2 text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span>Bulk Assign</span>
-              </button>
-              <button
-                onClick={downloadTemplate}
-                className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2 text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Template</span>
-              </button>
-              <button
-                onClick={() => setShowBulkUpload(true)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <span>Bulk Upload</span>
-              </button>
-              <button
-                onClick={handleDownloadCSV}
-                disabled={downloading || totalCount === 0}
-                className="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>CSV</span>
-              </button>
-              <button
-                onClick={handleDownloadExcel}
-                disabled={downloading || totalCount === 0}
-                className="px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Excel</span>
-              </button>
-              <Link
-                href="/admin/cleanup-agent-leads"
-                className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 text-sm"
-                title="Remove duplicate leads and reassign fresh leads to agents"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                <span>Cleanup</span>
-              </Link>
-              <Link
-                href="/admin/duplicate-checker"
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 text-sm"
-                title="Detect and remove duplicate lead assignments"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Duplicates</span>
-              </Link>
-              <Link
-                href="/admin"
-                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
-              >
-                Back
-              </Link>
+
+              {/* Grouped: Bulk Operations */}
+              <div className="relative" ref={bulkMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkMenu(!showBulkMenu)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 transition-colors shadow-2xs"
+                >
+                  <Layers className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Bulk Actions</span>
+                  <ChevronRight className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showBulkMenu ? 'rotate-90' : ''}`} />
+                </button>
+
+                {showBulkMenu && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-slate-200/90 shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <button
+                      onClick={() => {
+                        setShowBulkAssign(true);
+                        setShowBulkMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#D7242A] flex items-center gap-2.5 transition-colors"
+                    >
+                      <UserCheck className="w-4 h-4 text-indigo-500" />
+                      <span>Bulk Assign to Agents</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowBulkUpload(true);
+                        setShowBulkMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#D7242A] flex items-center gap-2.5 transition-colors"
+                    >
+                      <Upload className="w-4 h-4 text-blue-500" />
+                      <span>Bulk Upload (CSV)</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        downloadTemplate();
+                        setShowBulkMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#D7242A] flex items-center gap-2.5 transition-colors border-t border-slate-100"
+                    >
+                      <FileDown className="w-4 h-4 text-slate-400" />
+                      <span>Download Sample Template</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Grouped: Export Data */}
+              <div className="relative" ref={exportMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  disabled={downloading || totalCount === 0}
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 transition-colors shadow-2xs disabled:opacity-50"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>{downloading ? 'Exporting...' : 'Export'}</span>
+                  <ChevronRight className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showExportMenu ? 'rotate-90' : ''}`} />
+                </button>
+
+                {showExportMenu && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white border border-slate-200/90 shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <button
+                      onClick={() => {
+                        handleDownloadCSV();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 flex items-center gap-2.5 transition-colors"
+                    >
+                      <FileText className="w-4 h-4 text-emerald-600" />
+                      <span>Export as CSV</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleDownloadExcel();
+                        setShowExportMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-teal-700 flex items-center gap-2.5 transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-teal-600" />
+                      <span>Export as Excel</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Grouped: Data Hygiene / Tools */}
+              <div className="relative" ref={toolsMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowToolsMenu(!showToolsMenu)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 transition-colors shadow-2xs"
+                  title="Database Integrity Tools"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Integrity Tools</span>
+                </button>
+
+                {showToolsMenu && (
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white border border-slate-200/90 shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                    <Link
+                      href="/admin/duplicate-checker"
+                      className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-rose-600 transition-colors"
+                    >
+                      Duplicate Checker
+                    </Link>
+                    <Link
+                      href="/admin/cleanup-agent-leads"
+                      className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-amber-600 transition-colors"
+                    >
+                      Cleanup &amp; Reassign
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-full mx-auto px-4 py-6 text-black">
-        {/* Search and Filter */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col gap-4">
-            {/* Search Bar */}
-            <div className="flex-1">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Search by name, phone, email, or location..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={handleSearchKeyPress}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <button
-                  onClick={handleSearch}
-                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <span>Search</span>
-                </button>
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        {/* Interactive KPI Pipeline Telemetry Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          {/* Card 1: Total Leads */}
+          <button
+            onClick={() => updateURLParams({ status: 'all', page: '1' })}
+            className={`text-left p-4 rounded-2xl border transition-all duration-150 ${
+              statusFilter === 'all'
+                ? 'bg-white border-[#D7242A] shadow-sm ring-1 ring-[#D7242A]'
+                : 'bg-white/80 hover:bg-white border-slate-200/80 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between text-xs font-medium text-slate-500 mb-1">
+              <span>All Prospects</span>
+              <Users className="w-4 h-4 text-slate-400" />
             </div>
+            <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
+              {totalCount}
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1 font-medium">Complete pipeline</p>
+          </button>
 
-            {/* Filters Row */}
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-              {/* Status Filter */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Filter by Status
-                </label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => updateURLParams({ status: e.target.value, page: '1' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="new">New</option>
-                  <option value="not_connected">Not Connected</option>
-                  <option value="interested">Interested</option>
-                  <option value="site_visit_scheduled">Site Visit Scheduled</option>
-                  <option value="follow_up_scheduled">Follow-up Scheduled</option>
-                  <option value="visit_rescheduled">Visit Rescheduled</option>
-                  <option value="site_visit_done">Site Visit Done</option>
-                  <option value="not_interested">Not Interested</option>
-                  <option value="call_disconnected">Call Disconnected</option>
-                  <option value="location_mismatch">Location Mismatch</option>
-                  <option value="budget_mismatch">Budget Mismatch</option>
-                  <option value="possession_mismatch">Possession Mismatch</option>
-                  <option value="do_not_disturb">Do Not Disturb</option>
-                </select>
-              </div>
+          {/* Card 2: Interested (Hot) */}
+          <button
+            onClick={() => updateURLParams({ status: 'interested', page: '1' })}
+            className={`text-left p-4 rounded-2xl border transition-all duration-150 ${
+              statusFilter === 'interested'
+                ? 'bg-emerald-50/50 border-emerald-500 shadow-sm ring-1 ring-emerald-500'
+                : 'bg-white/80 hover:bg-white border-slate-200/80 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between text-xs font-medium text-emerald-700 mb-1">
+              <span>High Intent</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-900 tabular-nums">
+              {statusFilter === 'interested' ? totalCount : 'Filter'}
+            </div>
+            <p className="text-[10px] text-emerald-600 mt-1 font-medium">Interested buyers</p>
+          </button>
 
-              {/* Assignment Filter */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assignment Status
-                </label>
-                <select
-                  value={assignmentFilter}
-                  onChange={(e) => updateURLParams({ assignment: e.target.value, page: '1' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="all">All Leads</option>
-                  <option value="assigned">Assigned</option>
-                  <option value="unassigned">Unassigned</option>
-                </select>
-              </div>
+          {/* Card 3: Site Visits Scheduled */}
+          <button
+            onClick={() => updateURLParams({ status: 'site_visit_scheduled', page: '1' })}
+            className={`text-left p-4 rounded-2xl border transition-all duration-150 ${
+              statusFilter === 'site_visit_scheduled'
+                ? 'bg-violet-50/50 border-violet-500 shadow-sm ring-1 ring-violet-500'
+                : 'bg-white/80 hover:bg-white border-slate-200/80 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between text-xs font-medium text-violet-700 mb-1">
+              <span>Site Visits</span>
+              <CalendarCheck className="w-4 h-4 text-violet-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-violet-900 tabular-nums">
+              {statusFilter === 'site_visit_scheduled' ? totalCount : 'Tours'}
+            </div>
+            <p className="text-[10px] text-violet-600 mt-1 font-medium">Scheduled showings</p>
+          </button>
 
-              {/* Agent Filter */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Filter by Agent
-                </label>
-                <select
-                  value={agentFilter}
-                  onChange={(e) => updateURLParams({ agent: e.target.value, page: '1' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="all">All Agents</option>
-                  {agents.map((agent) => (
-                    <option key={agent._id} value={agent._id}>
-                      {agent.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Card 4: Follow Ups */}
+          <button
+            onClick={() => updateURLParams({ status: 'follow_up', page: '1' })}
+            className={`text-left p-4 rounded-2xl border transition-all duration-150 ${
+              statusFilter === 'follow_up'
+                ? 'bg-amber-50/50 border-amber-500 shadow-sm ring-1 ring-amber-500'
+                : 'bg-white/80 hover:bg-white border-slate-200/80 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between text-xs font-medium text-amber-700 mb-1">
+              <span>Follow-ups</span>
+              <Clock className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-amber-900 tabular-nums">
+              {statusFilter === 'follow_up' ? totalCount : 'Pending'}
+            </div>
+            <p className="text-[10px] text-amber-600 mt-1 font-medium">Attention required</p>
+          </button>
 
-              {/* Date From */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => updateURLParams({ dateFrom: e.target.value, page: '1' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
+          {/* Card 5: Unassigned */}
+          <button
+            onClick={() => updateURLParams({ assignment: 'unassigned', page: '1' })}
+            className={`col-span-2 sm:col-span-1 text-left p-4 rounded-2xl border transition-all duration-150 ${
+              assignmentFilter === 'unassigned'
+                ? 'bg-rose-50/50 border-rose-500 shadow-sm ring-1 ring-rose-500'
+                : 'bg-white/80 hover:bg-white border-slate-200/80 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between text-xs font-medium text-rose-700 mb-1">
+              <span>Unassigned</span>
+              <UserPlus className="w-4 h-4 text-rose-500" />
+            </div>
+            <div className="text-2xl font-extrabold text-rose-900 tabular-nums">
+              {assignmentFilter === 'unassigned' ? totalCount : 'Fresh'}
+            </div>
+            <p className="text-[10px] text-rose-600 mt-1 font-medium">Needs advisor dispatch</p>
+          </button>
+        </div>
 
-              {/* Date To */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => updateURLParams({ dateTo: e.target.value, page: '1' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              {/* Sort By */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sort By
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => updateURLParams({ sortBy: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="createdAt">Date Added</option>
-                    <option value="name">Name</option>
-                    <option value="interestedLocation">Location</option>
-                  </select>
-                  <button
-                    onClick={() => updateURLParams({ sortOrder: sortOrder === 'asc' ? 'desc' : 'asc' })}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-                  >
-                    {sortOrder === 'asc' ? '↑' : '↓'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Clear Filters Button */}
-              {(statusFilter !== 'all' || assignmentFilter !== 'all' || agentFilter !== 'all' || dateFrom || dateTo || searchTerm || searchInput) && (
+        {/* Command Search & Multi-filter Suite */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+          {/* Top Search Input Row */}
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search by prospect name, mobile number, email address, or target location..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleSearchKeyPress}
+                className="w-full pl-11 pr-10 py-2.5 text-xs sm:text-sm bg-slate-50/70 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] transition-all text-slate-900 placeholder:text-slate-400 outline-none"
+              />
+              {searchInput && (
                 <button
                   onClick={() => {
                     setSearchInput('');
-                    router.replace('/admin/crm/leads', { scroll: false });
+                    updateURLParams({ search: '', page: '1' });
                   }}
-                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
-                  Clear Filters
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
+
+            <button
+              onClick={handleSearch}
+              className="px-5 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search</span>
+            </button>
+          </div>
+
+          {/* Filter Capsules Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-2 border-t border-slate-100">
+            {/* 1. Status Filter */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Pipeline Stage
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => updateURLParams({ status: e.target.value, page: '1' })}
+                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] outline-none"
+              >
+                <option value="all">All Stages</option>
+                <option value="new">New Inquiry</option>
+                <option value="not_connected">Not Connected</option>
+                <option value="interested">Interested (High Intent)</option>
+                <option value="site_visit_scheduled">Site Visit Scheduled</option>
+                <option value="follow_up_scheduled">Follow-up Scheduled</option>
+                <option value="visit_rescheduled">Visit Rescheduled</option>
+                <option value="site_visit_done">Site Visit Done</option>
+                <option value="not_interested">Not Interested</option>
+                <option value="call_disconnected">Call Disconnected</option>
+                <option value="location_mismatch">Location Mismatch</option>
+                <option value="budget_mismatch">Budget Mismatch</option>
+                <option value="possession_mismatch">Possession Mismatch</option>
+                <option value="do_not_disturb">Do Not Disturb</option>
+              </select>
+            </div>
+
+            {/* 2. Assignment Filter */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Advisor Assignment
+              </label>
+              <select
+                value={assignmentFilter}
+                onChange={(e) => updateURLParams({ assignment: e.target.value, page: '1' })}
+                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] outline-none"
+              >
+                <option value="all">All Statuses</option>
+                <option value="assigned">Assigned Only</option>
+                <option value="unassigned">Unassigned Only</option>
+              </select>
+            </div>
+
+            {/* 3. Agent Filter */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Specific Advisor
+              </label>
+              <select
+                value={agentFilter}
+                onChange={(e) => updateURLParams({ agent: e.target.value, page: '1' })}
+                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] outline-none"
+              >
+                <option value="all">All Advisors</option>
+                {agents.map((agent) => (
+                  <option key={agent._id} value={agent._id}>
+                    {agent.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 4. Date From */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                From Date
+              </label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => updateURLParams({ dateFrom: e.target.value, page: '1' })}
+                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] outline-none"
+              />
+            </div>
+
+            {/* 5. Date To */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                To Date
+              </label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => updateURLParams({ dateTo: e.target.value, page: '1' })}
+                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] outline-none"
+              />
+            </div>
+
+            {/* 6. Sort By & Order Toggle */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Sort Order
+              </label>
+              <div className="flex gap-1.5">
+                <select
+                  value={sortBy}
+                  onChange={(e) => updateURLParams({ sortBy: e.target.value })}
+                  className="flex-1 px-2.5 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] outline-none"
+                >
+                  <option value="createdAt">Date Created</option>
+                  <option value="name">Name</option>
+                  <option value="interestedLocation">Location</option>
+                </select>
+                <button
+                  onClick={() => updateURLParams({ sortOrder: sortOrder === 'asc' ? 'desc' : 'asc' })}
+                  className="px-2.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 transition-colors text-xs font-bold"
+                  title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                >
+                  {sortOrder === 'asc' ? '↑' : '↓'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Active Filter Chips Bar */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 text-xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Active Filters:
+              </span>
+
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-100 text-slate-700 font-medium">
+                  Search: "{searchTerm}"
+                  <button onClick={() => updateURLParams({ search: '', page: '1' })}>
+                    <X className="w-3 h-3 hover:text-[#D7242A]" />
+                  </button>
+                </span>
+              )}
+
+              {statusFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 font-medium border border-blue-200/60">
+                  Status: {statusFilter.replace(/_/g, ' ')}
+                  <button onClick={() => updateURLParams({ status: 'all', page: '1' })}>
+                    <X className="w-3 h-3 hover:text-[#D7242A]" />
+                  </button>
+                </span>
+              )}
+
+              {assignmentFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-purple-50 text-purple-700 font-medium border border-purple-200/60">
+                  Assignment: {assignmentFilter}
+                  <button onClick={() => updateURLParams({ assignment: 'all', page: '1' })}>
+                    <X className="w-3 h-3 hover:text-[#D7242A]" />
+                  </button>
+                </span>
+              )}
+
+              {agentFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 font-medium border border-emerald-200/60">
+                  Advisor: {agents.find(a => a._id === agentFilter)?.name || agentFilter}
+                  <button onClick={() => updateURLParams({ agent: 'all', page: '1' })}>
+                    <X className="w-3 h-3 hover:text-[#D7242A]" />
+                  </button>
+                </span>
+              )}
+
+              {(dateFrom || dateTo) && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-50 text-amber-700 font-medium border border-amber-200/60">
+                  Date: {dateFrom || 'Start'} to {dateTo || 'End'}
+                  <button onClick={() => updateURLParams({ dateFrom: '', dateTo: '', page: '1' })}>
+                    <X className="w-3 h-3 hover:text-[#D7242A]" />
+                  </button>
+                </span>
+              )}
+
+              <button
+                onClick={() => {
+                  setSearchInput('');
+                  router.replace('/admin/crm/leads', { scroll: false });
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline ml-auto"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset All</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Results Counter Bar */}
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <div className="font-medium">
+            Showing <span className="font-bold text-slate-800">{leads.length === 0 ? 0 : ((currentPage - 1) * 30) + 1}</span> to{' '}
+            <span className="font-bold text-slate-800">{Math.min(currentPage * 30, totalCount)}</span> of{' '}
+            <span className="font-bold text-slate-900">{totalCount}</span> total leads
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Real-time database sync</span>
           </div>
         </div>
 
-        {/* Pagination Info */}
-        {totalCount > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>
-                Showing {((currentPage - 1) * 30) + 1} to {Math.min(currentPage * 30, totalCount)} of {totalCount} leads
-              </span>
+        {/* Main CRM Leads Data Table */}
+        {loading ? (
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-16 flex flex-col items-center justify-center">
+            <div className="relative w-14 h-14 mb-4">
+              <div className="absolute inset-0 rounded-full border-2 border-[#D7242A]/20"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-t-[#D7242A] animate-spin"></div>
             </div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Loading Pipeline Data...</p>
           </div>
-        )}
-
-        {/* Leads Table */}
-        {leads.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+        ) : error ? (
+          <div className="bg-white rounded-3xl border border-rose-200 p-12 text-center shadow-sm">
+            <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-rose-900 mb-1">Error Loading Pipeline</h3>
+            <p className="text-xs text-slate-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-[#D7242A] text-white text-xs font-bold rounded-xl hover:bg-[#b8181e] transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        ) : leads.length === 0 ? (
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-16 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+              <Users className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No leads found</h3>
-            <p className="text-gray-600">
-              {searchTerm ? 'Try adjusting your search criteria.' : 'No leads have been captured yet.'}
+            <h3 className="text-lg font-bold text-slate-900 mb-1">No Leads Found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6">
+              {hasActiveFilters
+                ? 'No prospects match your current search or filter criteria. Try loosening your filters.'
+                : 'Your sales pipeline is empty. Start capturing leads via public property portals or add manual leads.'}
             </p>
+            {hasActiveFilters ? (
+              <button
+                onClick={() => {
+                  setSearchInput('');
+                  router.replace('/admin/crm/leads', { scroll: false });
+                }}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2 rounded-xl bg-[#D7242A] hover:bg-[#b8181e] text-white text-xs font-bold transition-colors inline-flex items-center gap-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Add First Lead</span>
+              </button>
+            )}
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div>
-              <table className="w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Lead Information
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Interested Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Source
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Assigned To
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date Added
-                    </th>
-                    {isAdmin && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    )}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left divide-y divide-slate-100 text-sm">
+                <thead>
+                  <tr className="bg-slate-50/80 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                    <th className="py-4 px-6">Prospect Details</th>
+                    <th className="py-4 px-4">Contact &amp; Connect</th>
+                    <th className="py-4 px-4">Target Location</th>
+                    <th className="py-4 px-4">Stage &amp; Appointment</th>
+                    <th className="py-4 px-4">Assigned Advisor</th>
+                    <th className="py-4 px-4">Notes &amp; Activity</th>
+                    <th className="py-4 px-4">Added</th>
+                    <th className="py-4 px-6 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {leads.map((lead) => {
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {leads.map((lead, index) => {
                     const isVisited = visitedLeads.has(lead._id);
+                    const statusConfig = getStatusBadgeConfig(lead.status);
+                    const isNearBottom = index >= leads.length - 3 && leads.length > 3;
+                    const popoverPosition = isNearBottom ? "bottom-full mb-2" : "top-full mt-2";
+                    const bridgePosition = isNearBottom 
+                      ? "before:absolute before:-bottom-3 before:left-0 before:w-full before:h-4 before:content-['']" 
+                      : "before:absolute before:-top-3 before:left-0 before:w-full before:h-4 before:content-['']";
+
                     return (
-                    <tr
-                      key={lead._id}
-                      onClick={() => {
-                        // Mark lead as visited
-                        const newVisited = new Set(visitedLeads);
-                        newVisited.add(lead._id);
-                        setVisitedLeads(newVisited);
-                        sessionStorage.setItem('visitedLeads', JSON.stringify([...newVisited]));
+                      <tr
+                        key={lead._id}
+                        onClick={() => onRowNavigate(lead._id)}
+                        className={`group transition-all duration-150 cursor-pointer ${
+                          isVisited
+                            ? 'bg-slate-50/40 hover:bg-slate-100/70 border-l-4 border-l-emerald-500'
+                            : 'hover:bg-slate-50/80 border-l-4 border-l-transparent'
+                        }`}
+                      >
+                        {/* 1. Prospect Info */}
+                        <td className="py-4 px-6 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 text-slate-800 font-black text-xs flex items-center justify-center border border-slate-200 flex-shrink-0 shadow-2xs group-hover:border-[#D7242A]/40 transition-colors">
+                              {lead.name
+                                ?.split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-slate-900 group-hover:text-[#D7242A] transition-colors truncate">
+                                  {lead.name}
+                                </span>
+                                {isVisited && (
+                                  <span title="Viewed in this session">
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] font-mono font-semibold text-slate-400">
+                                  #{lead._id.slice(-6).toUpperCase()}
+                                </span>
+                                <span className="text-slate-300">•</span>
+                                <span className="text-[10px] text-slate-400 capitalize">
+                                  {lead.source || 'Website'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
 
-                        // Build URL with current filter/sort params
-                        const params = new URLSearchParams({
-                          sortBy,
-                          sortOrder,
-                          page: currentPage.toString(),
-                          ...(searchTerm && { search: searchTerm }),
-                          ...(statusFilter !== 'all' && { status: statusFilter }),
-                          ...(dateFrom && { dateFrom }),
-                          ...(dateTo && { dateTo })
-                        });
-                        window.location.href = `/admin/crm/leads/${lead._id}?${params.toString()}`;
-                      }}
-                      className={`hover:bg-indigo-50 transition-colors duration-200 cursor-pointer ${
-                        isVisited ? 'bg-green-50 border-l-4 border-green-400' : ''
-                      }`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                              <span className="text-indigo-600 font-medium text-sm">
-                                {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{lead.name}</div>
-                            <div className="text-sm text-gray-500">ID: {lead._id.slice(-6)}</div>
-                            <div className="text-xs text-gray-500">
-                              {lead.assignedTo ? (
-                                <span className="text-green-600">Assigned to: {lead.assignedTo.name}</span>
-                              ) : (
-                                <span className="text-orange-600">Not Assigned</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          <div className="flex items-center mb-1">
-                            <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <a href={`tel:${lead.phone}`} className="text-indigo-600 hover:text-indigo-900">
-                              {lead.phone}
-                            </a>
-                          </div>
-                          {lead.email && (
-                            <div className="flex items-center">
-                              <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              <a href={`mailto:${lead.email}`} className="text-indigo-600 hover:text-indigo-900 text-sm">
-                                {lead.email}
+                        {/* 2. Quick Contact & Direct Action */}
+                        <td className="py-4 px-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-2">
+                            {lead.phone && (
+                              <a
+                                href={`tel:${lead.phone}`}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                                title={`Call ${lead.phone}`}
+                              >
+                                <Phone className="w-3 h-3" />
+                                <span className="tabular-nums">{lead.phone}</span>
                               </a>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {getLocationDisplayName(lead.interestedLocation || 'Unknown')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          {lead.source || 'website'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap relative">
-                        <div className="group relative">
-                          <div className="flex flex-col gap-1">
-                            <span className={`justify-center inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${getStatusColor(lead.status || 'new')}`}>
-                              {formatStatusText(lead.status || 'new')}
-                            </span>
-                            {lead.substatus && (
-                              <span className="text-xs text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full max-w-fit">
-                                {formatSubstatusText(lead.substatus)}
-                              </span>
                             )}
-                            {lead.siteVisitDate && (
-                              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full max-w-fit">
-                                Visit: {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                              </span>
+                            {lead.phone && (
+                              <a
+                                href={`https://wa.me/91${lead.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${lead.name}, regarding your real estate inquiry with A4 Realty...`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                                title="Chat on WhatsApp"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </a>
                             )}
-                            {lead.followUpDate && (
-                              <span className="text-xs text-cyan-600 bg-cyan-100 px-2 py-0.5 rounded-full max-w-fit">
-                                Follow-up: {new Date(lead.followUpDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                              </span>
+                            {lead.email && (
+                              <a
+                                href={`mailto:${lead.email}`}
+                                className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                title={lead.email}
+                              >
+                                <Mail className="w-4 h-4" />
+                              </a>
                             )}
                           </div>
-                          {lead.notes && lead.notes.length > 0 && (
-                            <span className="ml-2 inline-flex items-center justify-center w-4 h-4 text-xs bg-indigo-100 text-indigo-600 rounded-full cursor-pointer">
-                              {lead.notes.length}
+                        </td>
+
+                        {/* 3. Target Location */}
+                        <td className="py-4 px-4 whitespace-nowrap text-xs text-slate-600">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 font-medium max-w-[180px] truncate">
+                            <MapPin className="w-3 h-3 text-[#D7242A] flex-shrink-0" />
+                            <span className="truncate">
+                              {getLocationDisplayName(lead.interestedLocation || 'Bangalore')}
                             </span>
-                          )}
-                          {(lead.notes && lead.notes.length > 0) || lead.followUpDate || lead.siteVisitDate || (lead.followUpHistory && lead.followUpHistory.length > 0) || (lead.visitHistory && lead.visitHistory.length > 0) ? (
-                             <div className="invisible group-hover:visible absolute z-50 left-0 top-8 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-64 overflow-y-auto">
-                              {/* Current Follow-up */}
-                              {lead.followUpDate && (
-                                <div className="mb-3 p-2 bg-cyan-50 border-l-2 border-cyan-400 rounded">
-                                  <div className="text-xs font-semibold text-cyan-800">📅 Next Follow-up</div>
-                                  <div className="text-sm text-cyan-700 mt-1">
-                                    {new Date(lead.followUpDate).toLocaleDateString('en-IN', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
+                          </div>
+                        </td>
+
+                        {/* 4. Pipeline Stage & Schedule - ON HOVER INTEL */}
+                        <td className="py-4 px-4 whitespace-nowrap relative group/stage" onClick={(e) => e.stopPropagation()}>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${statusConfig.bg}`}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`}></span>
+                                {statusConfig.label}
+                              </span>
+                              {lead.notes && lead.notes.length > 0 && (
+                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-[#D7242A]/10 text-[#D7242A] rounded-full border border-[#D7242A]/20">
+                                  {lead.notes.length}
+                                </span>
+                              )}
+                            </div>
+
+                            {lead.substatus && (
+                              <div className="text-[10px] font-medium text-slate-500 pl-1">
+                                ↳ {formatSubstatusText(lead.substatus)}
+                              </div>
+                            )}
+
+                            {lead.siteVisitDate && (
+                              <div className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-700 bg-violet-50 border border-violet-200/80 px-2 py-0.5 rounded-md">
+                                <CalendarCheck className="w-3 h-3" />
+                                <span>
+                                  Visit:{' '}
+                                  {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                            )}
+
+                            {lead.followUpDate && !lead.siteVisitDate && (
+                              <div className="inline-flex items-center gap-1 text-[10px] font-bold text-cyan-700 bg-cyan-50 border border-cyan-200/80 px-2 py-0.5 rounded-md">
+                                <Clock className="w-3 h-3" />
+                                <span>
+                                  Follow-up:{' '}
+                                  {new Date(lead.followUpDate).toLocaleDateString('en-IN', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* On-Hover Notes & Schedule Popover from Stage Column */}
+                          {((lead.notes && lead.notes.length > 0) || lead.followUpDate || lead.siteVisitDate || (lead.followUpHistory && lead.followUpHistory.length > 0) || (lead.visitHistory && lead.visitHistory.length > 0)) && (
+                            <div
+                              className={`invisible opacity-0 group-hover/stage:visible group-hover/stage:opacity-100 transition-all duration-200 absolute left-0 ${popoverPosition} w-80 sm:w-88 bg-white/98 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4.5 z-50 pointer-events-auto text-left whitespace-normal ${bridgePosition}`}
+                            >
+                              <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-lg bg-[#D7242A]/10 text-[#D7242A] flex items-center justify-center font-bold">
+                                    <FileText className="w-3.5 h-3.5" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-xs font-bold text-slate-900 tracking-tight">Stage & Notes Intel</h4>
+                                    <p className="text-[10px] text-slate-400 truncate max-w-[160px]">{lead.name}</p>
                                   </div>
                                 </div>
-                              )}
+                                {lead.notes && lead.notes.length > 0 && (
+                                  <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                                    {lead.notes.length} {lead.notes.length === 1 ? 'Note' : 'Notes'}
+                                  </span>
+                                )}
+                              </div>
 
-                              {/* Follow-up History */}
-                              {lead.followUpHistory && lead.followUpHistory.length > 0 && (
-                                <div className="mb-3">
-                                  <div className="text-xs font-semibold text-gray-600 mb-2">Follow-up History</div>
-                                  <div className="space-y-2">
-                                    {lead.followUpHistory.slice().reverse().slice(0, 3).map((followUp, index) => (
-                                      <div key={index} className="text-xs p-2 bg-gray-50 border-l-2 border-gray-300 rounded">
-                                        <div className="text-gray-700">
-                                          {new Date(followUp.scheduledDate).toLocaleDateString('en-IN', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                          })}
-                                        </div>
-                                        {followUp.notes && (
-                                          <div className="text-gray-500 mt-1">{followUp.notes}</div>
-                                        )}
-                                        <div className="text-gray-400 mt-1">
-                                          {followUp.completed ? '✓ Completed' : 'Scheduled'} • {formatDate(followUp.addedAt).split(',')[0]}
-                                        </div>
-                                      </div>
-                                    ))}
+                              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                                {/* Next Scheduled Follow-up */}
+                                {lead.followUpDate && (
+                                  <div className="p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs">
+                                    <div className="font-bold text-amber-900 flex items-center gap-1.5 mb-0.5">
+                                      <Clock className="w-3.5 h-3.5 text-amber-700" />
+                                      <span>Next Scheduled Follow-up</span>
+                                    </div>
+                                    <div className="text-amber-800 font-medium">
+                                      {new Date(lead.followUpDate).toLocaleDateString('en-IN', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {/* Current Site Visit */}
-                              {lead.siteVisitDate && (
-                                <div className="mb-3 p-2 bg-blue-50 border-l-2 border-blue-400 rounded">
-                                  <div className="text-xs font-semibold text-blue-800">🏠 Next Site Visit</div>
-                                  <div className="text-sm text-blue-700 mt-1">
-                                    {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
+                                {/* Next Site Visit */}
+                                {lead.siteVisitDate && (
+                                  <div className="p-2.5 bg-violet-50/80 border border-violet-200/80 rounded-xl text-xs">
+                                    <div className="font-bold text-violet-900 flex items-center gap-1.5 mb-0.5">
+                                      <CalendarCheck className="w-3.5 h-3.5 text-violet-700" />
+                                      <span>Scheduled Site Tour</span>
+                                    </div>
+                                    <div className="text-violet-800 font-medium">
+                                      {new Date(lead.siteVisitDate).toLocaleDateString('en-IN', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {/* Visit History */}
-                              {lead.visitHistory && lead.visitHistory.length > 0 && (
-                                <div className="mb-3">
-                                  <div className="text-xs font-semibold text-gray-600 mb-2">Visit History</div>
-                                  <div className="space-y-2">
-                                    {lead.visitHistory.slice().reverse().slice(0, 3).map((visit, index) => (
-                                      <div key={index} className="text-xs p-2 bg-gray-50 border-l-2 border-gray-300 rounded">
-                                        <div className="text-gray-700">
+                                {/* Visit History */}
+                                {lead.visitHistory && lead.visitHistory.length > 0 && (
+                                  <div className="space-y-1.5">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                      Tour History ({lead.visitHistory.length})
+                                    </div>
+                                    {lead.visitHistory.slice().reverse().slice(0, 2).map((visit, idx) => (
+                                      <div key={idx} className="p-2 bg-slate-50 border border-slate-100 rounded-lg text-xs">
+                                        <div className="font-semibold text-slate-700">
                                           {new Date(visit.scheduledDate).toLocaleDateString('en-IN', {
                                             day: '2-digit',
                                             month: 'short',
@@ -1021,191 +1323,253 @@ export default function CRMLeadsPage() {
                                             minute: '2-digit'
                                           })}
                                         </div>
-                                        {visit.reason && (
-                                          <div className="text-gray-500 mt-1">{visit.reason}</div>
+                                        {visit.reason && <div className="text-slate-500 text-[11px] mt-0.5">{visit.reason}</div>}
+                                        {visit.rescheduleReason && (
+                                          <div className="text-amber-600 text-[11px] mt-0.5">Rescheduled: {visit.rescheduleReason}</div>
                                         )}
-                                        <div className="text-gray-400 mt-1">
+                                        <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
                                           {visit.type === 'completed' ? '✓ Completed' : visit.type === 'rescheduled' ? '↻ Rescheduled' : 'Scheduled'}
                                         </div>
                                       </div>
                                     ))}
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {/* Notes */}
-                              {lead.notes && lead.notes.length > 0 && (
-                                <>
-                                  <div className="text-sm font-semibold text-gray-900 mb-2">Notes ({lead.notes.length})</div>
-                                  <div className="space-y-3">
-                                    {lead.notes.slice().reverse().map((note, index) => (
-                                      <div key={index} className="border-l-2 border-indigo-200 pl-3">
-                                        <div className="text-sm text-gray-700">{note.content}</div>
-                                        <div className="text-xs text-gray-500 mt-1">
-                                          {formatDate(note.addedAt)} • {note.addedBy}
-                                        </div>
+                                {/* Conversation Notes */}
+                                {lead.notes && lead.notes.length > 0 && (
+                                  <div className="space-y-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                      Conversation Notes ({lead.notes.length})
+                                    </div>
+                                    {lead.notes.slice().reverse().map((note, idx) => (
+                                      <div key={idx} className="text-xs p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/70 border-l-3 border-l-[#D7242A]">
+                                        <p className="text-slate-800 font-medium leading-relaxed">{note.content}</p>
+                                        <p className="text-[10px] text-slate-400 mt-1.5 font-medium flex items-center justify-between">
+                                          <span>{note.addedBy || 'Advisor'}</span>
+                                          <span>{formatDate(note.addedAt)}</span>
+                                        </p>
                                       </div>
                                     ))}
                                   </div>
-                                </>
-                              )}
-                            </div>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {lead.assignedTo ? (
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-8 w-8">
-                              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                                <span className="text-green-700 font-medium text-xs">
-                                  {lead.assignedTo.name?.charAt(0)?.toUpperCase() || 'A'}
+                                )}
+                              </div>
+
+                              <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                                <span className="text-slate-400">Hovering reveals intel</span>
+                                <span
+                                  onClick={() => onRowNavigate(lead._id)}
+                                  className="text-[#D7242A] font-bold hover:underline cursor-pointer"
+                                >
+                                  Open Dossier →
                                 </span>
                               </div>
                             </div>
-                            <div className="ml-2">
-                              <div className="text-sm font-medium text-gray-900">{lead.assignedTo.name || 'Unknown'}</div>
-                              <div className="text-xs text-gray-500">{lead.assignedTo.email || ''}</div>
+                          )}
+                        </td>
+
+                        {/* 5. Assigned Advisor */}
+                        <td className="py-4 px-4 whitespace-nowrap text-xs">
+                          {lead.assignedTo ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center justify-center border border-emerald-200">
+                                {lead.assignedTo.name?.charAt(0)?.toUpperCase() || 'A'}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-800 truncate">{lead.assignedTo.name}</p>
+                                <p className="text-[10px] text-slate-400 truncate">{lead.assignedTo.email || ''}</p>
+                              </div>
                             </div>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/80">
+                              Unassigned
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 6. Notes & Intel - ON HOVER NOTES */}
+                        <td className="py-4 px-4 whitespace-nowrap relative" onClick={(e) => e.stopPropagation()}>
+                          <div className="relative group/notes inline-block">
+                            {lead.notes && lead.notes.length > 0 ? (
+                              <button
+                                onClick={() => setActiveNotesPopover(activeNotesPopover === lead._id ? null : lead._id)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 group-hover/notes:bg-rose-50 group-hover/notes:text-[#D7242A] text-slate-700 transition-colors cursor-pointer"
+                              >
+                                <FileText className="w-3.5 h-3.5 text-slate-500 group-hover/notes:text-[#D7242A]" />
+                                <span>{lead.notes.length} {lead.notes.length === 1 ? 'Note' : 'Notes'}</span>
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-400 font-normal">No notes</span>
+                            )}
+
+                            {/* Notes Popover - Automatically visible ON HOVER OR when clicked */}
+                            {lead.notes && lead.notes.length > 0 && (
+                              <div
+                                className={`invisible opacity-0 group-hover/notes:visible group-hover/notes:opacity-100 transition-all duration-200 absolute right-0 ${popoverPosition} w-80 sm:w-88 bg-white/98 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4.5 z-50 pointer-events-auto text-left whitespace-normal ${bridgePosition} ${
+                                  activeNotesPopover === lead._id ? '!visible !opacity-100' : ''
+                                }`}
+                              >
+                                <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-lg bg-[#D7242A]/10 text-[#D7242A] flex items-center justify-center font-bold">
+                                      <FileText className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xs font-bold text-slate-900 tracking-tight">Lead Notes History</h4>
+                                      <p className="text-[10px] text-slate-400 truncate max-w-[160px]">{lead.name}</p>
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                                    {lead.notes.length} {lead.notes.length === 1 ? 'Note' : 'Notes'}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                  {lead.notes.slice().reverse().map((note, idx) => (
+                                    <div key={idx} className="text-xs p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/70 border-l-3 border-l-[#D7242A]">
+                                      <p className="text-slate-800 font-medium leading-relaxed">{note.content}</p>
+                                      <p className="text-[10px] text-slate-400 mt-1.5 font-medium flex items-center justify-between">
+                                        <span>{note.addedBy || 'Advisor'}</span>
+                                        <span>{formatDate(note.addedAt)}</span>
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                                  <span className="text-slate-400">Hovering reveals notes</span>
+                                  <span
+                                    onClick={() => onRowNavigate(lead._id)}
+                                    className="text-[#D7242A] font-bold hover:underline cursor-pointer"
+                                  >
+                                    Open Dossier →
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            Unassigned
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(lead.createdAt)}
-                      </td>
-                      {isAdmin && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex items-center space-x-2">
+                        </td>
+
+                        {/* 7. Date Added */}
+                        <td className="py-4 px-4 whitespace-nowrap text-xs text-slate-500">
+                          <div>{formatRelativeTime(lead.createdAt)}</div>
+                          <div className="text-[10px] text-slate-400 font-normal">
+                            {formatDate(lead.createdAt).split(',')[0]}
+                          </div>
+                        </td>
+
+                        {/* 8. Row Action Suite */}
+                        <td className="py-4 px-6 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="inline-flex items-center gap-1.5">
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => handleEditClick(e, lead)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-[#D7242A] hover:bg-slate-100 transition-colors"
+                                title="Edit Lead"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                            )}
+
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => handleDeleteClick(e, lead._id)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                title="Delete Lead"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+
                             <button
-                              onClick={(e) => handleEditClick(e, lead)}
-                              className="text-indigo-600 hover:text-indigo-900 transition-colors p-1 hover:bg-indigo-50 rounded"
-                              title="Edit lead"
+                              onClick={() => onRowNavigate(lead._id)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                              title="View Complete Lead Profile"
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={(e) => handleDeleteClick(e, lead._id)}
-                              className="text-red-600 hover:text-red-900 transition-colors p-1 hover:bg-red-50 rounded"
-                              title="Delete lead"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                              <ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
-                      )}
-                    </tr>
+                      </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination Suite */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  {/* Previous Button */}
-                  <button
-                    onClick={() => updateURLParams({ page: Math.max(1, currentPage - 1).toString() }, true)}
-                    disabled={currentPage === 1}
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Previous
-                  </button>
+              <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <button
+                  onClick={() => updateURLParams({ page: Math.max(1, currentPage - 1).toString() }, true)}
+                  disabled={currentPage === 1}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </button>
 
-                  {/* Page Numbers */}
-                  <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap justify-center">
-                    {(() => {
-                      const pages = [];
-                      const maxVisiblePages = 7;
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1 flex-wrap justify-center">
+                  {(() => {
+                    const pages = [];
+                    const maxVisible = 7;
 
-                      if (totalPages <= maxVisiblePages) {
-                        // Show all pages if total is less than max
-                        for (let i = 1; i <= totalPages; i++) {
-                          pages.push(i);
-                        }
-                      } else {
-                        // Show first page
-                        pages.push(1);
+                    if (totalPages <= maxVisible) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i);
+                    } else {
+                      pages.push(1);
+                      let start = Math.max(2, currentPage - 1);
+                      let end = Math.min(totalPages - 1, currentPage + 1);
 
-                        // Calculate range around current page
-                        let startPage = Math.max(2, currentPage - 1);
-                        let endPage = Math.min(totalPages - 1, currentPage + 1);
-
-                        // Adjust if we're near the start
-                        if (currentPage <= 3) {
-                          startPage = 2;
-                          endPage = 5;
-                        }
-
-                        // Adjust if we're near the end
-                        if (currentPage >= totalPages - 2) {
-                          startPage = totalPages - 4;
-                          endPage = totalPages - 1;
-                        }
-
-                        // Add ellipsis after first page if needed
-                        if (startPage > 2) {
-                          pages.push('...');
-                        }
-
-                        // Add middle pages
-                        for (let i = startPage; i <= endPage; i++) {
-                          pages.push(i);
-                        }
-
-                        // Add ellipsis before last page if needed
-                        if (endPage < totalPages - 1) {
-                          pages.push('...');
-                        }
-
-                        // Show last page
-                        pages.push(totalPages);
+                      if (currentPage <= 3) {
+                        start = 2;
+                        end = 5;
+                      }
+                      if (currentPage >= totalPages - 2) {
+                        start = totalPages - 4;
+                        end = totalPages - 1;
                       }
 
-                      return pages.map((page, index) => {
-                        if (page === '...') {
-                          return (
-                            <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
-                              ...
-                            </span>
-                          );
-                        }
+                      if (start > 2) pages.push('...');
+                      for (let i = start; i <= end; i++) pages.push(i);
+                      if (end < totalPages - 1) pages.push('...');
+                      pages.push(totalPages);
+                    }
 
+                    return pages.map((page, idx) => {
+                      if (page === '...') {
                         return (
-                          <button
-                            key={page}
-                            onClick={() => updateURLParams({ page: page.toString() }, true)}
-                            className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              currentPage === page
-                                ? 'bg-indigo-600 text-white'
-                                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                            }`}
-                          >
-                            {page}
-                          </button>
+                          <span key={`ellipsis-${idx}`} className="px-2.5 py-1 text-xs text-slate-400">
+                            …
+                          </span>
                         );
-                      });
-                    })()}
-                  </div>
+                      }
 
-                  {/* Next Button */}
-                  <button
-                    onClick={() => updateURLParams({ page: Math.min(totalPages, currentPage + 1).toString() }, true)}
-                    disabled={currentPage === totalPages}
-                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                  </button>
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => updateURLParams({ page: page.toString() }, true)}
+                          className={`w-8 h-8 rounded-xl text-xs font-bold transition-colors ${
+                            currentPage === page
+                              ? 'bg-[#D7242A] text-white shadow-sm shadow-[#D7242A]/20'
+                              : 'text-slate-600 bg-white hover:bg-slate-100 border border-slate-200'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
+
+                <button
+                  onClick={() => updateURLParams({ page: Math.min(totalPages, currentPage + 1).toString() }, true)}
+                  disabled={currentPage === totalPages}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-colors"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
@@ -1214,138 +1578,118 @@ export default function CRMLeadsPage() {
 
       {/* Add New Lead Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative min-h-screen flex items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
-              <div className="bg-green-600 text-white py-4 px-6 rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold flex items-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    Add New Lead
-                  </h2>
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    className="text-white hover:text-gray-200 transition-colors"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-[#0B0F19] to-[#1E293B] text-white p-6 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D7242A] flex items-center justify-center text-white shadow-md shadow-[#D7242A]/30">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Create New Lead</h2>
+                  <p className="text-xs text-slate-400">Capture buyer or investor inquiry details</p>
                 </div>
               </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {addError && (
-                <div className="mx-6 mt-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
-                  <div className="flex items-center">
-                    <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    {addError}
-                  </div>
-                </div>
-              )}
+            {addError && (
+              <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                <span>{addError}</span>
+              </div>
+            )}
 
-              <form onSubmit={handleAddLead} className="p-6 space-y-4 text-black">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name*
-                  </label>
+            <form onSubmit={handleAddLead} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Full Name <span className="text-[#D7242A]">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newLead.name}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="e.g. Vikram Malhotra"
+                  className="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] text-slate-900 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Phone Number (10 Digits) <span className="text-[#D7242A]">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                    +91
+                  </span>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={newLead.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                    placeholder="Enter lead's full name"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number*
-                  </label>
-                  <input
-                    type="text"
-                    id="phone"
                     name="phone"
                     value={newLead.phone}
                     onChange={handleInputChange}
                     required
                     maxLength="10"
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                    placeholder="10-digit phone number"
+                    placeholder="9876543210"
+                    className="w-full pl-12 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] text-slate-900 outline-none font-mono"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={newLead.email}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                    placeholder="Enter email address (optional)"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newLead.email}
+                  onChange={handleInputChange}
+                  placeholder="vikram@example.com"
+                  className="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] text-slate-900 outline-none"
+                />
+              </div>
 
-                <div>
-                  <label htmlFor="interestedLocation" className="block text-sm font-medium text-gray-700 mb-1">
-                    Interested Location*
-                  </label>
-                  <input
-                    type="text"
-                    id="interestedLocation"
-                    name="interestedLocation"
-                    value={newLead.interestedLocation}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 shadow-sm"
-                    placeholder="e.g. Koramangala, BTM Layout, Electronic City"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Interested Location <span className="text-[#D7242A]">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="interestedLocation"
+                  value={newLead.interestedLocation}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="e.g. Koramangala, Indiranagar, Whitefield"
+                  className="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] text-slate-900 outline-none"
+                />
+              </div>
 
-                <div className="flex justify-end space-x-3 pt-4 border-t">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    disabled={addingLead}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={addingLead || !newLead.name || !newLead.phone || !newLead.interestedLocation}
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
-                  >
-                    {addingLead ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        <span>Add Lead</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  disabled={addingLead}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addingLead || !newLead.name || !newLead.phone || !newLead.interestedLocation}
+                  className="px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#D7242A] to-[#B01A20] hover:from-[#e0292f] hover:to-[#99151A] rounded-xl shadow-md shadow-[#D7242A]/25 transition-all disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                >
+                  {addingLead ? 'Adding...' : 'Save Prospect'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

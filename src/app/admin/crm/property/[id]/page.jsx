@@ -3,6 +3,28 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Calendar,
+  Check,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  Sparkles,
+  Camera,
+  Video,
+  Layers,
+  Compass,
+  CheckCircle2,
+  User,
+  Tag,
+  Maximize2,
+  CalendarCheck
+} from 'lucide-react';
 import { formatPrice } from '@/utils/formatPrice';
 import { getEmbedUrl, getVideoPlayerProps } from '@/utils/videoUtils';
 
@@ -15,6 +37,7 @@ export default function AdminPropertyDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeMediaTab, setActiveMediaTab] = useState('images');
   const [user, setUser] = useState(null);
+  const [copiedId, setCopiedId] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
@@ -64,12 +87,19 @@ export default function AdminPropertyDetailPage() {
     });
   };
 
+  const copyPropertyId = () => {
+    if (!property?._id) return;
+    navigator.clipboard.writeText(property._id);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 2000);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading property details...</p>
+          <div className="w-12 h-12 border-3 border-slate-200 border-t-[#D7242A] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Loading Property Portfolio...</p>
         </div>
       </div>
     );
@@ -77,128 +107,149 @@ export default function AdminPropertyDetailPage() {
 
   if (error || !property) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Property</h2>
-            <p className="text-red-600">{error || 'Property not found'}</p>
-            <div className="mt-4 space-x-4">
-              <button 
-                onClick={() => router.back()}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Go Back
-              </button>
-            </div>
+      <div className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-rose-200 shadow-xl text-center">
+          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
+            <Building2 className="w-6 h-6" />
           </div>
+          <h2 className="text-base font-bold text-slate-900 mb-1">Property Not Accessible</h2>
+          <p className="text-xs text-slate-500 mb-6">{error || 'This property profile does not exist or has been removed.'}</p>
+          <button 
+            onClick={() => router.back()}
+            className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            Return to Previous Screen
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Executive Header */}
+      <div className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 md:top-16 z-30 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => router.back()}
-                className="text-indigo-600 hover:text-indigo-800"
+                className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors cursor-pointer"
+                title="Back"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <ArrowLeft className="w-4 h-4" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Property Details</h1>
-                <p className="text-gray-600 mt-1">Complete property information for sales calls</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#D7242A] bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-md">
+                    Sales Match Dossier
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">
+                    #{property._id.slice(-6).toUpperCase()}
+                  </span>
+                </div>
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate max-w-md mt-0.5">
+                  {property.title}
+                </h1>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
-                Admin Only
-              </span>
+
+            <div className="flex items-center space-x-2.5">
               <Link 
                 href="/admin/crm/leads"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
               >
-                Back to CRM
+                Back to Leads
               </Link>
+              <a
+                href={`tel:${property.contactNumber}`}
+                className="px-4 py-2 bg-[#D7242A] hover:bg-[#b51c22] text-white rounded-xl text-xs font-bold shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Call Owner</span>
+              </a>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Section - Media Gallery */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* Left Section - Media Gallery & Property Overview */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
               <div className="p-6">
-                {/* Property Title and Price */}
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
-                    <div className="flex items-center text-lg text-gray-600">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      {property.location}
+                {/* Title and Price Header */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                      {property.title}
+                    </h2>
+                    <div className="flex items-center text-sm font-medium text-slate-600 gap-1.5">
+                      <MapPin className="w-4 h-4 text-[#D7242A] flex-shrink-0" />
+                      <span>{property.location}</span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-indigo-600">{formatPrice(property.price)}</div>
-                    <div className="text-sm text-gray-500">{property.mode === 'rent' ? 'per month' : ''}</div>
+                  <div className="sm:text-right">
+                    <div className="text-2xl sm:text-3xl font-black text-[#D7242A] tracking-tight">
+                      {formatPrice(property.price)}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-0.5">
+                      {property.mode === 'rent' ? 'Per Month' : 'Total Valuation'}
+                    </div>
                   </div>
                 </div>
 
-                {/* Property Tags */}
+                {/* Property Feature Badges */}
                 <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-full capitalize">
+                  <span className="px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded-lg capitalize">
                     {property.type}
                   </span>
                   {property.bhk && property.bhk !== 'na' && (
-                    <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                    <span className="px-3 py-1 bg-rose-50 border border-rose-100 text-[#D7242A] text-xs font-bold rounded-lg">
                       {property.bhk.toUpperCase()}
                     </span>
                   )}
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full capitalize">
+                  <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg capitalize">
                     For {property.mode}
                   </span>
                   {property.furnishingStatus && (
-                    <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full capitalize">
+                    <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg capitalize">
                       {property.furnishingStatus.replace('-', ' ')}
                     </span>
                   )}
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-bold rounded-lg inline-flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Verified Inventory
+                  </span>
                 </div>
 
                 {/* Media Gallery */}
                 <div className="space-y-4">
                   {/* Media Tabs */}
-                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                  <div className="flex p-1 bg-slate-100 rounded-xl gap-1">
                     <button
                       onClick={() => setActiveMediaTab('images')}
-                      className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         activeMediaTab === 'images'
-                          ? 'bg-white text-indigo-700 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white text-slate-900 shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      📸 Images ({property.gallery?.length || 0})
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Photography ({property.gallery?.length || 0})</span>
                     </button>
                     {property.videos && property.videos.length > 0 && (
                       <button
                         onClick={() => setActiveMediaTab('videos')}
-                        className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           activeMediaTab === 'videos'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900'
+                            ? 'bg-white text-slate-900 shadow-2xs'
+                            : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        🎬 Videos ({property.videos.length})
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Video Tours ({property.videos.length})</span>
                       </button>
                     )}
                   </div>
@@ -206,32 +257,34 @@ export default function AdminPropertyDetailPage() {
                   {/* Images Tab */}
                   {activeMediaTab === 'images' && property.gallery && property.gallery.length > 0 && (
                     <div>
-                      {/* Main Image */}
-                      <div className="relative mb-4">
+                      {/* Main Featured Image */}
+                      <div className="relative mb-3 aspect-video sm:h-96 w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-inner">
                         <img
                           src={property.gallery[selectedImageIndex]}
                           alt={property.title}
-                          className="w-full h-96 object-cover rounded-lg"
+                          className="w-full h-full object-cover"
                         />
-                        <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                        <div className="absolute bottom-3 right-3 bg-slate-950/70 backdrop-blur-xs text-white px-3 py-1 rounded-full text-xs font-bold">
                           {selectedImageIndex + 1} / {property.gallery.length}
                         </div>
                       </div>
                       
-                      {/* Image Thumbnails */}
-                      <div className="grid grid-cols-6 gap-2">
+                      {/* Image Thumbnails Carousel */}
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                         {property.gallery.map((image, index) => (
                           <button
                             key={index}
                             onClick={() => setSelectedImageIndex(index)}
-                            className={`relative rounded-lg overflow-hidden border-2 ${
-                              selectedImageIndex === index ? 'border-indigo-500' : 'border-gray-200'
+                            className={`relative rounded-xl overflow-hidden aspect-video border-2 transition-all cursor-pointer ${
+                              selectedImageIndex === index 
+                                ? 'border-[#D7242A] shadow-xs scale-98' 
+                                : 'border-transparent opacity-70 hover:opacity-100'
                             }`}
                           >
                             <img
                               src={image}
                               alt={`${property.title} ${index + 1}`}
-                              className="w-full h-16 object-cover"
+                              className="w-full h-full object-cover"
                             />
                           </button>
                         ))}
@@ -246,11 +299,11 @@ export default function AdminPropertyDetailPage() {
                         const embedUrl = getEmbedUrl(videoUrl);
                         if (embedUrl) {
                           return (
-                            <div key={index} className="relative">
+                            <div key={index} className="aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 bg-black">
                               <iframe
                                 src={embedUrl}
-                                title={`Video ${index + 1}`}
-                                className="w-full h-64 rounded-lg"
+                                title={`Property Video ${index + 1}`}
+                                className="w-full h-full"
                                 frameBorder="0"
                                 allowFullScreen
                               ></iframe>
@@ -258,15 +311,16 @@ export default function AdminPropertyDetailPage() {
                           );
                         }
                         return (
-                          <div key={index} className="bg-gray-100 rounded-lg p-4 text-center">
-                            <p className="text-gray-600">Unable to embed video</p>
+                          <div key={index} className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center">
+                            <p className="text-xs font-semibold text-slate-600 mb-2">Video source external link</p>
                             <a 
                               href={videoUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-indigo-600 hover:text-indigo-800 underline"
+                              className="inline-flex items-center gap-1 text-xs font-bold text-[#D7242A] hover:underline"
                             >
-                              View Video
+                              <span>Open Video in New Tab</span>
+                              <ExternalLink className="w-3 h-3" />
                             </a>
                           </div>
                         );
@@ -276,116 +330,145 @@ export default function AdminPropertyDetailPage() {
                 </div>
 
                 {/* Property Description */}
-                <div className="mt-6 pt-6 border-t">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-                  <p className="text-gray-600 leading-relaxed">{property.description}</p>
+                <div className="mt-8 pt-6 border-t border-slate-100">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    Property Description & Narrative
+                  </h3>
+                  <p className="text-sm text-slate-700 leading-relaxed font-medium whitespace-pre-line">
+                    {property.description}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Section - Detailed Property Information */}
+          {/* Right Section - CRM Sales & Technical Dossier */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Critical Sales Information */}
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-              <h3 className="text-lg font-bold text-red-800 mb-3 flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                Contact Information
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Contact Number:</span>
-                  <a href={`tel:${property.contactNumber}`} className="font-bold text-red-800 hover:text-red-900">
-                    {property.contactNumber}
-                  </a>
+            {/* Critical Sales Contact Card */}
+            <div className="bg-[#0B0F19] text-white rounded-2xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#D7242A]/10 rounded-full blur-2xl"></div>
+              <div className="relative">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#D7242A] bg-[#D7242A]/10 px-2.5 py-1 rounded-md border border-[#D7242A]/20">
+                    Direct Owner Contact
+                  </span>
+                  <button
+                    onClick={copyPropertyId}
+                    className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                    title="Copy Property ID"
+                  >
+                    {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span className="font-mono text-[11px]">#{property._id.slice(-6).toUpperCase()}</span>
+                  </button>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Property ID:</span>
-                  <span className="font-medium text-gray-900">{property._id.slice(-8)}</span>
+
+                <div className="mb-5">
+                  <div className="text-xs text-slate-400 font-medium mb-1">Owner / Rep Phone</div>
+                  <div className="text-xl font-bold tracking-tight text-white font-mono">
+                    {property.contactNumber || 'Not available'}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${property.contactNumber}`}
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#D7242A] hover:bg-[#b51c22] text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Call Now</span>
+                  </a>
+                  <a
+                    href={`https://wa.me/${property.contactNumber?.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
                 </div>
               </div>
             </div>
 
             {/* Property Specifications */}
-            <div className="bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h3>
-              <div className="space-y-3 text-black">
-                {property.yearBuilt && ( 
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Year Built:</span>
-                    <span className="font-medium">{property.yearBuilt}</span>
-                  </div>
-                )}
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+                Technical Specifications
+              </h3>
+              <div className="divide-y divide-slate-100 text-xs font-medium">
                 {property.squareFootage && (
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Square Footage:</span>
-                    <span className="font-medium">{property.squareFootage} sq ft</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Super Built-up Area:</span>
+                    <span className="font-bold text-slate-900">{property.squareFootage} sq ft</span>
                   </div>
                 )}
                 {property.lotSize && (
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Lot Size:</span>
-                    <span className="font-medium">{property.lotSize}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Plot / Lot Size:</span>
+                    <span className="font-bold text-slate-900">{property.lotSize}</span>
                   </div>
                 )}
                 {property.propertyCondition && (
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Condition:</span>
-                    <span className="font-medium capitalize">{property.propertyCondition.replace('-', ' ')}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Condition:</span>
+                    <span className="font-bold text-slate-900 capitalize">{property.propertyCondition.replace('-', ' ')}</span>
                   </div>
                 )}
                 {property.parkingSpaces && (
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Parking Spaces:</span>
-                    <span className="font-medium">{property.parkingSpaces}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Parking Capacity:</span>
+                    <span className="font-bold text-slate-900">{property.parkingSpaces} Vehicle(s)</span>
                   </div>
                 )}
                 {property.floorNumber && (
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Floor:</span>
-                    <span className="font-medium">{property.floorNumber}{property.totalFloors ? ` of ${property.totalFloors}` : ''}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Floor Level:</span>
+                    <span className="font-bold text-slate-900">
+                      Floor {property.floorNumber}{property.totalFloors ? ` of ${property.totalFloors}` : ''}
+                    </span>
+                  </div>
+                )}
+                {property.yearBuilt && (
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Year Built / Delivered:</span>
+                    <span className="font-bold text-slate-900">{property.yearBuilt}</span>
                   </div>
                 )}
                 {property.availabilityDate && (
-                  <div className="flex justify-between py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Available From:</span>
-                    <span className="font-medium">{formatDate(property.availabilityDate)}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Available From:</span>
+                    <span className="font-bold text-slate-900">{formatDate(property.availabilityDate)}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Financial Information */}
-            <div className="bg-green-50 rounded-lg shadow-sm p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Financial Details
+            {/* Financial Details */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+                Financial Architecture
               </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between py-2 border-b border-green-100">
-                  <span className="text-sm text-gray-600">Listing Price:</span>
-                  <span className="font-bold text-green-700">{formatPrice(property.price)}</span>
+              <div className="divide-y divide-slate-100 text-xs font-medium">
+                <div className="flex justify-between py-2.5">
+                  <span className="text-slate-500">Base Listing Price:</span>
+                  <span className="font-bold text-[#D7242A]">{formatPrice(property.price)}</span>
                 </div>
                 {property.hoa && (
-                  <div className="flex justify-between py-2 border-b border-green-100">
-                    <span className="text-sm text-gray-600">HOA/Maintenance:</span>
-                    <span className="font-medium">{property.hoa}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Maintenance / HOA:</span>
+                    <span className="font-bold text-slate-900">{property.hoa}</span>
                   </div>
                 )}
                 {property.propertyTax && (
-                  <div className="flex justify-between py-2 border-b border-green-100">
-                    <span className="text-sm text-gray-600">Property Tax:</span>
-                    <span className="font-medium">{property.propertyTax}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">Annual Property Tax:</span>
+                    <span className="font-bold text-slate-900">{property.propertyTax}</span>
                   </div>
                 )}
                 {property.schoolDistrict && (
-                  <div className="flex justify-between py-2 border-b border-green-100">
-                    <span className="text-sm text-gray-600">School District:</span>
-                    <span className="font-medium">{property.schoolDistrict}</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="text-slate-500">School Zone / District:</span>
+                    <span className="font-bold text-slate-900">{property.schoolDistrict}</span>
                   </div>
                 )}
               </div>
@@ -393,69 +476,55 @@ export default function AdminPropertyDetailPage() {
 
             {/* Amenities */}
             {property.amenities && property.amenities.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Property Amenities</h3>
-                <div className="flex flex-wrap gap-2">
-                  {property.amenities.map((amenity, index) => (
-                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Nearby Amenities */}
-            {property.nearbyAmenities && property.nearbyAmenities.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Nearby Amenities</h3>
-                <div className="flex flex-wrap gap-2">
-                  {property.nearbyAmenities.map((amenity, index) => (
-                    <span key={index} className="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full">
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* CRM Nearby Locations */}
-            {property.nearbyLocations && property.nearbyLocations.length > 0 && (
-              <div className="bg-purple-50 rounded-lg shadow-sm p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Also Serves Areas
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                  In-House Amenities ({property.amenities.length})
                 </h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {property.amenities.map((amenity, index) => (
+                    <span key={index} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg">
+                      {amenity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Corridors Served */}
+            {property.nearbyLocations && property.nearbyLocations.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Compass className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Adjacent Micro-Markets Served
+                  </h3>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {property.nearbyLocations.map((location, index) => (
-                    <span key={index} className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
+                    <span key={index} className="px-2.5 py-1 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold rounded-lg">
                       {location}
                     </span>
                   ))}
                 </div>
-                <p className="text-xs text-purple-600 mt-2">Use for leads interested in these areas</p>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Ideal alternative for prospects searching in these sub-zones.
+                </p>
               </div>
             )}
 
-            {/* Property Metadata */}
-            <div className="bg-gray-50 rounded-lg shadow-sm p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Property Information</h3>
-              <div className="space-y-2 text-sm text-black">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Added Date:</span>
-                  <span className="font-medium">{formatDate(property.createdAt)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Property ID:</span>
-                  <span className="font-mono text-xs">{property._id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Listed by:</span>
-                  <span className="font-medium">{property.user?.name || 'Admin'}</span>
-                </div>
+            {/* Property System Metadata */}
+            <div className="bg-slate-100/70 rounded-2xl border border-slate-200/60 p-4 text-[11px] text-slate-500 space-y-1.5">
+              <div className="flex justify-between">
+                <span>Created Date:</span>
+                <span className="font-medium text-slate-700">{formatDate(property.createdAt)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Inventory ID:</span>
+                <span className="font-mono text-slate-700">{property._id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Listing Advisor:</span>
+                <span className="font-medium text-slate-700">{property.user?.name || 'Admin'}</span>
               </div>
             </div>
           </div>
