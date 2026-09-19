@@ -1,7 +1,7 @@
 'use client';
 
 export default function FloatingContact() {
-  const phoneNumber = '919876543210'; // Replace with actual number
+  const phoneNumber = '919002981353';
   const whatsappMessage = encodeURIComponent('Hi, I am interested in a property listed on A4 Realty. Can you help me?');
 
   return (

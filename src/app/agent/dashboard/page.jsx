@@ -79,7 +79,7 @@ export default function AgentDashboard() {
         const agent = data.data;
         const assigned = agent.currentAssignedCount || 0;
         const completed = agent.currentCompletedCount || 0;
-        const pending = Math.max(0, assigned - completed);
+        const pending = agent.currentPendingCount !== undefined ? agent.currentPendingCount : Math.max(0, assigned - completed);
         const successRate = assigned > 0 ? Math.round((completed / assigned) * 100) : 0;
 
         setStats({
@@ -313,7 +313,7 @@ export default function AgentDashboard() {
               <div className="text-lg font-black text-[#D7242A]">{stats.pending} Leads</div>
             </div>
             <Link
-              href="/agent/my-leads?status=not_connected"
+              href="/agent/my-leads?status=new"
               className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-colors"
             >
               Filter Pending

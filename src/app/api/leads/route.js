@@ -54,12 +54,12 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 30;
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || 'all';
+    const assignedTo = searchParams.get('assignedTo'); // For filtering by agent
+    const assignmentStatus = searchParams.get('assignmentStatus'); // 'assigned', 'unassigned', 'all'
     const sortBy = searchParams.get('sortBy') || (assignedTo ? 'assignedAt' : 'createdAt');
     const sortOrder = searchParams.get('sortOrder') || 'desc';
     const dateFrom = searchParams.get('dateFrom');
     const dateTo = searchParams.get('dateTo');
-    const assignedTo = searchParams.get('assignedTo'); // For filtering by agent
-    const assignmentStatus = searchParams.get('assignmentStatus'); // 'assigned', 'unassigned', 'all'
 
     // Build filter query
     const filter = {};

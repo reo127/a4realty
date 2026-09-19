@@ -240,11 +240,11 @@ export default function Terms() {
                                     <p>
                                         If you have questions about these Terms and Conditions, please contact us:
                                     </p>
-                                    <div className="bg-gray-50 p-6 rounded-lg">
-                                        <p><strong>A4Realty</strong></p>
-                                        <p>Email: legal@a4realty.com</p>
-                                        <p>Phone: +91-9876543210</p>
-                                        <p>Address: Mumbai, Maharashtra, India</p>
+                                    <div className="bg-gray-50 p-6 rounded-lg space-y-1">
+                                        <p><strong>A4Realty Pvt Ltd</strong></p>
+                                        <p>Email: a4realtyinfo@gmail.com</p>
+                                        <p>Phone: +91-9002981353 / +91-6289038527</p>
+                                        <p>Address: No.184, A4 Realty, Hennur Cross, 3rd Cross, Narayanappa Road, Kalyan Nagar Post, Bengaluru, 560043</p>
                                     </div>
                                 </div>
                             </div>

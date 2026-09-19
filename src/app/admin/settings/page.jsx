@@ -33,12 +33,12 @@ export default function AdminSettings() {
   // Settings State
   const [settings, setSettings] = useState({
     companyName: 'A4 Realty',
-    tagline: 'Premier Luxury Real Estate Advisory & Capital Management',
-    phone: '+91 98765 43210',
-    whatsapp: '+91 98765 43210',
-    email: 'contact@a4realty.in',
-    reraNumber: 'A51900012345',
-    address: 'Level 14, Executive Heights, BKC, Bandra East, Mumbai, Maharashtra 400051',
+    tagline: 'New projects, verified listings, and trusted agents across India',
+    phone: '+91 9002981353',
+    whatsapp: '+91 6289038527',
+    email: 'a4realtyinfo@gmail.com',
+    reraNumber: 'PRM/KA/RERA/1251/309/AG/250915/006180',
+    address: 'No.184, A4 Realty, Hennur Cross, 3rd Cross, Narayanappa Road, Kalyan Nagar Post, Bengaluru, 560043',
     autoAssignLeads: true,
     skipInactiveAgents: true,
     duplicateThresholdDays: '30',
@@ -187,7 +187,7 @@ export default function AdminSettings() {
 
             <div>
               <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                MahaRERA Registration Number
+                RERA Registration Number
               </label>
               <input
                 type="text"

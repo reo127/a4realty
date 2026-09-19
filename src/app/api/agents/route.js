@@ -25,15 +25,33 @@ export async function GET(request) {
             isAssigned: true
           });
 
+          // Handled/contacted leads (any status other than initial 'new')
           const completedCount = await Lead.countDocuments({
             assignedTo: agent._id,
-            status: { $in: ['site_visit_done', 'do_not_disturb'] }
+            isAssigned: true,
+            status: { $ne: 'new' }
+          });
+
+          // Fresh leads waiting to be called
+          const pendingCount = await Lead.countDocuments({
+            assignedTo: agent._id,
+            isAssigned: true,
+            status: 'new'
+          });
+
+          // Converted / high-intent pipeline leads
+          const convertedCount = await Lead.countDocuments({
+            assignedTo: agent._id,
+            isAssigned: true,
+            status: { $in: ['interested', 'site_visit_scheduled', 'site_visit_done', 'follow_up_scheduled'] }
           });
 
           return {
             ...agent.toObject(),
             currentAssignedCount: assignedCount,
-            currentCompletedCount: completedCount
+            currentCompletedCount: completedCount,
+            currentPendingCount: pendingCount,
+            currentConvertedCount: convertedCount
           };
         })
       );

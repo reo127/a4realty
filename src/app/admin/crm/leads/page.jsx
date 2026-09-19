@@ -1637,7 +1637,7 @@ export default function CRMLeadsPage() {
                     onChange={handleInputChange}
                     required
                     maxLength="10"
-                    placeholder="9876543210"
+                    placeholder="10-digit mobile number"
                     className="w-full pl-12 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#D7242A]/20 focus:border-[#D7242A] text-slate-900 outline-none font-mono"
                   />
                 </div>
